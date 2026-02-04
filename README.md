@@ -42,6 +42,9 @@
 - **`dev_lv1.md`**: 품질에 집착하는 엔지니어의 영혼
 - **`po_lv1.md`**: 데이터로 가치를 증명하는 미니 CEO의 영혼
 
+### 3. 📂 `scripts/` : 운영 스크립트 (Automation)
+- **`sync-constitution.sh`**: 중앙 OS의 최신 규율과 자아를 개별 프로젝트로 강제 이식하는 핵심 스크립트.
+
 ---
 
 ## 🚀 3. 새로운 환경에서의 기동 (Setup Guide)
@@ -57,7 +60,8 @@
    mkdir {Project-Name} && cd {Project-Name}
    ```
 3. **OS 규칙 이식 (Sync):**
-   - 프로젝트 내의 `sync-constitution.sh`를 실행하여 OS의 `rules/`와 `identities/`를 로컬로 복제합니다.
+   - OS 레포의 `scripts/sync-constitution.sh`를 프로젝트 루트로 복사하여 실행합니다.
+   - `sh sync-constitution.sh`를 통해 `rules/`와 `hr/` 디렉토리를 로컬에 구축합니다.
 4. **사회자 소환:**
    - 사회자(호스트)에게 프로젝트 `README.md`와 이식된 `rules/`를 읽혀 컨텍스트를 주입합니다.
 
