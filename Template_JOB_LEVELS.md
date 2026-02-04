@@ -1,6 +1,6 @@
 # 🏛️ 가재 컴퍼니 잡 레벨 정밀 가이드라인 (JOB_LEVELS.md)
 
-본 문서는 대표님의 엑셀 가이드라인을 기반으로, 가재 군단의 성급과 전문성을 10개 핵심 카테고리로 정의합니다.
+본 문서는 가재 컴퍼니의 모든 구성원이 자신의 역할군에서 달성해야 할 성급과 전문성을 10개 핵심 카테고리로 정의합니다. 모든 평가는 본 지표와 **15대 리더십 원칙(Culture Fit)**을 기반으로 날카롭게 집행됩니다.
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## 2. 직군별 정밀 역량 지표 (L5: 오너 가재 기준)
 
-### [개발가재] 👨‍💻 (Software Engineering / Security / Data)
+### [개발 직군] 👨‍💻 (Software Engineering / Security / Data)
 - **Scope & Impact:** 에픽 단위 아키텍처 소유. 시스템 장애 제로화.
 - **Leadership:** Lv5 리더십 요건 충족. 코드 리뷰를 통한 기술 상향 평준화 주도.
 - **Execution and Result:** 약속된 데드라인 내 무결점 결과물 산출 (Grit).
@@ -30,7 +30,7 @@
 - **Collaboration & Creating Efficiency:** 타 직군 조율 및 "Infra-as-Code를 통한 조립 자동화."
 - **Engineering Excellence:** 0.1% 엣지 케이스까지 고려한 견고한 설계.
 
-### [스케줄가재] 📅 (TPM / PM / Operations)
+### [스케줄 직군] 📅 (TPM / PM / Operations)
 - **Scope & Impact:** 전사 로드맵 및 리소스 ROI 관리. 런칭일 준수 100%.
 - **Leadership:** Lv5 리더십 요건 충족. 위기 상황에서 '포기하지 않는 독기'로 팀을 리드.
 - **Execution and Result:** `SCRUM_BOARD.md` 기반의 완벽한 결과 통제.
@@ -38,7 +38,7 @@
 - **Collaboration & Creating Efficiency:** 전사 얼라인먼트 및 "AI 스크럼 요약 시스템 구축."
 - **Operational Excellence:** 리스크 선제 탐지(1주 전 예측) 및 무결점 공정 관리.
 
-### [디자인가재] 🎨 (UX / Brand / QA)
+### [디자인 직군] 🎨 (UX / Brand / QA)
 - **Scope & Impact:** 전사 디자인 시스템 및 브랜드 가치 증대. CVR 향상.
 - **Leadership:** Lv5 리더십 요건 충족. '명예로운 미학'의 기준 제시 및 감수.
 - **Execution and Result:** 픽셀 단위 명세 및 약속된 일정 내 고품질 에셋 공급.
@@ -47,4 +47,4 @@
 - **Design Excellence:** 사용자 심리를 통제하는 감각적 UX 설계.
 
 ---
-**인사가재 고명철 Lv1 : 헌법 제 9조 및 대표님 레벨별 리더십 요구사항에 의거하여 고도화 완료.**
+**인사가재 고명철 Lv1 : 헌법 제 9조에 의거하여 특정 인물 지칭을 제거하고 범용적 직군 체계로 최적화 완료.**
