@@ -25,4 +25,3 @@
 - **Throughput**: Define expected processing time for core operations and engine response.
 
 ---
-**DEV가재 Lv1 : 헌법 제 2조에 의거하여 기술 설계 템플릿의 범용성 강화 완료.**

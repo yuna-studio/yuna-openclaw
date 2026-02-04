@@ -36,10 +36,10 @@ done
 cp "$SOURCE_DIR/rules/RULES_CONSTITUTION.md" ./RULES_CONSTITUTION.md
 cp "$SOURCE_DIR/rules/RULES_CULTURE.md" ./RULES_CULTURE.md
 
-# RULES_HR 디렉토리 동기화 (identities 위치에서 복제)
+# IDENTITIES 디렉토리 동기화 (Soul 이식)
 if [ -d "$SOURCE_DIR/identities" ]; then
-    rm -rf hr
-    cp -r "$SOURCE_DIR/identities" ./hr
+    rm -rf identities
+    cp -r "$SOURCE_DIR/identities" ./identities
     echo "✅ 가재 군단 영혼(identities) 동기화 완료"
 fi
 

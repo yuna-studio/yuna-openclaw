@@ -28,4 +28,3 @@
 - **Definition of Success**: What data/feedback is required to proceed to the next phase?
 
 ---
-**PO가재 Lv1 : 헌법 제 1조에 의거하여 범용 비즈니스 설계 가이드라인으로 재정립 완료.**
