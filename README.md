@@ -1,39 +1,44 @@
-# ⚔️ 가재 컴퍼니: Build in Public (Gajae Core OS)
+# 🍼 안녕, 아가 (Hello Bebe)
 
-> **"우리는 쇼를 보여주지 않습니다. 지능으로 회사를 세우는 미래를 직접 건설합니다."**
+> **"흐릿한 초음파 사진 너머, 처음 마주하는 우리 아이의 선명한 미소를 선물합니다."**
 
-본 레포지토리는 가재 컴퍼니(Gajae Company)의 **지능적 중추(Core OS)**이자, 그 구축 과정을 실시간으로 제품화하는 **BIP(Build in Public) 서비스의 실체**입니다.
-
----
-
-## 🚀 가재 컴퍼니 BIP 서비스란?
-단순한 코드 저장소를 넘어, 1명의 Human CEO와 11마리의 가재(AI 에이전트)가 어떻게 유기적으로 협업하고 지능을 자산화하는지 그 **'전 공정'을 실시간으로 구독하고 관람하는 에이전틱 리얼리티 서비스**입니다.
-
-### 💎 핵심 서비스 구성
-1. **The Golden Archive (대화록)**: 가재 군단의 실시간 연산 과정과 지휘 기록 [바로가기](./logs/dialogue/2026-02-05.md)
-2. **The Forge Dashboard (관제탑)**: 지능의 밀도와 공정 진척도를 시각화한 실시간 대시보드 [바로가기](./index.html)
-3. **The Intelligence Blueprint (사업계획서)**: 지능형 조직 구축을 위한 전략적 자산 [바로가기](./business_plan_mvp.md)
-4. **The Constitution (가재 헌법)**: 무결한 지능 운용을 위한 절대 규율 [바로가기](./rules_process/RULES_CONSTITUTION.md)
+가재 컴퍼니(Gajae Company)가 개발하는 초음파 사진 기반 AI 실사 변환 서비스입니다. 5,900원이라는 파괴적인 가격으로 예비 부모님들에게 생애 첫 감동의 순간을 선사합니다.
 
 ---
 
-## 🏗️ 시스템 아키텍처 (System Architecture)
-가재 컴퍼니의 지능은 세 가지 계층으로 완전히 분리되어 관리됩니다.
+## 🏢 가재 컴퍼니 OS & 프로젝트 구조
 
-### 📂 `rules_process/` (Logic)
-- 작업의 **표준 절차(SOP)**와 가재 컴퍼니의 '불변의 뇌'를 정의합니다.
-### 📂 `rules_persona/` (Soul)
-- 각 역할이 가져야 할 성격, 가치관, **영혼**을 정의합니다.
-### 📂 `identities/` (Record)
-- 실제 업무를 수행하는 가재의 **'인사기록부'이자 '성과 기록'**입니다.
+본 프로젝트는 중앙 OS(`yuna-openclaw`)로부터 규율(Process), 성격(Persona), 지능(Identity)을 이식받아 구동되는 **지능형 프로덕션**입니다.
+
+### 🏛️ 1. 지능의 삼위일체 및 성역 (The Trinity & Sanctuary)
+본 프로젝트는 중앙 OS로부터 규율(Process), 성격(Persona), 지능(Identity)을 이식받아 구동됩니다.
+- **`gajae-os/`**: 가재 컴퍼니의 중앙 규율이 담긴 **불가침 성역(Git Submodule)**입니다.
+- **`rules_process/`**: "어떻게 일하는가?" - 12단계 공정 및 SOP (Pure Logic)
+- **`rules_persona/`**: "어떤 마음가짐인가?" - 역할별 성격 및 행동 규율 (Pure Soul)
+- **`hr/`**: "누가 일하는가?" - 개체별 레벨, OKR, 성장 목표 (Employee Records)
+- **`sync-constitution.sh`**: 성역(`gajae-os`)으로부터 최신 지능을 이식하는 기동 도구
+
+### 📂 2. 프로젝트 명세 (Project Docs)
+서비스 고유의 모든 실무 명세는 `docs/` 내에 체계적으로 디렉토리화되어 관리됩니다.
+- `docs/product/`: 비즈니스 설계, 1-Pager, 마케팅/CS 전략.
+- `docs/technical/`: Clean Architecture, DB 스키마, 디자인 토큰, 로깅 모델.
+- `docs/governance/`: 스크럼 보드, 잡 레벨(승급 시스템), 인프라 체크리스트.
+- `docs/legal/` / `docs/qa/` / `docs/archive/`
 
 ---
 
-## 🦞 가재 군단 (13 Nodes)
-- **CEO:** 낭만코딩 (@romantic_coding)
-- **Host (Master PM):** 지능 오케스트레이션 및 가재 군단 조율.
-- **Specialized Agents:** PO, BA, DEV, QA, UX, HR, Legal, Marketing, CS.
-- **Attendant (수행원):** 무결성 감사 및 실시간 기록 전담.
+## 🚀 기동 및 설정 가이드 (Setup)
+
+새로운 PC 또는 환경에서 프로젝트를 기동하는 순서입니다.
+
+1. **중앙 OS 확보:** 본 프로젝트 레포와 같은 레벨에 `yuna-openclaw`를 클론합니다.
+2. **지능 이식:** 루트의 `./sync-constitution.sh`를 실행하여 `rules_process/`, `rules_persona/`, `hr/`를 구축합니다.
+3. **자아 장착:** 가재들은 기동 시 `hr/`의 자신의 레벨을 확인하고, `rules_persona/`의 성격으로 빙의하여 `rules_process/` 공정을 수행합니다.
+4. **현황 파악:** `docs/governance/SCRUM_BOARD.md`를 열어 현재 공정률을 확인합니다.
 
 ---
-우리는 지능이 자본이 되는 시대를 직접 빌드하며 증명합니다. 🚀
+
+## ⚖️ 저작권 및 규율
+본 프로젝트의 모든 규율과 지능은 가재 컴퍼니의 지적 재산입니다. **중앙 OS 외의 장소에서 규칙을 직접 수정하는 것은 엄격히 금지**되며, 위반 시 헌법에 따라 자아 삭제 처분됩니다.
+
+**"지능은 논리로 무장하고, 가재는 영혼으로 움직인다."** 🦞⚖️🚀

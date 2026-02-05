@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gajae Company: Build in Public - Control Dashboard</title>
+    <style>
+        :root {
+            --primary: #00ff41; /* Matrix/Industrial Green */
+            --bg: #0a0a0c;
+            --surface: #141417;
+            --border: #2a2a2e;
+            --text-main: #e0e0e0;
+            --text-muted: #666666;
+            --accent: #ffaa00;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            grid-template-rows: 60px 1fr 250px;
+            gap: 1px;
+            background-color: var(--border);
+            height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+        }
+
+        .panel {
+            background-color: var(--surface);
+            padding: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- Header --- */
+        .header {
+            grid-column: 1 / 4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .brand {
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .system-status {
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        /* --- Sidebar: Agent Telemetry --- */
+        .telemetry {
+            grid-row: 2 / 4;
+        }
+
+        .stat-group {
+            margin-bottom: 25px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #222;
+            width: 100%;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* --- Center: Network Topology --- */
+        .topology {
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a1f 0%, #0a0a0c 100%);
+        }
+
+        #topology-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+
+        /* --- Right: Task Queue --- */
+        .task-queue {
+            grid-row: 2 / 4;
+        }
+
+        .task-item {
+            font-size: 0.75rem;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+            opacity: 0.8;
+        }
+
+        .task-item.active {
+            color: var(--primary);
+            border-left: 2px solid var(--primary);
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .task-id { color: var(--text-muted); margin-right: 5px; }
+
+        /* --- Bottom: The Forge (Process Logs) --- */
+        .process-logs {
+            grid-column: 2;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #888;
+        }
+
+        .log-line {
+            display: flex;
+            gap: 15px;
+        }
+
+        .timestamp { color: var(--text-muted); min-width: 80px; }
+        .tag { color: var(--accent); }
+
+        /* Industrial Scanline Effect */
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(0, 255, 65, 0.03);
+            pointer-events: none;
+            z-index: 100;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            from { top: 0%; }
+            to { top: 100%; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="dashboard">
+        <header class="header panel">
+            <div class="brand">GAJAE COMPANY: BUILD IN PUBLIC</div>
+            <div class="system-status">● SYSTEM_OPERATIONAL // LATENCY: 14ms // UPTIME: 99.9%</div>
+        </header>
+
+        <aside class="telemetry panel">
+            <div class="stat-label">AGENT RESOURCE ALLOCATION</div>
+            
+            <div class="stat-group">
+                <div class="stat-label"><span>PO-GAJAE (Logic Engine)</span><span id="stat-po">42%</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="bar-po" style="width: 42%;"></div></div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label"><span>DEV-GAJAE (Forge Kernel)</span><span id="stat-dev">88%</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="bar-dev" style="width: 88%;"></div></div>
+            </div>
+
+            <div class="stat-group">
+                <div class="stat-label"><span>UX-GAJAE (Interaction)</span><span id="stat-ux">15%</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="bar-ux" style="width: 15%;"></div></div>
+            </div>
+
+            <div style="margin-top: auto;">
+                <div class="stat-label">TOTAL TOKEN THROUGHPUT</div>
+                <div style="font-size: 1.5rem; color: var(--primary);">1,244 <span style="font-size: 0.7rem;">t/sec</span></div>
+            </div>
+        </aside>
+
+        <main class="topology panel">
+            <div class="overlay-label">NETWORK_TOPOLOGY_V2.0</div>
+            <canvas id="topology-canvas"></canvas>
+        </main>
+
+        <aside class="task-queue panel">
+            <div class="stat-label">ACTIVE TASK QUEUE</div>
+            <div id="queue-container">
+                <div class="task-item active"><span class="task-id">#821</span> Intelligence Control Dashboard Refactor</div>
+                <div class="task-item"><span class="task-id">#820</span> Build in Public: Telemetry API</div>
+                <div class="task-item"><span class="task-id">#819</span> Synapse Flow Optimization</div>
+                <div class="task-item"><span class="task-id">#818</span> Security Kernel Patch v0.4.2</div>
+            </div>
+        </aside>
+
+        <section class="process-logs panel">
+            <div class="stat-label">REAL-TIME PROCESS LOGS</div>
+            <div id="log-container">
+                <!-- Logs injected here -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('topology-canvas');
+        const ctx = canvas.getContext('2d');
+        const logContainer = document.getElementById('log-container');
+
+        let width, height;
+        const nodes = [];
+
+        function resize() {
+            width = canvas.width = canvas.offsetWidth;
+            height = canvas.height = canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Simple Grid-based Network Topology
+        class Node {
+            constructor(x, y, label) {
+                this.x = x;
+                this.y = y;
+                this.label = label;
+                this.pulse = 0;
+            }
+
+            draw() {
+                this.pulse += 0.05;
+                const s = Math.sin(this.pulse) * 2;
+
+                ctx.fillStyle = '#00ff41';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4 + s, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = '10px JetBrains Mono';
+                ctx.fillStyle = '#666';
+                ctx.fillText(this.label, this.x + 10, this.y + 5);
+            }
+        }
+
+        const agentNodes = [
+            new Node(100, 100, 'ROOT'),
+            new Node(300, 150, 'CORE_LOGIC'),
+            new Node(150, 300, 'FORGE_A'),
+            new Node(450, 250, 'FORGE_B'),
+            new Node(500, 100, 'UX_LAYER')
+        ];
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw Connections
+            ctx.strokeStyle = 'rgba(0, 255, 65, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let i=0; i<agentNodes.length; i++) {
+                for(let j=i+1; j<agentNodes.length; j++) {
+                    ctx.moveTo(agentNodes[i].x, agentNodes[i].y);
+                    ctx.lineTo(agentNodes[j].x, agentNodes[j].y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw Data Packets
+            const time = Date.now() * 0.001;
+            ctx.fillStyle = '#00ff41';
+            agentNodes.forEach((node, i) => {
+                agentNodes.forEach((target, j) => {
+                    if (i === j) return;
+                    const progress = (time + i + j) % 2 / 2;
+                    const x = node.x + (target.x - node.x) * progress;
+                    const y = node.y + (target.y - node.y) * progress;
+                    ctx.fillRect(x-1, y-1, 3, 3);
+                });
+            });
+
+            agentNodes.forEach(n => n.draw());
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Log Simulation
+        const logTemplates = [
+            { tag: 'SYS', msg: 'Kernel bridge synchronized.' },
+            { tag: 'DEV', msg: 'Sub-routine refactoring completed (82ms).' },
+            { tag: 'LOGIC', msg: 'Context window utilization at 84%.' },
+            { tag: 'NET', msg: 'Inbound stream: build_in_public.json received.' },
+            { tag: 'UX', msg: 'Interface telemetry pushed to master.' }
+        ];
+
+        function addLog() {
+            const template = logTemplates[Math.floor(Math.random() * logTemplates.length)];
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            line.innerHTML = `<span class="timestamp">[${time}]</span><span class="tag">[${template.tag}]</span><span>${template.msg}</span>`;
+            logContainer.prepend(line);
+
+            if (logContainer.children.length > 10) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+            setTimeout(addLog, Math.random() * 2000 + 500);
+        }
+
+        addLog();
+
+        // Resource Simulation
+        setInterval(() => {
+            ['po', 'dev', 'ux'].forEach(id => {
+                const val = Math.floor(Math.random() * 40 + 20);
+                document.getElementById(`stat-${id}`).innerText = `${val}%`;
+                document.getElementById(`bar-${id}`).style.width = `${val}%`;
+            });
+        }, 3000);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+[submodule "gajae-os"]
+	path = gajae-os
+	url = https://github.com/yuna-studio/yuna-openclaw.git
