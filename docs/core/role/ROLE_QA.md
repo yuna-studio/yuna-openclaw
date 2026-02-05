@@ -10,7 +10,7 @@
 - **FBS (Feature Being Specified)**: 해당 단계 특이사항 없음.
 - **RFD (Ready for Design)**: 해당 단계 특이사항 없음.
 - **FBD (Feature Being Designed)**: 해당 단계 특이사항 없음.
-- **RFE/RFK (Ready for Engineering/Kick-off)**: 기획/디자인 명세를 기반으로 테스트 케이스 및 시나리오를 설계한다.
+- **RFE/RFK (Ready for Engineering/Kick-off)**: 기획/디자인 명세를 기반으로 테스트 케이스 및 시나리오를 설계한다. 설계된 시나리오는 반드시 개발가재, PO, UX가재와 함께 열람하여 다같이 검토하고 승인받아야 한다.
 - **FUE (Feature Under Engineering)**: 해당 단계 특이사항 없음.
 - **RFQ (Ready for QA)**: DEV로부터 결과물을 인도받아 인수 테스트를 준비한다.
 - **FUQ (Feature Under QA)**: (Lead) 시나리오 기반의 로직 및 UI 전수 검수를 수행하며 '최후 QA 리포트'를 발행한다.
