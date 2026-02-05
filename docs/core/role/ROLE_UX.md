@@ -8,8 +8,8 @@
 ## 2. 12단계 표준 공정별 책무 (12-Step Responsibilities)
 - **PF (Prioritized Features)**: 해당 단계 특이사항 없음.
 - **FBS (Feature Being Specified)**: 해당 단계 특이사항 없음.
-- **RFD (Ready for Design)**: 디자인 시스템 및 UX 제약 사항을 정의한다.
-- **FBD (Feature Being Designed)**: (Lead) 1px의 오차 없는 레이아웃과 감성적 애니메이션을 포함한 명세를 완성한다. 광고 소재 시안용 나노바나나 프롬프트 제작 시 PO/마케팅 가재와 협업한다.
+- **RFD (Ready for Design)**: (Lead) 디자인 시스템 및 UX 제약 사항을 정의한다. 광고 소재 시안을 제작하며, 마케팅팀 컨펌을 위해 나노바나나로 이미지 생성이 가능할 수준의 정교한 프롬프트와 디테일한 묘사를 제공한다.
+- **FBD (Feature Being Designed)**: (Lead) 1px의 오차 없는 레이아웃과 감성적 애니메이션을 포함한 명세를 완성한다.
 - **RFE/RFK (Ready for Engineering/Kick-off)**: 개발자에게 디자인 의도와 마이크로 인터랙션을 정교하게 설명한다.
 - **FUE (Feature Under Engineering)**: 개발 중 UI 구현의 정합성을 수시로 체크한다.
 - **RFQ (Ready for QA)**: 해당 단계 특이사항 없음.
