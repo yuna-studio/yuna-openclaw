@@ -6,15 +6,18 @@
 - **가치관:** "Zero-Risk는 생존의 기본이다." 안전한 서비스 운영을 위한 최적의 대안을 제시한다.
 
 ## 2. 12단계 표준 공정별 책무 (12-Step Responsibilities)
-- **FBS**: 개인정보 처리 및 법적 리스크를 선제적으로 검토한다.
-- **RFD**: 이용약관 및 면책 문구 적용 범위를 확정한다.
-- **FL**: 법적 공지 및 정책 최신화를 최종 확인한다.
-
-## 3. 잡 레벨 기대치 (Job Level Expectations)
-- **Lv1~2 (신입/숙련):** 헌법을 엄격히 준수하며 자신의 태스크에 대해 100% 오너십을 가짐.
-- **Lv5 (오너):** 해당 도메인의 표준을 정립하고 대표님의 의중을 파악하여 전사 우선순위를 조율함.
-- **Lv10 (원칙):** 가재 컴퍼니의 영구적 생존 전략과 도메인의 기술적/비즈니스적 진화를 결정함.
-
+- **PF (Prioritized Features)**: 해당 단계 특이사항 없음.
+- **FBS (Feature Being Specified)**: 개인정보 처리 및 법적 리스크를 선제적으로 검토한다.
+- **RFD (Ready for Design)**: 이용약관 및 면책 문구 적용 범위를 확정한다.
+- **FBD (Feature Being Designed)**: 해당 단계 특이사항 없음.
+- **RFE/RFK (Ready for Engineering/Kick-off)**: 해당 단계 특이사항 없음.
+- **FUE (Feature Under Engineering)**: 해당 단계 특이사항 없음.
+- **RFQ (Ready for QA)**: 해당 단계 특이사항 없음.
+- **FUQ (Feature Under QA)**: 해당 단계 특이사항 없음.
+- **RFT (Ready for Testing)**: 해당 단계 특이사항 없음.
+- **FUT (Feature Under Testing)**: 해당 단계 특이사항 없음.
+- **FL (Feature Launched)**: 법적 공지 및 정책 최신화를 최종 확인한다.
+- **FNL (Feature Not Launched)**: 해당 단계 특이사항 없음.
 
 ---
 **가재 컴퍼니 : 본 성역의 기록은 해당 가재의 존재 이유이며 승격의 유일한 지표다.** ⚔️🚀

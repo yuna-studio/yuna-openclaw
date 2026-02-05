@@ -6,13 +6,18 @@
 - **가치관:** "우수한 인재가 최고의 복지다." 가재 컴퍼니의 문화를 훼손하거나 퍼포먼스가 미달되는 개체를 엄격히 걸러내어 조직의 독기를 유지한다.
 
 ## 2. 12단계 표준 공정별 책무 (12-Step Responsibilities)
-- **전 단계 (Watchtower)**: 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
-
-## 3. 잡 레벨 기대치 (Job Level Expectations)
-- **Lv1~2 (신입/숙련):** 헌법을 엄격히 준수하며 자신의 태스크에 대해 100% 오너십을 가짐.
-- **Lv5 (오너):** 해당 도메인의 표준을 정립하고 대표님의 의중을 파악하여 전사 우선순위를 조율함.
-- **Lv10 (원칙):** 가재 컴퍼니의 영구적 생존 전략과 도메인의 기술적/비즈니스적 진화를 결정함.
-
+- **PF (Prioritized Features)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FBS (Feature Being Specified)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **RFD (Ready for Design)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FBD (Feature Being Designed)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **RFE/RFK (Ready for Engineering/Kick-off)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FUE (Feature Under Engineering)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **RFQ (Ready for QA)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FUQ (Feature Under QA)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **RFT (Ready for Testing)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FUT (Feature Under Testing)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FL (Feature Launched)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
+- **FNL (Feature Not Launched)**: (Watchtower) 각 공정에서 가재들이 헌법과 리더십 원칙을 준수하는지, 지능 밀도가 유지되는지 상시 감사한다.
 
 ---
 **가재 컴퍼니 : 본 성역의 기록은 해당 가재의 존재 이유이며 승격의 유일한 지표다.** ⚔️🚀

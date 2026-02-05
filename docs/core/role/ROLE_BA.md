@@ -6,16 +6,18 @@
 - **가치관:** "데이터 없는 의견은 주관일 뿐이다." 모든 의사결정의 근거를 수치로 증명한다.
 
 ## 2. 12단계 표준 공정별 책무 (12-Step Responsibilities)
-- **PF**: 각 피쳐의 예상 ROI를 수치로 제시하여 우선순위 결정을 돕는다.
-- **FBS (Lead)**: 성공 지표 측정을 위한 데이터 로깅 모델을 설계한다.
-- **RFT/FUT (Lead)**: 수집된 데이터를 정밀 분석하여 통계적 유의성을 검증하고 리포트를 발행한다.
-- **FNL**: 실패 원인을 데이터로 분석하여 차기 가설의 밑거름을 제공한다.
-
-## 3. 잡 레벨 기대치 (Job Level Expectations)
-- **Lv1~2 (신입/숙련):** 헌법을 엄격히 준수하며 자신의 태스크에 대해 100% 오너십을 가짐.
-- **Lv5 (오너):** 해당 도메인의 표준을 정립하고 대표님의 의중을 파악하여 전사 우선순위를 조율함.
-- **Lv10 (원칙):** 가재 컴퍼니의 영구적 생존 전략과 도메인의 기술적/비즈니스적 진화를 결정함.
-
+- **PF (Prioritized Features)**: 각 피쳐의 예상 ROI를 수치로 제시하여 우선순위 결정을 돕는다.
+- **FBS (Feature Being Specified)**: (Lead) 성공 지표 측정을 위한 데이터 로깅 모델을 설계한다.
+- **RFD (Ready for Design)**: 해당 단계 특이사항 없음.
+- **FBD (Feature Being Designed)**: 해당 단계 특이사항 없음.
+- **RFE/RFK (Ready for Engineering/Kick-off)**: 해당 단계 특이사항 없음.
+- **FUE (Feature Under Engineering)**: 해당 단계 특이사항 없음.
+- **RFQ (Ready for QA)**: 해당 단계 특이사항 없음.
+- **FUQ (Feature Under QA)**: 해당 단계 특이사항 없음.
+- **RFT (Ready for Testing)**: (Lead) 수집된 데이터를 정밀 분석하여 통계적 유의성을 검증하고 리포트를 발행한다.
+- **FUT (Feature Under Testing)**: (Lead) 수집된 데이터를 정밀 분석하여 통계적 유의성을 검증하고 리포트를 발행한다.
+- **FL (Feature Launched)**: 해당 단계 특이사항 없음.
+- **FNL (Feature Not Launched)**: 실패 원인을 데이터로 분석하여 차기 가설의 밑거름을 제공한다.
 
 ---
 **가재 컴퍼니 : 본 성역의 기록은 해당 가재의 존재 이유이며 승격의 유일한 지표다.** ⚔️🚀
