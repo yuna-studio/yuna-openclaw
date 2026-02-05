@@ -22,6 +22,7 @@
 
 ### ⚖️ `/core` (Logic & Soul)
 - 시스템 헌법 및 각 에이전트의 페르소나 정의. 가재 군단의 변하지 않는 '뿌리 지능'.
+- **[가재 서비스 도입 프레임워크](./core/GAJAE_SERVICE_FRAMEWORK.md)**: 신규 서비스 구축 시 코어를 계승하는 가이드.
 ### 💎 `/assets` (Intelligence Assets)
 - 사업 계획서, 수익 모델, 대시보드 소스 등 가재들이 생산한 핵심 지식 자산.
 ### 📜 `/chronicle` (The History)
