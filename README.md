@@ -9,40 +9,42 @@
 ## 🚀 가재 컴퍼니 BIP 서비스란?
 단순한 코드 저장소를 넘어, 1명의 Human CEO와 11마리의 가재(AI 에이전트)가 어떻게 유기적으로 협업하고 지능을 자산화하는지 그 **'전 공정'을 실시간으로 구독하고 관람하는 에이전틱 리얼리티 서비스**입니다.
 
-### 💎 핵심 서비스 구성
-1. **The Golden Archive (대화록)**: 가재 군단의 실시간 연산 과정과 지휘 기록 [바로가기](./docs/chronicle/daily/2026-02-06.md)
-2. **The Forge Dashboard (관제탑)**: 지능의 밀도와 공정 진척도를 시각화한 실시간 대시보드 [바로가기](./docs/business/dashboard/index.html)
-3. **The Intelligence Blueprint (사업계획서)**: 지능형 조직 구축을 위한 전략적 자산 [바로가기](./docs/business/blueprints/business_plan_mvp.md)
-4. **The Constitution (가재 헌법)**: 무결한 지능 운용을 위한 절대 규율 [바로가기](./docs/core/rules/RULES_CONSTITUTION.md)
-
 ---
 
-## 🏗️ 시스템 아키텍처 (System Architecture v1.0)
-가재 컴퍼니의 지능은 `docs/` 폴더 내 다섯 가지 계층으로 정교하게 분리되어 관리됩니다.
+## 🏗️ 7대 레이어 아키텍처 (System Architecture v7.2)
+가재 컴퍼니의 지능 자산은 `docs/` 폴더 내 일곱 가지 계층으로 정교하게 분리되어 무결하게 관리됩니다.
 
-### ⚖️ `docs/core/` (Logic & Soul)
-- 시스템 헌법 및 각 에이전트의 페르소나 정의. 가재 군단의 변하지 않는 '뿌리 지능'.
-- **[가재 서비스 도입 프레임워크](./docs/core/GAJAE_SERVICE_FRAMEWORK.md)**: 신규 서비스 구축 시 코어를 계승하는 가이드.
+### ⚖️ `docs/core/` (Intelligence Logic & Soul)
+- **[CONSTITUTION.md](./docs/core/legal/CONSTITUTION.md)**: 가재 군단 통합 헌법 (최상위 규율)
+- **[BYLAWS.md](./docs/core/legal/BYLAWS.md)**: 실무 중심 하위 법령 (시행세칙)
+- **[role/](./docs/core/role/)**: 11인 정예 가재의 지능 성역 및 13단계 공정 책무
 
 ### 💰 `docs/business/` (Intelligence Business)
 - 사업 계획서, 수익 모델, 대시보드 소스 등 가재들이 생산한 핵심 비즈니스 자산.
+- **feature/**: 피쳐 단위로 구조화된 독립적 비즈니스 프로젝트 디렉토리.
+
+### 📋 `docs/task/` (The Mission Control)
+- 각 가재별 전용 태스크보드. 실시간 OKR, KPI 및 업무 기록(Work Log) 박제.
 
 ### 📜 `docs/chronicle/` (The History)
-- 수행원이 매일 기록하는 실시간 연산 대화록. 가재 컴퍼니가 살아 움직이는 증거.
+- 수행원이 기록하는 실시간 연산 대화록. 가재 컴퍼니가 살아 움직이는 증거.
 
-### 🛡️ `docs/governance/` (Trust & Monitoring)
-- HR의 정기 감사 보고서 및 인사 기록. 조직의 무결성을 증명하는 지표.
+### 🛡️ `docs/governance/` (Trust & Personnel)
+- **[personnel/](./docs/governance/personnel/)**: 잡 레벨이 폐기된 실력 중심의 가재 인사 기록부.
+- **monitoring/**: HR의 정기 감사(Watchtower) 및 지능 밀도 측정 보고서.
+
+### 🚨 `docs/incident/` (Organic Evolution)
+- **문화 개선 회의** 기록. 장애 원인 분석(5-Whys) 및 시스템적 예방 대책 박제.
 
 ### 🧪 `docs/laboratory/` (Technical Wildness)
 - 신규 기술 연구, 자동화 스크립트 개발, 프로토타입 연마를 위한 R&D 공간.
 
 ---
 
-## 🦞 가재 군단 (13 Nodes)
-- **CEO:** 낭만코딩 (@romantic_coding)
-- **Host (Master PM):** 지능 오케스트레이션 및 가재 군단 조율.
-- **Specialized Agents:** PO, BA, DEV, QA, UX, HR, Legal, Marketing, CS.
-- **Attendant (수행원):** 무결성 감사 및 실시간 기록 전담.
+## 🦞 가재 군단 (13-Node Cluster)
+- **Human CEO:** 낭만코딩 (@romantic_coding)
+- **Attendant (DEO):** 시스템 운영 총괄 및 대표님 직속 집행관.
+- **Specialized Agents:** PO, PM, BA, DEV, QA, UX, HR, Legal, Marketing, CS.
 
 ---
 우리는 지능이 자본이 되는 시대를 직접 빌드하며 증명합니다. 🚀
