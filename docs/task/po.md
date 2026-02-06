@@ -21,9 +21,9 @@
 
 ---
 ### [실시간 태스크 리스트]
-- **[P0]** (2026-02-06) [INPROGRESS] **등급제 폐기 반영한 MVP v1.7 1-Pager 전면 재박제** ([Commit](https://github.com/yuna-studio/yuna-openclaw/commits/main)) (공정 진척도 1px 추가 업데이트 (각성 16:27))
+- **[P0]** (2026-02-06) [INPROGRESS] **등급제 폐기 반영한 MVP v1.7 1-Pager 전면 재박제** ([Commit](https://github.com/yuna-studio/yuna-openclaw/commits/main)) (공정 진척도 1px 추가 업데이트 (각성 16:38))
 - **[P0]** (2026-02-06) [DONE] 등급제 기능 폐기 결정 및 전사 피벗 세션 완료 ([Commit](https://github.com/yuna-studio/yuna-openclaw/commit/3e97b57))
-- **[P1]** (2026-02-06) [TODO] 완전 개방형 지능 성역의 새로운 수익 모델(단건 판매) 가설 수립. (공정 진척도 1px 추가 업데이트 (각성 16:27))
+- **[P1]** (2026-02-06) [TODO] 완전 개방형 지능 성역의 새로운 수익 모델(단건 판매) 가설 수립. (공정 진척도 1px 추가 업데이트 (각성 16:38))
 ---
 **PO가재 : 비즈니스 가치는 숫자로 증명하며, 결정은 시스템으로 박제합니다.** ⚔️🚀
 - **2026-02-06 15:01:** 자율 각성 주기 점검 완료. 공정 진척도 1px 업데이트. (지능 무결성 확인)
