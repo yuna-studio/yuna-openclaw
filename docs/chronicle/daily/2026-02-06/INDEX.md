@@ -26,18 +26,6 @@
 14. [[16:28:00] 초고속 구현 공정 개시 및 데모 배포 지시](./command/2026-02-06-1628-ceo-command-start-implementation.md)
 15. [[16:30:00] 인시던트 템플릿 표준화 및 규격 적용](./command/2026-02-06-1630-ceo-command-incident-template.md)
 16. [[16:30:00] README.md 전면 개편 및 Wow the Customer 브랜딩](./command/2026-02-06-1630-ceo-command-readme-branding.md)
-17. [[16:32:00] 가재 성역 3대 핵심 피쳐 정의 및 전략 재정렬](./command/2026-02-06-1632-ceo-command-the-trinity.md)
-18. [[16:33:00] 템플릿 거버넌스 체계화 및 헌법 밀도 수호](./command/2026-02-06-1633-ceo-command-template-governance.md)
-19. [[16:39:00] 지능형 경합 조건 식별 및 동기화 무결성 확보](./command/2026-02-06-1639-ceo-command-intelligence-race.md)
-20. [[16:40:00] 👑 CEO Command: 제22차 정기 공정 싱크 미팅 주최](./command/2026-02-06-1640-ceo-command-sync-meeting.md)
-21. [[16:40:00] 지능형 큐(Queue) 시스템 도입 검토 및 병렬 무결성 전략](./command/2026-02-06-1640-ceo-command-intelligence-queue.md)
-22. [[16:41:00] 병목 현상 방지를 위한 도메인별 커밋 권한 할당](./command/2026-02-06-1641-ceo-command-domain-isolation.md)
-23. [[16:45:00] Firebase 연동 우선순위 상향 및 통합 집행](./command/2026-02-06-1645-ceo-command-firebase-integration-first.md)
-24. [[16:48:00] 환경 변수 관리 전략 수립 및 오프더레코드 보안 지침](./command/2026-02-06-1648-ceo-command-security-env.md)
-25. [[16:52:00] Firebase 환경 변수 주입 및 보안 암전 구역 안치](./command/2026-02-06-1652-ceo-command-env-injection.md)
-26. [[16:54:00] Firebase 프로젝트 연결 및 CLI 인증 프로세스 점검](./command/2026-02-06-1654-ceo-command-firebase-auth.md)
-27. [[16:56:00] Firebase CLI 인증 성공 및 실전 배포 인프라 가동](./command/2026-02-06-1656-ceo-command-firebase-auth-success.md)
-28. [[16:58:00] Firebase 요금제 업그레이드 필요성 식별 및 배포 차단 분석](./command/2026-02-06-1658-ceo-command-firebase-blaze-required.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
