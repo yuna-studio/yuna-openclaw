@@ -1,23 +1,25 @@
-# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.3
+# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.4
 
 ## 1. Foundation
 ### 🎨 Color Palette
 - **Base (Background)**: `Deep Black (#000000)`
 - **Primary (Intelligence)**: `Electric Neon Blue (#00F0FF)`
-- **Secondary (Success)**: `Acid Green (#CCFF00)`
-- **Surface**: `Metal Grey (#1A1A1A)`
 
-## 2. Dynamic Performance Strategy
-- **High-Performance Mode**: Full Glassmorphism (Blur: 20px) 적용.
-- **Eco Mode (Default)**: **Solid Metallic Gradient**
-    - **CSS Data**: `linear-gradient(135deg, #1A1A1A 0%, #333333 50%, #1A1A1A 100%)`
-    - **Reason**: 렌더링 비용 최소화 및 메탈릭 질감 유지 (Ref: Review Session #2).
+### 💓 Intelligence Heartbeat Wave (New)
+- **Position**: 배경 최하단 (Z-index: -2)
+- **Opacity**: 10% 고정 (가독성 보호 데이터)
+- **Style**: `Neon Blue Stroke (1px)` - 지능의 연산 상태에 따라 완만한 파형이 실시간으로 흐름.
+- **Goal**: 지능이 살아있음을 시각적으로 증명 (Ref: Review Session 2026-02-06).
 
-## 3. Branding & Identity
-### 🏷️ Watermark
+## 2. Branding & Identity
+### 🏷️ Ghost Watermark
 - **Position**: 우측 상단 (Fixed)
-- **Opacity (Desktop)**: 10%
-- **Opacity (Mobile < 360px)**: **5% 강제 적용** (가독성 보호 데이터).
+- **Opacity**: Desktop 10% / Mobile 5%
+
+## 3. Component Specification
+### 🔡 Typography
+- **Thinking Log & Decision**: `JetBrains Mono` (정체성 수호 데이터).
+- **UI Content**: `Inter` Regular.
 
 ---
-**UX가재 : 데이터 없는 디자인은 장식이며, 근거 있는 미학만이 시스템을 수호한다.** ⚔️🚀
+**UX가재 : 비판적 반박 끝에 탄생한 '지능의 심장 박동'이 성역의 생명력을 불어넣습니다.** ⚔️🚀
