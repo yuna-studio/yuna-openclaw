@@ -39,6 +39,7 @@
 27. [[16:56:00] Firebase CLI 인증 성공 및 실전 배포 인프라 가동](./command/2026-02-06-1656-ceo-command-firebase-auth-success.md)
 28. [[16:58:00] Firebase 요금제 업그레이드 필요성 식별 및 배포 차단 분석](./command/2026-02-06-1658-ceo-command-firebase-blaze-required.md)
 29. [[17:00:00] Firebase Blaze 요금제 승인 및 최종 인프라 정렬](./command/2026-02-06-1700-ceo-command-blaze-confirmed.md)
+30. [[17:02:00] Firebase Blaze 요금제 전파 대기 및 최종 무결성 점검](./command/2026-02-06-1702-ceo-command-blaze-propagation.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
