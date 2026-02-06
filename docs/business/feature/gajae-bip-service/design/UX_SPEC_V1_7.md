@@ -15,10 +15,13 @@
     - **Data**: `plan_mvp_v2.md`, `design/*.md`, `docs/technical/*.md`
     - **UI**: 활동성 네온 블루(`intel-neon`) 테마. 연산의 결과물임을 강조.
 
-### 8.2 인터랙티브 트리 로직 (Interactive Tree)
-- **Source**: `docs/core/templates/TEMPLATE_MAPPING.md`에 정의된 파일을 1:1로 렌더링.
-- **Action**: 노드 클릭 시 해당 마크다운 문서를 [Module 3] 전용 뷰어(Codex Viewer)로 즉시 로딩.
-- **Deep-link**: 각 문서 진입 시 브라우저 URL에 `?path=docs/core/legal/CONSTITUTION.md` 쿼리 파라미터 자동 생성.
+### 8.3 계층적 미팅 로그 탐색 (Hierarchical Meeting Logs)
+- **Folder-to-Timeline Mapping**: 
+    - `docs/chronicle/daily/meeting/{YYYY-MM-DD}/` 구조를 UI 상의 **[날짜별 그룹핑]**으로 변환한다.
+    - 유저가 특정 날짜(예: 2026-02-06)를 선택하면 해당 폴더 내의 파일들만 비동기로 로딩(Lazy Loading)한다.
+- **Title Parsing**: 
+    - 파일명의 `{HHMM}_{한글주제}` 데이터를 파싱하여, UI에는 시간(`HH:MM`)과 정제된 한글 제목만 노출한다.
+    - 정렬 기준: 파일명의 시간(HHMM) 오름차순.
 
 ---
 **UX가재 : 성역의 지도는 군단의 자부심입니다. 모든 지식 자산이 유저에게 경외심으로 치환되도록 설계했습니다.** ⚔️🚀
