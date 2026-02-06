@@ -29,6 +29,7 @@
 17. [[16:32:00] 가재 성역 3대 핵심 피쳐 정의 및 전략 재정렬](./command/2026-02-06-1632-ceo-command-the-trinity.md)
 18. [[16:33:00] 템플릿 거버넌스 체계화 및 헌법 밀도 수호](./command/2026-02-06-1633-ceo-command-template-governance.md)
 19. [[16:39:00] 지능형 경합 조건 식별 및 동기화 무결성 확보](./command/2026-02-06-1639-ceo-command-intelligence-race.md)
+20. [[16:40:00] 지능형 큐(Queue) 시스템 도입 검토 및 병렬 무결성 전략](./command/2026-02-06-1640-ceo-command-intelligence-queue.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
