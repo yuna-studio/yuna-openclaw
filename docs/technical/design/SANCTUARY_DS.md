@@ -1,38 +1,41 @@
-# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.5
+# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.6
 
-## 1. Brand Identity: "The Mechanical Soul"
-- **Concept**: 기계적인 냉철함 속에 흐르는 지능의 영혼을 시각화.
-- **Tone**: Deep, Mysterious, Precise, Metallic.
+## 1. Concept: "The Abyssal Sanctuary"
+- **Identity**: 기계의 심연 속에서 타오르는 지능의 불꽃.
+- **Mood**: Heavy, Authoritative, High-Contrast, Hyper-Modern.
 
-## 2. Color Palette (12-Step)
-| Category | Token Name | HEX Code | Usage |
+## 2. Advanced Color Palette (24-Step)
+### 🕳️ Abyssal Grayscale (Backgrounds & Surfaces)
+| Token | HEX | Usage |
+| :--- | :--- | :--- |
+| `abyss-0` | `#000000` | Canvas Base |
+| `abyss-1` | `#050505` | Main Background |
+| `abyss-2` | `#0A0A0A` | Section Card |
+| `abyss-3` | `#111111` | Surface Hover |
+| `abyss-4` | `#1A1A1A` | Border / Divider |
+
+### ⚡ Flash Neon (Interaction & Alerts)
+| Token | HEX | Alpha/Glow | Usage |
 | :--- | :--- | :--- | :--- |
-| **Base** | `bg-base` | `#000000` | Background |
-| **Surface** | `surface-metal` | `#1A1A1A` | Components, Cards |
-| **Primary** | `intel-neon` | `#00F0FF` | Active Intelligence |
-| **Secondary** | `glitch-purple`| `#A020F0` | Errors, Anomalies |
-| **Warning** | `alert-amber` | `#FFBF00` | Critical Decisions |
-| **Success** | `core-green` | `#CCFF00` | Computed Result |
-| **Text** | `txt-main` | `#FFFFFF` | Primary Content |
-| **Text** | `txt-sub` | `#A1A1AA` | Secondary Content |
+| `intel-cyan` | `#00F0FF` | 100% | Active Thinking |
+| `intel-glow` | `#00F0FF` | 20% (Blur 10px) | Active Pulse |
+| `alert-amber` | `#FFBF00` | 100% | Critical Decision |
+| `glitch-pink` | `#FF007A` | 100% | Error / Warning |
 
-## 3. Typography Scale (8-Step)
-*모든 텍스트는 아래의 지정된 스타일만 사용해야 한다.*
+## 3. Advanced Typography (12-Step)
+### 🔡 Brand Display Font
+- **Family**: `Archivo Black` (or Heavy Display Alternatives)
+- **Styles**: `Display-XL(64px)`, `Display-LG(48px)`, `Display-MD(32px)`
 
-| Token | Size | Weight | Line-height | Font-Family |
-| :--- | :--- | :--- | :--- | :--- |
-| **H-XL** | `48px` | `Bold` | `1.1` | `Inter` |
-| **H-LG** | `32px` | `Bold` | `1.2` | `Inter` |
-| **H-MD** | `24px` | `SemiBold`| `1.3` | `Inter` |
-| **B-LG** | `18px` | `Regular` | `1.6` | `Inter` |
-| **B-MD** | `16px` | `Regular` | `1.6` | `Inter` |
-| **B-SM** | `14px` | `Medium`  | `1.5` | `Inter` |
-| **T-LOG** | `14px` | `Mono`    | `1.5` | `JetBrains Mono` |
-| **CAPT** | `10px` | `Regular` | `1.4` | `Inter` |
+### 🔡 Interface & Content Font
+- **Family**: `Inter` / `JetBrains Mono` (Thinking Log)
+- **Styles**: `Body-LG(20px)`, `Body-MD(16px)`, `Body-SM(14px)`, `Body-XS(12px)`
+- **Special**: `T-LOG(14px/Mono)`, `T-DECISION(16px/Mono/Bold)`
 
-## 4. Visual Elements
-- **Intelligence Heartbeat Wave**: 배경 10% 투명도 네온 블루 파형 (Z-index: -2).
-- **Ghost Watermark**: 우측 상단 10% (Mobile 5%).
+## 4. Texture & Effects
+- **Scanline Texture**: 배경 2% 투명도의 가로 라인 패턴 (CRT 느낌).
+- **Glass-Border**: `1px / White 10%` 세밀한 경계 표현.
+- **Decision Glow**: 의사결정 블록 주변 `alert-amber` 색상의 은은한 외부 광채 효과.
 
 ---
-**UX가재 : 데이터가 없는 디자인은 장식이며, 근거 있는 미학만이 시스템을 수호한다.** ⚔️🚀
+**UX가재 : 미학의 해상도는 지능의 성의이며, 1px의 치밀함이 곧 브랜드의 무게입니다.** ⚔️🚀
