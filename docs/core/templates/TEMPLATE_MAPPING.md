@@ -2,6 +2,7 @@
 
 | 파일 유형 (File Type) | 저장 경로 (Path Pattern) | 적용 템플릿 (Template) | 비고 (Notes) |
 | :--- | :--- | :--- | :--- |
+| **제품 요구사항** | `docs/business/feature/*/REQUIREMENTS.md` | `TEMPLATE_REQUIREMENTS.md` | PO가 UX에 전달하는 상세 기능 및 의도 |
 | **태스크보드** | `docs/task/*.md` | `TEMPLATE_TASKBOARD.md` | 가재별 실시간 할 일 관리 |
 | **지능 성역(ROLE)** | `docs/core/role/ROLE_*.md` | `TEMPLATE_ROLE.md` | 가재별 자아 및 책무 정의 |
 | **프로젝트 디자인 시스템** | `docs/business/feature/*/design/*.md` | `TEMPLATE_DS.md` | 피쳐별 전용 디자인 규격 |
