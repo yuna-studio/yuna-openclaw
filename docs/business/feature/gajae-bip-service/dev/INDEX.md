@@ -13,6 +13,7 @@
 | 파일명 (File Name) | 목적 및 내용 (Purpose) | 상위 계보 (Parent) | 후속 산출물 (Next Step) |
 | :--- | :--- | :--- | :--- |
 | **architecture-blueprint-v1-7.md** | UML/시퀀스 기반 초정밀 기술 설계도 | UX_SPEC_V1_7.md | src/ (Implementation) |
+| **development-handover-v1-7.md** | 개발 이관 가이드 및 체크리스트 | architecture-blueprint-v1-7.md | FUE (Feature Under Engineering) |
 
 ## 4. 담당 지능 및 책무 (Role & Context)
 - **주관 가재**: DEV가재 (B2D6E8C4)
