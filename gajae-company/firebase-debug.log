@@ -1,0 +1,55 @@
+[debug] [2026-02-06T11:36:01.945Z] ----------------------------------------------------------------------
+[debug] [2026-02-06T11:36:01.946Z] Command:       /opt/homebrew/Cellar/node/25.5.0/bin/node /opt/homebrew/bin/firebase functions:secrets:set GITHUB_TOKEN
+[debug] [2026-02-06T11:36:01.947Z] CLI Version:   15.5.1
+[debug] [2026-02-06T11:36:01.947Z] Platform:      darwin
+[debug] [2026-02-06T11:36:01.947Z] Node Version:  v25.5.0
+[debug] [2026-02-06T11:36:01.947Z] Time:          Fri Feb 06 2026 20:36:01 GMT+0900 (한국 표준시)
+[debug] [2026-02-06T11:36:01.947Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-06T11:36:02.050Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-06T11:36:02.050Z] > authorizing via signed-in user (kyeonghwan.kong@gmail.com)
+[debug] [2026-02-06T11:36:02.050Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:02.050Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:02.051Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com [none]
+[debug] [2026-02-06T11:36:02.051Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T11:36:03.369Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com 200
+[debug] [2026-02-06T11:36:03.369Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com [omitted]
+[debug] [2026-02-06T11:36:03.370Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:03.370Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:03.370Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com:enable [none]
+[debug] [2026-02-06T11:36:03.370Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com:enable  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T11:36:04.410Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com:enable 200
+[debug] [2026-02-06T11:36:04.410Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/secretmanager.googleapis.com:enable [omitted]
+[debug] [2026-02-06T11:36:14.425Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-06T11:36:14.425Z] > authorizing via signed-in user (kyeonghwan.kong@gmail.com)
+[debug] [2026-02-06T11:36:14.425Z] [iam] checking project gajae-company-bip for permissions ["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]
+[debug] [2026-02-06T11:36:14.425Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:14.425Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:14.425Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions [none]
+[debug] [2026-02-06T11:36:14.426Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T11:36:14.426Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions {"permissions":["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]}
+[debug] [2026-02-06T11:36:14.650Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions 200
+[debug] [2026-02-06T11:36:14.650Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions {"permissions":["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]}
+[debug] [2026-02-06T11:36:14.651Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:14.651Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:14.651Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip [none]
+[debug] [2026-02-06T11:36:15.280Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip 200
+[debug] [2026-02-06T11:36:15.280Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip {"projectNumber":"741386724665","projectId":"gajae-company-bip","lifecycleState":"ACTIVE","name":"gajae-company-bip","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-02-06T07:51:23.030172Z"}
+[debug] [2026-02-06T11:36:15.281Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:15.281Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:15.281Z] >>> [apiv2][query] GET https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets/GITHUB_TOKEN [none]
+[debug] [2026-02-06T11:36:15.780Z] <<< [apiv2][status] GET https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets/GITHUB_TOKEN 404
+[debug] [2026-02-06T11:36:15.780Z] <<< [apiv2][body] GET https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets/GITHUB_TOKEN {"error":{"code":404,"message":"Secret [projects/741386724665/secrets/GITHUB_TOKEN] not found.","status":"NOT_FOUND"}}
+[debug] [2026-02-06T11:36:15.781Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:15.781Z] Checked if tokens are valid: true, expires at: 1770378876059
+[debug] [2026-02-06T11:36:15.782Z] >>> [apiv2][query] POST https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets secretId=GITHUB_TOKEN
+[debug] [2026-02-06T11:36:15.782Z] >>> [apiv2][body] POST https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets {"name":"GITHUB_TOKEN","replication":{"automatic":{}},"labels":{"firebase-managed":"functions"}}
+[debug] [2026-02-06T11:36:17.390Z] <<< [apiv2][status] POST https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets 200
+[debug] [2026-02-06T11:36:17.390Z] <<< [apiv2][body] POST https://secretmanager.googleapis.com/v1/projects/gajae-company-bip/secrets {"name":"projects/741386724665/secrets/GITHUB_TOKEN","replication":{"automatic":{}},"createTime":"2026-02-06T11:36:15.864491Z","labels":{"firebase-managed":"functions"},"etag":"\"164a263288cb60\""}
+[debug] [2026-02-06T11:36:17.479Z] Error: EAGAIN: resource temporarily unavailable, read
+    at Object.readFileSync (node:fs:435:20)
+    at readSecretValue (/opt/homebrew/lib/node_modules/firebase-tools/lib/utils.js:596:35)
+    at Command.actionFn (/opt/homebrew/lib/node_modules/firebase-tools/lib/commands/functions-secrets-set.js:49:59)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[error] 
+[error] Error: An unexpected error has occurred.
