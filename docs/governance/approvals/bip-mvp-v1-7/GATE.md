@@ -9,7 +9,8 @@
 | **BIP MVP v1.7** | **1. PF** | PM | **DONE** | ✅ **APPROVED** | 2026-02-06 |
 | **BIP MVP v1.7** | **2. FBS** | PO | **INPROGRESS** | ⏳ WAITING | 2026-02-06 |
 | **BIP MVP v1.7** | **3. RFD** | UX | **DONE** | ⏳ WAITING | 2026-02-06 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commit/0d75059) |
-| **BIP MVP v1.7** | **4. FBD** | UX | **READY** | ⏳ WAITING | 2026-02-06 | |
+| **BIP MVP v1.7** | **4. FBD** | UX | **DONE** | ⏳ WAITING | 2026-02-07 | [Commit](https://github.com/yuna-studio/yuna-openclaw/commits/main) |
+| **BIP MVP v1.7** | **5. RFE/RFK** | PM | **READY** | ⏳ WAITING | 2026-02-07 | |
 
 ---
 
