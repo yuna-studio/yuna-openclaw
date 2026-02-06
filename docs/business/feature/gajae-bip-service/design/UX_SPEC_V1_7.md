@@ -16,6 +16,9 @@
 
 ### 7.3 기술적 웹 표준 (Technical Standard)
 - **Framework**: Next.js (App Router) + Server Components.
+- **Data Navigation**: 
+    - `meeting/` 하위의 **날짜별 디렉토리 구조**를 탐색기(Explorer) UI로 직결 렌더링한다.
+    - 파일명의 `HHMM` 시간 데이터를 파싱하여 UI상에서 자동 정렬을 수행한다.
 - **SEO**: 피쳐명, 가재 ID, 의사결정 요약을 메타데이터로 자동 추출하여 검색 엔진에 노출.
 - **Platform Support**: Chrome, Safari, Edge (Desktop & Mobile Browser) 완벽 대응.
 
