@@ -4,6 +4,7 @@
 
 | 파일 유형 (File Type) | 저장 경로 (Path Pattern) | 적용 템플릿 (Template) | 계보 (Lineage) |
 | :--- | :--- | :--- | :--- |
+| **일일 연대기 스켈레톤** | `docs/chronicle/daily/*/` | `SKELETON_DAILY/` | 날짜별 3대 레이어 구조 본체 |
 | **일일 연대기 인덱스** | `docs/chronicle/daily/*/INDEX.md` | `TEMPLATE_CHRONICLE.md` | 일일 자산 허브 |
 | **미팅 로그** | `docs/chronicle/daily/*/meeting/*.md` | `TEMPLATE_MEETING.md` | 가재 간 격돌 기록 |
 | **CEO 지시 로그** | `docs/chronicle/daily/*/command/*.md` | `TEMPLATE_COMMAND.md` | CEO 직접 명령 기록 |
