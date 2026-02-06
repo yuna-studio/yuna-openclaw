@@ -1,0 +1,23 @@
+{
+  "name": "gajae-company",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "firebase": "^12.9.0",
+    "framer-motion": "^12.33.0",
+    "lucide-react": "^0.563.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "zustand": "^5.0.11",
+    "sharp": "^0.32 || ^0.33",
+    "firebase-frameworks": "^0.11.0",
+    "firebase-functions": "^6.0.1",
+    "firebase-admin": "^11.11.1"
+  },
+  "main": "server.js",
+  "engines": {
+    "node": "24"
+  }
+}
