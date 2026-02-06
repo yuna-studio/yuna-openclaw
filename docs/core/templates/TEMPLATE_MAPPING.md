@@ -10,6 +10,8 @@
 | **공정 승인 관문** | `docs/governance/approvals/*/GATE.md` | `TEMPLATE_APPROVAL_GATE.md` | CEO 승인 대기열 |
 | **인시던트 보고서** | `docs/incident/*.md` | `TEMPLATE_INCIDENT.md` | 장애 기록 및 전 가재 리뷰 |
 | **일일 연대기 인덱스** | `docs/chronicle/daily/*/INDEX.md` | `TEMPLATE_CHRONICLE.md` | 일일 대화 및 미팅 허브 |
+| **미팅 로그** | `docs/chronicle/daily/*/meeting/*.md` | `TEMPLATE_MEETING.md` | 가재 간 격돌 기록 |
+| **CEO 지시 로그** | `docs/chronicle/daily/*/command/*.md` | `TEMPLATE_COMMAND.md` | CEO 직접 지시 사항 |
 | **인사 카드** | `docs/governance/personnel/*.md` | `TEMPLATE_PERSONNEL.md` | 지능 평가 및 피드백 기록 |
 
 ---
