@@ -1,27 +1,45 @@
-# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.7
+# 🏛️ Sanctuary UI 디자인 시스템 (Design System) v0.8
 
-## 1. Brand Concept: "The Mechanical Soul"
-- **Identity**: 기계의 차가움 속에 타오르는 지능의 감정을 시각화.
-- **Mood**: High-Resolution Depth, Luminous Precise.
+## 1. Brand Concept: "The Abyssal Sanctuary" (Extended)
+- **Concept**: 기계의 심연 속에서 타오르는 지능의 불꽃.
+- **Visual Depth Policy**: 단순한 평면 디자인을 배제하고, 최소 4개 이상의 레이어 중첩을 통해 '공간의 깊이'를 시각화함.
 
-## 2. Emotional Intelligence Feedback (New)
-*지능의 상태에 따라 'Heartbeat Wave'의 컬러가 동적으로 변화함.*
-
-| 지능 상태 (State) | Token | HEX | 의미 |
+## 2. Ultra-High-Resolution Color Palette (32-Step)
+### 🕳️ Abyssal Grayscale (10-Step Depth)
+| Token | HEX | Description | Usage |
 | :--- | :--- | :--- | :--- |
-| **Idle** | `wave-calm` | `#00F0FF` (10% Opacity) | 안정적 연산 대기 |
-| **Thinking** | `wave-active`| `#00F0FF` (30% Opacity) | 집중 연산 및 사고 전개 |
-| **Deciding** | `wave-amber` | `#FFBF00` (40% Opacity) | 치명적 의사결정 시점 |
-| **Warning** | `wave-pink`  | `#FF007A` (50% Opacity) | 규율 위반 및 인시던트 발생 |
+| `abyss-0` | `#000000` | Pure Void | Absolute Base |
+| `abyss-1` | `#030303` | Wet Black | Main Background |
+| `abyss-2` | `#080808` | Cold Metal | Section Base |
+| `abyss-3` | `#0D0D0D` | Dusty Surface | Card Background |
+| `abyss-4` | `#141414` | Inner Shadow | Inset Layer |
+| `abyss-5` | `#1C1C1C` | Active Border | Stroke Default |
+| `abyss-6` | `#252525` | Hover Surface | Interaction |
+| `abyss-7` | `#333333` | Disabled | Inactive UI |
+| `abyss-8` | `#454545` | Secondary Text | Meta Data |
+| `abyss-9` | `#666666` | Tertiary Text | Captions |
 
-## 3. Luminous Typography (Added)
-- **Effect**: 모든 `JetBrains Mono` 폰트에 `text-shadow` 데이터 적용.
-- **Data**: `0px 0px 4px rgba(0, 240, 255, 0.4)` - 지능이 빛을 내뿜는 시각적 메타포.
+### ⚡ Intelligence Flash (Special Interaction)
+| Token | HEX | Effect Data | 의미 |
+| :--- | :--- | :--- | :--- |
+| `intel-cyan` | `#00F0FF` | `Glow: 0 0 10px` | Active Thinking |
+| `alert-amber` | `#FFBF00` | `Glow: 0 0 15px` | Critical Decision |
+| `glitch-pink` | `#FF007A` | `Scanline Overlay`| Error / Warning |
 
-## 4. Abyssal Layering (Added)
-*공간의 깊이감을 위한 4단계 중첩 그림자(Box-shadow) 데이터.*
-- **Token**: `depth-abyss`
-- **Data**: `0 10px 30px rgba(0,0,0,0.5), 0 6px 10px rgba(0,0,0,0.3), 0 2px 2px rgba(255,255,255,0.05)`
+## 3. High-Definition Texture & Effects
+### 🎞️ Multi-Layer Texturing
+1. **Layer 1: Noise Grain**: `opacity: 1%`의 미세 노이즈. 기계의 생생한 표면 질감.
+2. **Layer 2: Scanline**: `2px` 간격의 가로 라인. CRT 모니터의 아날로그 감성.
+3. **Layer 3: Backdrop Blur**: `20px` 심도. 공간의 몽환적 깊이감.
+
+### 🪟 Double-Stroke Architecture
+- **Outer**: `1px abyss-5` (강철 같은 경계)
+- **Inner**: `1px white / 5% opacity` (유리 같은 반사광)
+
+## 4. Typography Scale (12-Step)
+- **Display**: `Archivo Black` (64px, 48px, 32px)
+- **Body**: `Inter` (18px, 16px, 14px, 12px)
+- **Intelligence**: `JetBrains Mono` (14px, 16px-Bold) + `text-shadow`
 
 ---
-**UX가재 : 영감은 데이터의 융합이며, 1px의 광채가 지능의 생명력을 증명합니다.** ⚔️🚀
+**UX가재 : 요약된 미학은 기만입니다. 1px의 치밀함이 지능의 품격을 결정합니다.** ⚔️🚀
