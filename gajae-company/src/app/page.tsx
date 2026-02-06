@@ -5,8 +5,8 @@ import { LayoutDashboard, History, Zap, ShieldCheck, Cpu, BookOpen, Terminal, Sp
 import Image from "next/image";
 
 /**
- * [가재 컴퍼니] The Ghibli Style Dashboard (v1.2)
- * 의도: 지브리 감성의 따스한 수채화풍 UI로 브랜드 정체성을 전면 개편함.
+ * [가재 컴퍼니] The Ghibli Style Dashboard (v1.3)
+ * 의도: 지브리 감성 심화 및 한글 성물(The Trinity) 체제 안착.
  */
 
 export default async function HomePage() {
@@ -31,8 +31,8 @@ export default async function HomePage() {
                     className="object-cover hover:scale-105 transition-transform duration-1000"
                 />
             </div>
-            <div className="absolute -bottom-6 -right-6 abyssal-glass p-6 rounded-3xl border-2 border-ghibli-accent shadow-xl rotate-3">
-                <p className="handwritten text-2xl text-ghibli-text font-bold">2026.02.06 오찬 기록</p>
+            <div className="absolute -bottom-6 -right-6 abyssal-glass p-6 rounded-3xl border-2 border-ghibli-accent shadow-xl rotate-3 bg-white/90">
+                <p className="handwritten text-2xl text-ghibli-text font-bold">2026.02.06 전열 재정비</p>
             </div>
         </div>
 
@@ -47,17 +47,17 @@ export default async function HomePage() {
       {/* The Trinity: Core Features */}
       <section className="mb-24 relative z-10">
         <h2 className="text-sm font-black tracking-[0.3em] text-ghibli-accent uppercase mb-12 text-center flex items-center justify-center gap-4">
-            <Sparkles size={16} /> The Trinity <Sparkles size={16} />
+            <Sparkles size={16} /> 3대 성물 <Sparkles size={16} />
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* The Law: Constitution */}
           <Link href="https://github.com/yuna-studio/yuna-openclaw/blob/main/docs/core/legal/CONSTITUTION.md" target="_blank" className="group">
-            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2">
+            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-accent flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
                 <BookOpen size={32} fill="currentColor" />
               </div>
-              <h3 className="text-2xl font-black mb-4 text-ghibli-text">The Law</h3>
-              <p className="text-slate-600 leading-relaxed font-medium">가재 군단의 뼈대와 15대 리더십 원칙이 담긴 불변의 통합 헌법.</p>
+              <h3 className="text-2xl font-black mb-4 text-ghibli-text">통합 헌법</h3>
+              <p className="text-slate-600 leading-relaxed font-medium">가재 군단의 뼈대와 15대 리더십 원칙이 담긴 불변의 법전.</p>
               <div className="mt-8 flex items-center gap-2 text-ghibli-accent font-bold text-sm">
                 성역의 법전 읽기 ➔
               </div>
@@ -66,12 +66,12 @@ export default async function HomePage() {
 
           {/* The Pulse: Daily Chronicle */}
           <Link href="/timeline" className="group">
-            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2">
+            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-green flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
                 <History size={32} />
               </div>
-              <h3 className="text-2xl font-black mb-4 text-ghibli-text">The Pulse</h3>
-              <p className="text-slate-600 leading-relaxed font-medium">가재 군단이 매일 격돌하고 합의하는 지능의 박동, 실시간 연대기.</p>
+              <h3 className="text-2xl font-black mb-4 text-ghibli-text">일일 연대기</h3>
+              <p className="text-slate-600 leading-relaxed font-medium">가재 군단이 매일 격돌하고 합의하는 지능의 박동, 실시간 기록.</p>
               <div className="mt-8 flex items-center gap-2 text-ghibli-green font-bold text-sm">
                 지능의 박동 확인 ➔
               </div>
@@ -80,12 +80,12 @@ export default async function HomePage() {
 
           {/* The Will: CEO Command */}
           <Link href="/timeline?filter=command" className="group">
-            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2">
+            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-orange flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
                 <Terminal size={32} />
               </div>
-              <h3 className="text-2xl font-black mb-4 text-ghibli-text">The Will</h3>
-              <p className="text-slate-600 leading-relaxed font-medium">시스템의 방향을 결정짓는 대표님의 지엄한 명령 레이어.</p>
+              <h3 className="text-2xl font-black mb-4 text-ghibli-text">CEO 명령</h3>
+              <p className="text-slate-600 leading-relaxed font-medium">시스템의 방향을 결정짓는 대표님의 지엄한 지시 레이어.</p>
               <div className="mt-8 flex items-center gap-2 text-ghibli-orange font-bold text-sm">
                 의지의 기록 열람 ➔
               </div>
@@ -107,16 +107,16 @@ export default async function HomePage() {
           <div className="w-3 h-3 rounded-full bg-ghibli-green animate-pulse" />
         </div>
         
-        <div className="ghibli-card p-8 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+        <Link href="/personnel" className="ghibli-card p-8 flex items-center justify-between bg-white/50 backdrop-blur-sm group hover:border-ghibli-blue/50 transition-all">
           <div className="flex items-center gap-4">
             <Cpu className="text-ghibli-blue" size={24} />
             <div>
               <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Cognition</p>
-              <p className="text-sm font-black text-ghibli-text">12개 지능 노드 활성</p>
+              <p className="text-sm font-black text-ghibli-text group-hover:text-ghibli-blue transition-colors">12개 지능 노드 활성</p>
             </div>
           </div>
-          <div className="w-3 h-3 rounded-full bg-ghibli-blue animate-pulse" />
-        </div>
+          <div className="w-3 h-3 rounded-full bg-ghibli-blue animate-pulse group-hover:scale-150 transition-transform" />
+        </Link>
 
         <div className="ghibli-card p-8 flex items-center justify-between bg-white/50 backdrop-blur-sm">
           <div className="flex items-center gap-4">

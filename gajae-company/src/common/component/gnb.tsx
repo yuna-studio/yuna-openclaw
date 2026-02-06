@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { LayoutDashboard, History, Leaf } from "lucide-react";
+import { LayoutDashboard, History, Scissors } from "lucide-react";
 import { Heartbeat } from "./heartbeat";
 
 export const GNB = () => {
@@ -19,10 +19,10 @@ export const GNB = () => {
       <div className="flex items-center gap-10">
         <Link href="/" className="flex items-center gap-3">
           <motion.div 
-            whileHover={{ rotate: 15 }}
+            whileHover={{ rotate: -15 }}
             className="w-10 h-10 rounded-xl bg-ghibli-accent flex items-center justify-center shadow-lg"
           >
-            <Leaf className="text-ghibli-bg" size={24} fill="currentColor" />
+            <Scissors className="text-ghibli-bg rotate-180" size={24} fill="currentColor" />
           </motion.div>
           <div className="flex flex-col">
             <span className="font-bold text-lg leading-none text-ghibli-text">가재 컴퍼니</span>
@@ -53,10 +53,6 @@ export const GNB = () => {
       </div>
 
       <div className="flex items-center gap-6">
-        <div className="hidden md:flex flex-col items-end mr-4">
-            <span className="text-[10px] font-bold text-ghibli-accent uppercase tracking-tighter">System Health</span>
-            <span className="text-xs font-bold text-ghibli-text">무결성 100%</span>
-        </div>
         <Heartbeat />
       </div>
     </nav>
