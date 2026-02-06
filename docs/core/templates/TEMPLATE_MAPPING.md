@@ -13,7 +13,7 @@
 | **공통 비즈니스 자산** | `docs/business/common/*/*.md` | N/A | 전사 공용 자산 (디자인 등) |
 | **태스크보드** | `docs/task/*.md` | `TEMPLATE_TASKBOARD.md` | 실무 현행화 및 평가 |
 | **지능 성역(ROLE)** | `docs/core/role/ROLE_*.md` | `TEMPLATE_ROLE.md` | 가재별 자아 정의 |
-| **공정 승인 관문** | `docs/governance/approvals/*/GATE.md` | `TEMPLATE_APPROVAL_GATE.md` | CEO 승인 대기열 |
+| **공정 승인 관문** | `docs/business/feature/*/pm/GATE.md` | `TEMPLATE_APPROVAL_GATE.md` | 피쳐별 CEO 승인 관리 |
 | **인시던트 보고서** | `docs/incident/*.md` | `TEMPLATE_INCIDENT.md` | 장애 복구 및 리뷰 |
 
 ---
