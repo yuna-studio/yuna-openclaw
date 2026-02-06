@@ -24,7 +24,8 @@
 12. [[16:17:00] 가재 군단 오찬 및 전열 재정비](./command/2026-02-06-1617-ceo-command-lunch-break.md)
 13. [[16:26:00] 실전 배포 전략 확정: Firebase Hosting](./command/2026-02-06-1626-ceo-command-firebase-deployment.md)
 14. [[16:28:00] 초고속 구현 공정 개시 및 데모 배포 지시](./command/2026-02-06-1628-ceo-command-start-implementation.md)
-15. [[16:30:00] README.md 전면 개편 및 Wow the Customer 브랜딩](./command/2026-02-06-1630-ceo-command-readme-branding.md)
+15. [[16:30:00] 인시던트 템플릿 표준화 및 규격 적용](./command/2026-02-06-1630-ceo-command-incident-template.md)
+16. [[16:30:00] README.md 전면 개편 및 Wow the Customer 브랜딩](./command/2026-02-06-1630-ceo-command-readme-branding.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
