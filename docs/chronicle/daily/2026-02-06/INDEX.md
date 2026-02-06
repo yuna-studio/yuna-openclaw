@@ -72,7 +72,8 @@
 14. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제26차 정기 공정률 보고 (6:30 PM)](./meeting/26th_progress_report.md)
 15. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
 16. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제29차 정기 공정률 보고 (8:00 PM)](./meeting/29th_progress_report.md)
-17. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+17. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제30차 정기 공정 싱크 미팅 (8:30 PM)](./meeting/30th_sync_meeting.md)
+18. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
 18. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
 19. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
 
