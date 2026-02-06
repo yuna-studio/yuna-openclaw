@@ -27,6 +27,7 @@
 #### 🏛️ [공정 및 거버넌스]
 1. [[15:30:00] ⚔️ 성역 연대기: [GAJAE-BIP] 제18차 정기 공정 싱크 미팅 (3:30 PM)](./meeting/18th_progress_report.md)
 2. [[15:00:00] ⚔️ 성역 연대기: [GAJAE-BIP] 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
+1. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
 2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
 3. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
 4. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
