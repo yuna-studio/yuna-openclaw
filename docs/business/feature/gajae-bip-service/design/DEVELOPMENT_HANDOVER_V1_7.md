@@ -6,7 +6,8 @@
 - **Framework**: Next.js 14+ (App Router)
 - **Data Source**: **GitHub-as-a-CMS** (GitHub API v3)
 - **Architecture**: 서버리스 기반 SSR/ISR (별도 DB/Server 부재)
-- **Security**: 모든 페칭은 **Route Handlers**를 통한 서버 사이드 수행 의무화.
+- **Security**: 모든 페칭은 **Route Handlers**를 통한 서버 사이드 수행 의무화. 
+- **Secrets**: API 키 및 토큰은 `process.env`를 통해서만 접근하며, 실무 값은 **GitHub Secrets**에서 주입함.
 
 ---
 
