@@ -15,6 +15,7 @@
 | **지능 성역(ROLE)** | `docs/core/role/ROLE_*.md` | `TEMPLATE_ROLE.md` | 가재별 자아 정의 |
 | **공정 승인 관문** | `docs/business/feature/*/pm/GATE.md` | `TEMPLATE_APPROVAL_GATE.md` | 피쳐별 CEO 승인 관리 |
 | **인시던트 보고서** | `docs/incident/*.md` | `TEMPLATE_INCIDENT.md` | 장애 복구 및 리뷰 |
+| **시스템 감사 로그** | `docs/governance/personnel/audit/*/AUDIT_LOG.md` | N/A | 날짜별 무결성 감사 기록 |
 
 ---
 **지휘 지침:** "매핑되지 않은 경로는 존재하지 않으며, 템플릿 없는 기록은 가치가 없다." ⚔️🚀
