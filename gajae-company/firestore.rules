@@ -2,9 +2,13 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /chronicles/{document} {
+    match /commands/{document} {
       allow read: if true;
-      allow write: if false; // Secure it after migration
+      allow write: if false;
+    }
+    match /meetings/{document} {
+      allow read: if true;
+      allow write: if false;
     }
     match /{document=**} {
       allow read, write: if false;
