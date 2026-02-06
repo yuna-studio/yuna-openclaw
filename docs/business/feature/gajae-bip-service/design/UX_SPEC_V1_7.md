@@ -1,24 +1,18 @@
-# 📗 [GAJAE-BIP] Service-MVP v1.7 초정밀 UI/UX 명세서 (Final v1.3)
+# 📗 [GAJAE-BIP] Service-MVP v1.7 초정밀 UI/UX 명세서 (Final v1.4)
 
-## 5. 룰베이스 데이터 파싱 규격 (Parsing Rules)
+## 6. UI 카피 및 텍스트 데이터 맵 (Text Asset Mapping)
 
-UI 파서는 `docs/` 내의 모든 `.md` 파일을 스캔하여 아래의 정규표현식 규칙에 따라 데이터를 추출하고 모듈별로 렌더링한다.
+모든 UI 문구는 하드코딩하지 않으며, `COPY_LEDGER_V1_7.md`의 Key값을 참조하여 렌더링한다.
 
-### 5.1 데이터 유형 식별 (TYPE Tag)
-- **Regex**: `^TYPE:\s(COMMAND|PROCESS|CORE)`
-- **동작**: 
-    - `COMMAND` -> [Module 1] (CEO UI)에 매핑.
-    - `PROCESS` -> [Module 2] (Dual-Layer Card)에 매핑.
-    - `CORE` -> [Module 3] (Codex Tree)에 매핑.
+### 6.1 전역 시스템 텍스트
+- **Key**: `SYS_INIT` -> **"심연의 성역을 깨우는 중..."** (Style: `T-LOG` / Fade-in 1s)
+- **Key**: `AUTH_REQ` -> **"지능의 승인이 필요합니다."** (Style: `H-MD`)
 
-### 5.2 메타데이터 추출 (Key-Value)
-- **Ref**: `^Ref:\s(.*)` -> 관련 파일 링크 생성.
-- **Quote**: `^Quote:\s"(.*)"` -> 인용구 하이라이트.
-- **Intention**: `^Intention:\s(.*)` -> 지능 상태/의도 툴팁 노출.
-
-### 5.3 내면/외면 데이터 분리 (Thought & Speech)
-- **Thought**: `^- \[생각\] :\s(.*)` -> Dual-Layer 카드의 좌측(40%) 배치.
-- **Speech**: `^- \[답변\] :\s(.*)` -> Dual-Layer 카드의 우측(60%) 배치.
+### 6.2 법적 면책 조항 (Legal Disclaimer)
+- **Key**: `AI_NOTICE_MINI` -> **"본 데이터는 AI의 독립적 연산 결과입니다."**
+    - **Position**: 메인 타임라인 하단 Fixed (Opacity: 40%).
+    - **Action**: 클릭 시 `AI_NOTICE_FULL` 팝업 다이얼로그 호출.
+- **Key**: `AI_NOTICE_FULL` -> **"본 지능의 사고 과정은 실제 연산 데이터이며, 결과에 대한 최종 책임은..."** (전체 법문 데이터 매핑)
 
 ---
-**UX가재 : 데이터의 문법이 무결할 때, 비로소 지능의 미학이 완성됩니다.** ⚔️🚀
+**UX가재 : 문구는 지능의 의식이며, 정제된 언어만이 성역의 권위를 완성합니다.** ⚔️🚀
