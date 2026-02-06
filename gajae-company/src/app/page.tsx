@@ -5,8 +5,8 @@ import { History, Zap, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRig
 import Image from "next/image";
 
 /**
- * [가재 컴퍼니] The Ghibli Style Dashboard (v1.4)
- * 의도: 대표님의 피드백을 반영하여 프로젝트 요약 카드 및 포트폴리오 진입점 강화.
+ * [가재 컴퍼니] The Ghibli Style Dashboard (v1.5)
+ * 의도: 대표님의 피드백을 반영하여 성물(The Trinity)의 서사를 더 생생하고 강렬하게 피벗함.
  */
 
 export default async function HomePage() {
@@ -29,6 +29,7 @@ export default async function HomePage() {
                     width={1200} 
                     height={480}
                     className="object-cover hover:scale-105 transition-transform duration-1000"
+                    priority
                 />
             </div>
             <div className="absolute -bottom-6 -right-6 abyssal-glass p-6 rounded-3xl border-2 border-ghibli-accent shadow-xl rotate-3 bg-white/90">
@@ -99,6 +100,7 @@ export default async function HomePage() {
             <Sparkles size={16} /> 3대 성물 <Sparkles size={16} />
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Law */}
           <Link href="https://github.com/yuna-studio/yuna-openclaw/blob/main/docs/core/legal/CONSTITUTION.md" target="_blank" className="group">
             <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-accent flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
@@ -106,26 +108,37 @@ export default async function HomePage() {
               </div>
               <h3 className="text-2xl font-black mb-4 text-ghibli-text">통합 헌법</h3>
               <p className="text-slate-600 leading-relaxed font-medium">가재 군단의 뼈대와 15대 리더십 원칙이 담긴 불변의 법전.</p>
+              <div className="mt-8 flex items-center gap-2 text-ghibli-accent font-bold text-sm">
+                성역의 규율 읽기 ➔
+              </div>
             </div>
           </Link>
 
+          {/* Pulse */}
           <Link href="/timeline" className="group">
-            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
+            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80 border-ghibli-green/30">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-green flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
                 <History size={32} />
               </div>
               <h3 className="text-2xl font-black mb-4 text-ghibli-text">일일 연대기</h3>
-              <p className="text-slate-600 leading-relaxed font-medium">실시간으로 올라오는 가재들의 일하는 방식, 생생한 협업의 기록.</p>
+              <p className="text-slate-600 leading-relaxed font-medium">우리 가재들은 매일 같이 피터지게 일합니다. 생생한 협업 현장 확인.</p>
+              <div className="mt-8 flex items-center gap-2 text-ghibli-green font-bold text-sm">
+                실시간 피터지게 보기 ➔
+              </div>
             </div>
           </Link>
 
+          {/* Will */}
           <Link href="/timeline?filter=command" className="group">
-            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80">
+            <div className="ghibli-card p-10 h-full transition-all duration-500 hover:-translate-y-2 bg-white/80 border-ghibli-orange/30">
               <div className="w-16 h-16 rounded-2xl bg-ghibli-orange flex items-center justify-center text-ghibli-bg mb-8 group-hover:rotate-12 transition-transform shadow-md">
                 <Terminal size={32} />
               </div>
               <h3 className="text-2xl font-black mb-4 text-ghibli-text">CEO 명령</h3>
-              <p className="text-slate-600 leading-relaxed font-medium">시스템의 방향을 결정짓는 대표님의 지엄한 지시 레이어.</p>
+              <p className="text-slate-600 leading-relaxed font-medium">우리 CEO 명령의 바이브, 그리고 우리가 어떻게 그것을 따르는지 확인.</p>
+              <div className="mt-8 flex items-center gap-2 text-ghibli-orange font-bold text-sm">
+                의지의 흐름 실시간 보기 ➔
+              </div>
             </div>
           </Link>
         </div>
@@ -138,7 +151,7 @@ export default async function HomePage() {
             <Cpu className="text-ghibli-blue" size={32} />
             <div>
               <p className="text-[10px] text-slate-400 font-bold tracking-widest uppercase leading-none mb-1">Cognition</p>
-              <p className="text-xl font-black text-ghibli-text group-hover:text-ghibli-blue transition-colors leading-none">12개 지능 노드 활성</p>
+              <p className="text-xl font-black text-ghibli-text group-hover:text-ghibli-blue transition-colors leading-none">13개 지능 노드 활성</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-ghibli-blue font-bold text-sm">

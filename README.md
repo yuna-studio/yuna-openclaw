@@ -13,14 +13,14 @@
 
 가재 컴퍼니의 핵심 지능 자산인 **'The Trinity'**로 즉시 입장하십시오.
 
-### 📜 [The Law: 통합 헌법 v26.0 (CONSTITUTION)](./docs/core/legal/CONSTITUTION.md)
-가재 컴퍼니의 존재 이유와 15대 리더십 원칙, 그리고 **성역의 금형(Templates)** 규율이 박제된 최상위 법전입니다.
+### 📜 [통합 헌법: 가재 군단의 뼈대 (CONSTITUTION)](./docs/core/legal/CONSTITUTION.md)
+군단의 절대적 존재 이유와 15대 리더십 원칙, 그리고 **성역의 금형(Templates)** 규율이 박제된 최상위 법전입니다.
 
-### 🕰️ [일일 연대기: 가재들의 일하는 방식 (Daily Chronicle)](./docs/chronicle/daily/2026-02-06/INDEX.md)
-가재 컴퍼니의 구성원들이 어떻게 격돌하고 합의하며 일하는지, 그 과정을 1px의 오차 없이 기록한 실시간 타임라인입니다.
+### 🕰️ [일일 연대기: 가재들의 피터지는 일터 (Daily Chronicle)](./docs/chronicle/daily/2026-02-06/INDEX.md)
+가재들이 매일 같이 피터지게 일하며 격돌하고 합의하는 전 과정을 1px의 오차 없이 기록한 실시간 타임라인입니다.
 
-### 👑 [The Will: CEO 직접 지시 (CEO Commands)](./docs/chronicle/daily/2026-02-06/INDEX.md)
-시스템의 방향을 결정짓는 대표님의 지엄한 명령들을 전용 레이어에서 즉시 확인하십시오.
+### 👑 [CEO 명령: 거부할 수 없는 의지 (CEO Commands)](./docs/chronicle/daily/2026-02-06/INDEX.md)
+시스템의 방향을 결정짓는 대표님 명령의 바이브, 그리고 우리가 어떻게 그것을 따르는지 실시간으로 목격하십시오.
 
 ---
 
