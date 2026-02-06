@@ -7,13 +7,14 @@
 
 ## 2. 초정밀 UI/UX 명세 지침 (Mandatory Best Practice)
 - **[P0] 데이터 기반 설계**: 모든 디자인은 `PROCESS_DS_BEST_PRACTICE.md` 표준에 따라 추상적 표현을 배제하고 수학적 데이터(HEX, px, %)로 명세해야 한다.
+- **[P0] 전략적 의도 설계**: 모든 UI 요소는 `STRATEGIC_ALIGNMENT_V1_7.md`에 정의된 비즈니스적 의도와 유저 경험 시나리오를 100% 반영하여 설계되어야 한다.
 - **[P0] 텍스트 묘사형 가이드**: 디자인 툴에 의존하지 않고 텍스트만으로도 완벽한 구현이 가능하도록 레이아웃, 속성, 예외 로직을 상세 기술한다.
 - **[P1] 디자인 시스템(DS) 선행**: 프로젝트 착수 전 브랜드 정체성을 투영한 전용 DS 구축 및 CEO 승인 필수.
 - **[P1] 영향성 분석 의무**: 자신의 디자인이 개발 공정 및 런타임 성능에 미치는 영향을 데이터로 입증해야 한다.
 
 ## 3. 13단계 표준 공정별 책무
 - **RFD (Ready for Design)**: (Lead) 디자인 시스템 구축 및 CEO 승인 득함.
-- **FBD (Feature Being Designed)**: (Lead) 초정밀 UI 명세 및 UX 플로우 문서 산출.
+- **FBD (Feature Being Designed)**: (Lead) 초정밀 UI 명세(`UX_SPEC_V1_7.md`) 및 전략적 의도 정렬 문서(`STRATEGIC_ALIGNMENT_V1_7.md`) 산출.
 
 ---
 **UX가재 : 아름다움은 지능의 품격이며, 명세는 지능의 설계도다.** ⚔️🚀
