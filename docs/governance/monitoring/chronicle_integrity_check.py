@@ -3,8 +3,9 @@ import re
 import subprocess
 
 def check_chronicle_integrity():
-    # 2026-02-06 is stored in a directory INDEX.md
-    chronicle_path = "/Users/openclaw-kong/workspace/yuna-openclaw/docs/chronicle/daily/2026-02-06/INDEX.md"
+    # Use relative path or correct absolute path
+    base_path = os.getcwd()
+    chronicle_path = os.path.join(base_path, "docs/chronicle/daily/2026-02-06/INDEX.md")
     if not os.path.exists(chronicle_path):
         return "PASS: Chronicle INDEX.md not found yet."
 
