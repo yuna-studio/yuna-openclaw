@@ -1,0 +1,303 @@
+[debug] [2026-02-06T08:02:04.782Z] ----------------------------------------------------------------------
+[debug] [2026-02-06T08:02:04.783Z] Command:       /opt/homebrew/Cellar/node/25.5.0/bin/node /opt/homebrew/bin/firebase deploy --only hosting --debug
+[debug] [2026-02-06T08:02:04.783Z] CLI Version:   15.5.1
+[debug] [2026-02-06T08:02:04.783Z] Platform:      darwin
+[debug] [2026-02-06T08:02:04.783Z] Node Version:  v25.5.0
+[debug] [2026-02-06T08:02:04.783Z] Time:          Fri Feb 06 2026 17:02:04 GMT+0900 (한국 표준시)
+[debug] [2026-02-06T08:02:04.784Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-06T08:02:05.130Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-06T08:02:05.130Z] > authorizing via signed-in user (kyeonghwan.kong@gmail.com)
+[debug] [2026-02-06T08:02:05.130Z] [iam] checking project gajae-company-bip for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-02-06T08:02:05.131Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:05.131Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:05.131Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions [none]
+[debug] [2026-02-06T08:02:05.131Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T08:02:05.131Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-06T08:02:05.378Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions 200
+[debug] [2026-02-06T08:02:05.379Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-02-06T08:02:05.380Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:05.380Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:05.381Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/gajae-company-bip [none]
+[debug] [2026-02-06T08:02:05.773Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/gajae-company-bip 200
+[debug] [2026-02-06T08:02:05.774Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/gajae-company-bip {"projectId":"gajae-company-bip","projectNumber":"741386724665","displayName":"gajae-company-bip","name":"projects/gajae-company-bip","resources":{"hostingSite":"gajae-company-bip"},"state":"ACTIVE","etag":"1_29889e52-48b5-4444-94d7-a23964fee870"}
+[debug] [2026-02-06T08:02:06.442Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:06.442Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:06.442Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites pageToken=&pageSize=10
+[debug] [2026-02-06T08:02:07.553Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites 200
+[debug] [2026-02-06T08:02:07.554Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites {"sites":[{"name":"projects/gajae-company-bip/sites/gajae-company-bip","defaultUrl":"https://gajae-company-bip.web.app","appId":"1:741386724665:web:4edffa712a91a7d665f4e8","type":"DEFAULT_SITE"}]}
+[debug] [2026-02-06T08:02:07.554Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:07.554Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:07.555Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:741386724665:web:4edffa712a91a7d665f4e8/config [none]
+[debug] [2026-02-06T08:02:08.209Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:741386724665:web:4edffa712a91a7d665f4e8/config 200
+[debug] [2026-02-06T08:02:08.209Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:741386724665:web:4edffa712a91a7d665f4e8/config {"projectId":"gajae-company-bip","appId":"1:741386724665:web:4edffa712a91a7d665f4e8","storageBucket":"gajae-company-bip.firebasestorage.app","apiKey":"AIzaSyC3zC80Hwi5R-IyhhLvDauZVlygOaCpGUo","authDomain":"gajae-company-bip.firebaseapp.com","messagingSenderId":"741386724665","measurementId":"G-HZVK9T5EBK","projectNumber":"741386724665","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-02-06T08:02:09.695Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:09.695Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:09.695Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites/gajae-company-bip [none]
+[debug] [2026-02-06T08:02:09.944Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites/gajae-company-bip 200
+[debug] [2026-02-06T08:02:09.944Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites/gajae-company-bip {"name":"projects/gajae-company-bip/sites/gajae-company-bip","defaultUrl":"https://gajae-company-bip.web.app","appId":"1:741386724665:web:4edffa712a91a7d665f4e8","type":"DEFAULT_SITE"}
+[info] ▲ Next.js 16.1.6 (Turbopack)
+
+[info] - Environments: .env.local
+
+
+[info]   Creating an optimized production build ...
+
+[info] 
+
+[info] [45.12ms] [@tailwindcss/postcss] src/app/globals.css
+[ 0.03ms]   ↳ Quick bail check
+[13.06ms]   ↳ Setup compiler
+[ 0.15ms]     ↳ PostCSS AST -> Tailwind CSS AST
+[12.89ms]     ↳ Create compiler
+[ 0.05ms]   ↳ Register full rebuild paths
+
+[info] [ 0.69ms]   ↳ Setup scanner
+[ 7.14ms]   ↳ Scan for candidates
+
+[info] [ 6.05ms]   ↳ Register dependency messages
+
+[info] [11.89ms]   ↳ Build utilities
+[ 4.68ms]   ↳ Optimization
+
+[info] [ 0.29ms]     ↳ AST -> CSS
+[ 2.12ms]     ↳ Lightning CSS
+
+[info] [ 2.26ms]     ↳ CSS -> PostCSS AST
+
+[info] [ 0.87ms]   ↳ Update PostCSS AST
+
+
+[info] ✓ Compiled successfully in 1156.8ms
+
+[info]   Running TypeScript ...
+
+[info]   Collecting page data using 7 workers ...
+
+[info]   Generating static pages using 7 workers (0/5) ...
+
+[info] GITHUB_TOKEN is missing. Returning mock data for demo.
+
+[info]   Generating static pages using 7 workers (1/5) 
+
+[info]   Generating static pages using 7 workers (2/5) 
+
+[info]   Generating static pages using 7 workers (3/5) 
+
+[info] ✓ Generating static pages using 7 workers (5/5) in 203.6ms
+
+[info]   Finalizing page optimization ...
+
+[info] 
+
+[info] Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/chronicle/[date]
+└ ○ /timeline
+
+
+[info] 
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+[info] Building a Cloud Function to run this application. This is needed due to:
+[info]  • Image Optimization
+[info]  • non-static component /api/chronicle/[date]/route
+[info] 
+[debug] [2026-02-06T08:02:14.103Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:14.103Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:14.103Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites/gajae-company-bip [none]
+[debug] [2026-02-06T08:02:14.599Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites/gajae-company-bip 200
+[debug] [2026-02-06T08:02:14.599Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/gajae-company-bip/sites/gajae-company-bip {"name":"projects/gajae-company-bip/sites/gajae-company-bip","defaultUrl":"https://gajae-company-bip.web.app","appId":"1:741386724665:web:4edffa712a91a7d665f4e8","type":"DEFAULT_SITE"}
+[warn] ⚠  This integration expects Node version 20, 22, or 24. You're running version 25, problems may be encountered. 
+[debug] [2026-02-06T08:02:19.533Z] [web frameworks] effective firebase.json:  {
+  "hosting": [
+    {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "frameworksBackend": {
+        "region": "us-central1"
+      },
+      "site": "gajae-company-bip",
+      "rewrites": [
+        {
+          "source": "/**",
+          "function": {
+            "functionId": "ssrgajaecompanybip",
+            "region": "us-central1",
+            "pinTag": true
+          }
+        }
+      ],
+      "redirects": [],
+      "headers": [
+        {
+          "source": "/_global-error",
+          "headers": [
+            {
+              "key": "x-nextjs-stale-time",
+              "value": "300"
+            },
+            {
+              "key": "x-nextjs-prerender",
+              "value": "1"
+            },
+            {
+              "key": "x-next-cache-tags",
+              "value": "_N_T_/layout,_N_T_/_global-error/layout,_N_T_/_global-error/page,_N_T_/_global-error"
+            }
+          ]
+        },
+        {
+          "source": "/favicon.ico",
+          "headers": [
+            {
+              "key": "cache-control",
+              "value": "public, max-age=0, must-revalidate"
+            },
+            {
+              "key": "content-type",
+              "value": "image/x-icon"
+            },
+            {
+              "key": "x-next-cache-tags",
+              "value": "_N_T_/layout,_N_T_/favicon.ico/layout,_N_T_/favicon.ico/route,_N_T_/favicon.ico"
+            }
+          ]
+        },
+        {
+          "source": "/_not-found",
+          "headers": [
+            {
+              "key": "x-nextjs-stale-time",
+              "value": "300"
+            },
+            {
+              "key": "x-nextjs-prerender",
+              "value": "1"
+            },
+            {
+              "key": "x-next-cache-tags",
+              "value": "_N_T_/layout,_N_T_/_not-found/layout,_N_T_/_not-found/page,_N_T_/_not-found"
+            }
+          ]
+        },
+        {
+          "source": "/timeline",
+          "headers": [
+            {
+              "key": "x-nextjs-stale-time",
+              "value": "300"
+            },
+            {
+              "key": "x-nextjs-prerender",
+              "value": "1"
+            },
+            {
+              "key": "x-next-cache-tags",
+              "value": "_N_T_/layout,_N_T_/timeline/layout,_N_T_/timeline/page,_N_T_/timeline"
+            }
+          ]
+        },
+        {
+          "source": "/**/*.[jt]s",
+          "headers": [
+            {
+              "key": "Set-Cookie",
+              "value": "__FIREBASE_DEFAULTS__=eyJjb25maWciOnsicHJvamVjdElkIjoiZ2FqYWUtY29tcGFueS1iaXAiLCJhcHBJZCI6IjE6NzQxMzg2NzI0NjY1OndlYjo0ZWRmZmE3MTJhOTFhN2Q2NjVmNGU4Iiwic3RvcmFnZUJ1Y2tldCI6ImdhamFlLWNvbXBhbnktYmlwLmZpcmViYXNlc3RvcmFnZS5hcHAiLCJhcGlLZXkiOiJBSXphU3lDM3pDODBId2k1Ui1JeWhoTHZEYXVaVmx5Z09hQ3BHVW8iLCJhdXRoRG9tYWluIjoiZ2FqYWUtY29tcGFueS1iaXAuZmlyZWJhc2VhcHAuY29tIiwibWVzc2FnaW5nU2VuZGVySWQiOiI3NDEzODY3MjQ2NjUiLCJtZWFzdXJlbWVudElkIjoiRy1IWlZLOVQ1RUJLIiwicHJvamVjdE51bWJlciI6Ijc0MTM4NjcyNDY2NSIsInZlcnNpb24iOiIyIn0sIl9hdXRoVG9rZW5TeW5jVVJMIjoiL19fc2Vzc2lvbiJ9; SameSite=Strict; Expires=2028-01-01T18:42:19.533Z; Path=/;"
+            }
+          ]
+        }
+      ],
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "public": ".firebase/gajae-company-bip/hosting",
+      "webFramework": "next_ssr"
+    }
+  ],
+  "functions": [
+    {
+      "source": ".firebase/gajae-company-bip/functions",
+      "codebase": "firebase-frameworks-gajae-company-bip"
+    }
+  ]
+}
+[debug] [2026-02-06T08:02:19.534Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-06T08:02:19.534Z] > authorizing via signed-in user (kyeonghwan.kong@gmail.com)
+[debug] [2026-02-06T08:02:19.534Z] [iam] checking project gajae-company-bip for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-02-06T08:02:19.534Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:19.534Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:19.534Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions [none]
+[debug] [2026-02-06T08:02:19.534Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T08:02:19.534Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-06T08:02:19.750Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions 200
+[debug] [2026-02-06T08:02:19.750Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-06T08:02:19.751Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:19.752Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:19.752Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/gajae-company-bip/locations/-/functions [none]
+[debug] [2026-02-06T08:02:20.569Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/gajae-company-bip/locations/-/functions 200
+[debug] [2026-02-06T08:02:20.569Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/gajae-company-bip/locations/-/functions {}
+[debug] [2026-02-06T08:02:20.570Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:20.570Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:20.571Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/gajae-company-bip/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-02-06T08:02:21.865Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/gajae-company-bip/locations/-/functions 200
+[debug] [2026-02-06T08:02:21.866Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/gajae-company-bip/locations/-/functions {}
+[info] i  hosting: The following function(s) are pinned to site gajae-company-bip and will be deployed as well: ssrgajaecompanybip 
+[info] 
+[info] === Deploying to 'gajae-company-bip'...
+[info] 
+[info] i  deploying functions, hosting 
+[debug] [2026-02-06T08:02:21.870Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:21.870Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:21.870Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip [none]
+[debug] [2026-02-06T08:02:22.067Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip 200
+[debug] [2026-02-06T08:02:22.067Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/gajae-company-bip {"projectNumber":"741386724665","projectId":"gajae-company-bip","lifecycleState":"ACTIVE","name":"gajae-company-bip","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-02-06T07:51:23.030172Z"}
+[info] i  functions: preparing codebase firebase-frameworks-gajae-company-bip for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2026-02-06T08:02:22.071Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:22.071Z] Checked if tokens are valid: true, expires at: 1770368156513
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-02-06T08:02:22.072Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:22.072Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:22.073Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com [none]
+[debug] [2026-02-06T08:02:22.073Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T08:02:22.075Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/artifactregistry.googleapis.com [none]
+[debug] [2026-02-06T08:02:22.075Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/artifactregistry.googleapis.com  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T08:02:23.288Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com 200
+[debug] [2026-02-06T08:02:23.288Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com [omitted]
+[warn] ⚠  functions: missing required API cloudbuild.googleapis.com. Enabling now... 
+[debug] [2026-02-06T08:02:23.289Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:23.289Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:23.289Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com:enable [none]
+[debug] [2026-02-06T08:02:23.290Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com:enable  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T08:02:23.293Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/artifactregistry.googleapis.com 200
+[debug] [2026-02-06T08:02:23.294Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/artifactregistry.googleapis.com [omitted]
+[warn] ⚠  artifactregistry: missing required API artifactregistry.googleapis.com. Enabling now... 
+[debug] [2026-02-06T08:02:23.294Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:23.294Z] Checked if tokens are valid: true, expires at: 1770368156513
+[debug] [2026-02-06T08:02:23.294Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/artifactregistry.googleapis.com:enable [none]
+[debug] [2026-02-06T08:02:23.294Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/artifactregistry.googleapis.com:enable  x-goog-user-project=gajae-company-bip
+[debug] [2026-02-06T08:02:23.593Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com:enable 400
+[debug] [2026-02-06T08:02:23.593Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/gajae-company-bip/services/cloudbuild.googleapis.com:enable [omitted]
+[error] 
+[error] Error: Your project gajae-company-bip must be on the Blaze (pay-as-you-go) plan to complete this command. Required API cloudbuild.googleapis.com can't be enabled until the upgrade is complete. To upgrade, visit the following URL:
+
+https://console.firebase.google.com/project/gajae-company-bip/usage/details
