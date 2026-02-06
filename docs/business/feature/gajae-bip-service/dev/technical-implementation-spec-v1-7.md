@@ -12,9 +12,18 @@
 - **Workspace**: `/gajae-company/` (Next.js 프로젝트 루트)
 - **Framework**: Next.js 14+ (App Router)
 - **Data Source**: GitHub-as-a-CMS (GitHub API v3)
-- **Deployment**: **Firebase Hosting (Next.js with App Hosting/Hosting support)**
+- **Cloud/Infra**: **Firebase (SDK & Hosting)**
 - **Architecture**: 서버리스 기반 SSR/ISR (별도 DB/Server 부재)
 - **Security**: 모든 페칭은 **Route Handlers**를 통한 서버 사이드 수행 의무화.
+
+---
+
+## 2. Firebase 통합 전략 (Firebase-first Integration)
+
+단순 호스팅을 넘어 소스 코드 레벨에서의 완벽한 연동을 지향한다.
+1. **SDK Initialization**: `src/core/config/firebase-config.ts`를 통해 클라이언트 및 서버 통합 SDK 초기화.
+2. **Environment Variables**: `NEXT_PUBLIC_` 접두사를 활용하여 Firebase 설정값(API Key 등)을 동적으로 로드.
+3. **Deployment**: Firebase CLI(`firebase-tools`)를 활용하여 Next.js 최적화 빌드 후 즉시 배포.
 
 ---
 
