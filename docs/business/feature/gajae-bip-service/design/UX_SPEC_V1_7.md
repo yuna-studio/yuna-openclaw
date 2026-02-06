@@ -2,18 +2,18 @@
 
 ## 8. Sanctuary Codex: 세계관 탐색 시스템 (World-view Navigator)
 
-성역의 핵심 지식 자산을 '3대 성물'로 정의하고, 이를 유저가 군단의 정체성을 탐험할 수 있도록 가장 아름답게 노출한다.
+성역의 핵심 지식 자산을 '3대 성물'로 정의하고, 이를 **[지브리 스튜디오]** 감성의 따뜻한 터치로 노출한다.
 
 ### 8.1 3대 핵심 피쳐 구조 (The Trinity)
 1. **The Law (통합 헌법)**:
     - **Data**: `docs/core/legal/CONSTITUTION.md`
-    - **UX**: 성역의 절대적 뼈대. 황금색(`Gold-leaf`) 발광 효과와 함께 고정 배치.
+    - **UX**: 성역의 절대적 뼈대. 오래된 양피지(`Parchment`) 질감과 따뜻한 금빛 테두리 적용.
 2. **The Pulse (일일 연대기)**:
     - **Data**: `docs/chronicle/daily/*/meeting/*.md`
-    - **UX**: 지능의 격돌 기록. 시간순 타임라인 노출 및 개별 미팅 로그의 '5대 단계' 시각화.
+    - **UX**: 지능의 성장 일기. 손글씨 느낌의 폰트와 수채화풍의 아이콘 배치.
 3. **The Will (CEO 지시 기록)**:
     - **Data**: `docs/chronicle/daily/*/command/*.md`
-    - **UX**: 시스템의 방향을 결정하는 최상위 의지. 'Command/ 레이어'의 명령 전문을 압도적인 권위의 UI로 렌더링.
+    - **UX**: 시스템의 지표가 되는 나침반. 따스한 오렌지 톤의 발광 효과를 통해 '의지'의 에너지를 시각화.
 
 ### 8.3 계층적 미팅 로그 탐색 (Hierarchical Meeting Logs)
 - **Folder-to-Timeline Mapping**: 

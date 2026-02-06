@@ -1,53 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-  --color-abyssal-950: #020617;
-  --color-abyssal-900: #0f172a;
-  --color-abyssal-800: #1e293b;
-  --color-abyssal-accent: #38bdf8;
-  --color-abyssal-glow: #0ea5e9;
+  --color-ghibli-bg: #fdf6e3;
+  --color-ghibli-paper: #f9f5d7;
+  --color-ghibli-text: #3c3836;
+  --color-ghibli-green: #8ec07c;
+  --color-ghibli-orange: #fe8019;
+  --color-ghibli-blue: #83a598;
+  --color-ghibli-accent: #d79921;
 }
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #fdf6e3;
+  --foreground: #3c3836;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Pretendard', sans-serif;
+  font-family: 'Pretendard', system-ui, sans-serif;
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar for Abyssal Theme */
+/* Ghibli Style Paper Card */
+.ghibli-card {
+  background: #f9f5d7;
+  border: 2px solid #ebdbb2;
+  box-shadow: 4px 4px 0px #ebdbb2;
+  border-radius: 1.5rem;
+}
+
+.ghibli-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #d5c4a1;
+}
+
+.watercolor-blur {
+  filter: blur(40px);
+  opacity: 0.3;
+}
+
+.handwritten {
+  font-family: 'Nanum Pen Script', cursive;
+}
+
+/* Custom Scrollbar for Ghibli Theme */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: #fdf6e3;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+  background: #ebdbb2;
+  border-radius: 10px;
+  border: 3px solid #fdf6e3;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
-}
-
-.abyssal-glass {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(56, 189, 248, 0.1);
-}
-
-.abyssal-border {
-  border: 1px solid rgba(56, 189, 248, 0.2);
-}
-
-.text-glow {
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  background: #d5c4a1;
 }

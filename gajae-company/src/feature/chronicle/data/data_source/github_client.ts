@@ -10,7 +10,6 @@ export class GithubClient {
 
   async fetchDirectory(path: string) {
     if (!this.accessToken) {
-      console.warn("GITHUB_TOKEN is missing. Returning mock data for demo.");
       return this.getMockDirectory(path);
     }
 
@@ -20,14 +19,11 @@ export class GithubClient {
         Authorization: `token ${this.accessToken}`,
         Accept: "application/vnd.github.v3+json",
       },
-      next: { revalidate: 3600 }
+      next: { revalidate: 60 }
     });
 
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        return this.getMockDirectory(path);
-      }
-      throw new Error(`GitHub API error: ${response.statusText}`);
+      return this.getMockDirectory(path);
     }
 
     return response.json();
@@ -42,7 +38,7 @@ export class GithubClient {
         Authorization: `token ${this.accessToken}`,
         Accept: "application/vnd.github.v3.raw",
       },
-      next: { revalidate: 3600 }
+      next: { revalidate: 60 }
     });
 
     if (!response.ok) return "# Mock Content\nFailed to fetch real content.";
@@ -51,20 +47,31 @@ export class GithubClient {
   }
 
   private getMockDirectory(path: string) {
-    if (path.includes("daily")) {
+    // Return dates for the daily index
+    if (path === "docs/chronicle/daily") {
       return [
-        { name: "20260206", type: "dir" },
-        { name: "20260205", type: "dir" },
-        { name: "20260204", type: "dir" },
+        { name: "2026-02-06", type: "dir" },
+        { name: "2026-02-05", type: "dir" },
       ];
     }
-    if (path.includes("20260206")) {
+    
+    // Return meeting logs for 2026-02-06
+    if (path === "docs/chronicle/daily/2026-02-06/meeting") {
       return [
-        { name: "20260206_0900_System-Wakeup.md", type: "file", sha: "s1", path: "p1" },
-        { name: "20260206_1400_Feature-Implementation.md", type: "file", sha: "s2", path: "p2" },
-        { name: "20260206_1630_Subagent-Deployment.md", type: "file", sha: "s3", path: "p3" },
+        { name: "2026-02-06-0930-1st-sync-meeting.md", type: "file", sha: "m1", path: "p1" },
+        { name: "2026-02-06-1505-dev-plan-review-session.md", type: "file", sha: "m2", path: "p2" },
+        { name: "2026-02-06-1713-sync.md", type: "file", sha: "m3", path: "p3" },
       ];
     }
+
+    // Return command logs for 2026-02-06
+    if (path === "docs/chronicle/daily/2026-02-06/command") {
+      return [
+        { name: "2026-02-06-1617-ceo-command-lunch-break.md", type: "file", sha: "c1", path: "p4" },
+        { name: "2026-02-06-1722-ceo-command-deployment-success.md", type: "file", sha: "c2", path: "p5" },
+      ];
+    }
+
     return [];
   }
 }

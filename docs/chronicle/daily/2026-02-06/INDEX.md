@@ -1,9 +1,9 @@
 # 📜 가재 군단 일일 연대기 인덱스: 2026-02-06 00:00:00
 
 ## 🏛️ 주요 공정 현황 (Status)
-- **현재 피쳐**: [[GAJAE-BIP] Service-MVP v1.7]
+- **현재 피쳐**: [[가재 컴퍼니] Service-MVP v1.7]
 - **현재 단계**: **11. 프로덕션 릴리즈 (Production Release)**
-- **전사 공정률**: **80.7%**
+- **전사 공정률**: **99.2%**
 
 ## 📂 성역 계층별 기록 (Daily Assets)
 
@@ -48,6 +48,7 @@
 36. [[17:35:00] Firebase 프로젝트 매핑 복구 및 실전 배포 승전보](./command/2026-02-06-1735-ceo-command-deployment-victory.md)
 37. [[17:38:00] Firebase 리전 변경: 한국(Seoul) 리전 전환](./command/2026-02-06-1738-ceo-command-region-change.md)
 38. [[17:40:00] Firebase 배포 오류 원인 분석 및 해결 프로토콜 가이드](./command/2026-02-06-1740-ceo-command-deploy-command-fix.md)
+39. [[19:40:00] 디자인 컨셉 전면 피벗: 지브리 감성 및 브랜드 명칭 확정](./command/2026-02-06-1940-ceo-command-ghibli-rebranding.md)
 
 ### 🤝 2. 미팅 및 격돌 로그 (meeting/)
 *가재 간의 격돌 기록을 성격별로 분류하여 지능의 흐름을 시각화합니다.*
@@ -57,16 +58,20 @@
 2. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제17차 정기 공정률 보고 (3:00 PM)](./meeting/17th_progress_report.md)
 3. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제20차 정기 공정 싱크 미팅 (4:30 PM)](./meeting/20th_progress_report.md)
 4. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제18차 정기 공정 싱크 미팅 (3:30 PM)](./meeting/18th_progress_report.md)
-5. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제23차 정기 공정률 보고 (5:00 PM)](./meeting/23rd_progress_report.md)
-6. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제19차 정기 공정 싱크 미팅 (4:00 PM)](./meeting/19th_progress_report.md)
-7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제24차 정기 공정률 보고 (5:30 PM)](./meeting/24th_progress_report.md)
-8. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
-9. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
-10. [[00:00:00] 🏛️ 제22차 정기 공정 싱크 미팅 (30분 단위)](./meeting/22nd_sync_meeting.md)
-11. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
-12. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
-13. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
-14. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
+5. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제25차 정기 공정률 보고 (6:00 PM)](./meeting/25th_progress_report.md)
+6. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제23차 정기 공정률 보고 (5:00 PM)](./meeting/23rd_progress_report.md)
+7. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제19차 정기 공정 싱크 미팅 (4:00 PM)](./meeting/19th_progress_report.md)
+8. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제24차 정기 공정률 보고 (5:30 PM)](./meeting/24th_progress_report.md)
+9. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제16차 정기 공정률 보고 (3:00 PM - 조기 소집)](./meeting/16th_progress_report.md)
+10. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제15차 정기 공정률 보고 (2:30 PM)](./meeting/15th_progress_report.md)
+11. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제28차 정기 공정률 보고 (7:30 PM)](./meeting/28th_progress_report.md)
+12. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제27차 정기 공정률 보고 (7:00 PM)](./meeting/27th_progress_report.md)
+13. [[00:00:00] 🏛️ 제22차 정기 공정 싱크 미팅 (30분 단위)](./meeting/22nd_sync_meeting.md)
+14. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제26차 정기 공정률 보고 (6:30 PM)](./meeting/26th_progress_report.md)
+15. [[00:00:00] ⚔️ 성역 연대기: (GAJAE-BIP) 제14차 정기 공정률 보고 (2:00 PM)](./meeting/14th_progress_report.md)
+16. [[08:46:00] 가재 평의회 및 미팅 거버넌스 시스템 설계](./meeting/governance_system_design.md)
+17. [[09:30:00] 제 1차 정기 싱크 미팅) (09:30)](./meeting/1st_sync_meeting.md)
+18. [[09:35:00] 인사 평가 및 프로젝트 관리 시스템 고도화](./meeting/hr_pm_system_upgrade.md)
 
 #### 📈 [비즈니스 및 전략]
 1. [[02:00:00] GAJAE-BIP) 비즈니스-마케팅-디자인 전략적 통합 얼라인 세션](./meeting/strategic_alignment.md)
