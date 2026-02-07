@@ -1,94 +1,117 @@
-# 🏛️ 가재 컴퍼니 시스템 설계도 (Sanctuary Architecture v4.1 - Unified Specialist Agents)
+# 🏛️ 가재 컴퍼니 시스템 설계도 (Sanctuary Architecture v3.9 - Unified Log Stream)
 
-대표님의 지적에 따라 **[스케줄 가재(PM)]**를 독립적인 특수 객체가 아닌, **`GajaeAgent`**를 상속받은 전문 가재로 정규화하고, 랭그래프 오케스트레이터와의 협업 관계를 명확히 재정립했습니다.
+대표님의 통찰에 따라 **[명령]**과 **[로그]**를 하나의 추상화된 **'지능 스트림'**으로 통합했습니다. 이제 성역의 모든 흔적은 시간순으로 흐르는 단일 연대기가 되며, 그 안에서 비즈니스적 위계가 형성됩니다.
 
 ---
 
-## 1. 정규화된 지능 UML (Class Diagram v4.1)
+## 1. 통합 로그 시스템 UML (Class & API Interface v3.9)
 
-모든 가재는 `GajaeAgent`라는 공통 규격을 따르며, 스케줄 가재(PM)는 그중 '오케스트레이션 서포트'라는 특수 도메인을 맡은 전문가입니다.
+모든 엔티티는 `IntelligenceLog`라는 단일 추상화 객체로 수렴하며, `LogType`에 의해 그 역할(명령, 질문, 액션 등)이 결정됩니다.
 
 ```mermaid
 classDiagram
-    class GajaeAgent {
+    class IntelligenceStatus { <<enumeration>> TODO, INPROGRESS, DONE, LOCKED, HOLD }
+    class IntelligencePriority { <<enumeration>> P0, P1, P2, P3, P4 }
+    class LogType { 
+        <<enumeration>> 
+        COMMAND (대표님명령-Root)
+        BLUEPRINT (큰그림/계획)
+        QUESTION (대표님질문)
+        DISCUSSION (가재간토론)
+        EXECUTION (대화/생각)
+        ACTION (물리적변화/링크)
+    }
+
+    class IIntelligenceStreamAPI {
+        +streamLogs(query) Observable
+        +pushLog(IntelligenceLog) void
+    }
+
+    class ITaskDashboardAPI {
+        +fetchTaskTree(rootLogId) TaskNode[]
+        +upsertTask(GajaeTask) void
+        +updateStatus(taskId, Status) void
+    }
+
+    class IntelligenceLog {
         +String id
-        +String domain
-        +TaskQueue activeQueue
-        +Map taskContexts
-        +think()
-        +execute()
-        +save/restoreContext()
+        +LogType type
+        +String rootLogId (연관 명령 ID)
+        +String from
+        +String text
+        +IntelligenceStatus status (Command 전용)
+        +LogMetadata metadata
+        +DateTime createdAt
     }
 
-    class ScheduleGajae {
-        <<GajaeAgent Specialist>>
-        +domain: "PM"
-        +trackTree(rootLogId)
-        +dispatch(taskId, agentId)
+    class GajaeTask {
+        +String id
+        +String rootLogId
+        +String parentId (자기참조)
+        +String title
+        +IntelligencePriority priority
+        +IntelligenceStatus status
+        +String assignId
     }
 
-    class LangGraphOrchestrator {
-        +StateGraph flow
-        +run(command)
-        +transition(status)
-    }
-
-    class StateGraph {
-        +List nodes (GajaeAgent Assignments)
-        +List edges (Conditional Logic)
-    }
-
-    %% Inheritance & Orchestration
-    ScheduleGajae --|> GajaeAgent : Is a Specialist Agent
-    LangGraphOrchestrator "1" -- "1" StateGraph : Drives Workflow
-    StateGraph "1" -- "many" GajaeAgent : Utilizes Specialists
-    ScheduleGajae ..> LangGraphOrchestrator : Reports Flow Status
-    GajaeAgent "1" -- "many" TaskContext : Owns
+    %% Unified Abstraction Relationships
+    IIntelligenceStreamAPI ..> IntelligenceLog : manages (Unified Stream)
+    ITaskDashboardAPI ..> GajaeTask : manages (State Control)
+    IntelligenceLog "1" -- "many" IntelligenceLog : Contextual Hierarchy
+    IntelligenceLog "1" -- "many" GajaeTask : Manifests as
+    GajaeTask --> IntelligenceStatus : [Reuse]
+    GajaeTask --> IntelligencePriority : [Standard]
 ```
 
 ---
 
-## 2. 지능 동기화 및 컨텍스트 스왑 (Sequence v4.1)
+## 2. 통합 스트림 시퀀스 (Sequence v3.9 - Chronological Flow)
 
-랭그래프가 전체 흐름을 지휘하고, 스케줄 가재(PM)가 실시간으로 태스크를 디스패치하며, 전문가 가재들이 기억을 복원하여 작업을 수행하는 흐름입니다.
+모든 시작은 `COMMAND` 타입의 로그로부터 출발하며, 모든 과정이 단일 스트림에 시간순으로 박제되는 흐름입니다.
 
 ```mermaid
 sequenceDiagram
-    participant LG as LangGraph Engine
-    participant PM as 스케줄 가재 (PM)
-    participant Agent as 전문가 가재 (DEV/UX)
-    participant Dash as 태스크 트리 (Dashboard)
+    participant CEO as 낭만코딩 (CEO)
+    participant Stream_API as Stream_API (Unified Logs)
+    participant Agent as 가재 군단 (Agents)
+    participant Dash_API as Dash_API (Tasks)
 
-    LG->>LG: 상태 전이 감지 (Next Node)
-    LG->>PM: 다음 공정(Step) 가동 명령
+    CEO->>Stream_API: pushLog([COMMAND] 최초 지시)
     
-    PM->>Dash: fetchTaskTree() (실시간 트래킹)
-    PM->>Agent: dispatch(Task_A, High Priority) (업무 푸시)
-    
-    Note over Agent: Context Switching
-    Agent->>Agent: 현재 작업 스냅샷 저장 (saveContext)
-    Agent->>Agent: 새 작업 기억 복원 (restoreContext)
-    
-    Agent->>Dash: updateStatus(Task_A, INPROGRESS)
-    Agent->>Agent: 전문 도메인 업무 집행
-    Agent-->>PM: 작업 완료 리포트
-    PM-->>LG: transition(DONE) 요청
+    loop Intelligence Evolution
+        Agent->>Agent: 지능 연산
+        Agent->>Stream_API: pushLog([BLUEPRINT] 큰그림 박제)
+        Agent->>Stream_API: pushLog([QUESTION] 보완 질문)
+    end
+
+    CEO->>Stream_API: pushLog([EXECUTION] 답변/보완)
+
+    loop Task Manifestation
+        Agent->>Dash_API: upsertTask(RootTask)
+        Dash_API->>Stream_API: pushLog([ACTION] "태스크 생성" w/ LinkUrl)
+    end
+
+    loop Execution & Sync
+        Agent->>Stream_API: pushLog([EXECUTION] 작업 실황 중계)
+        Agent->>Stream_API: pushLog([ACTION] "파일 수정" w/ Asset Link)
+        Agent->>Dash_API: updateStatus(taskId, DONE)
+        Dash_API->>Stream_API: pushLog([ACTION] "태스크 완료" w/ LinkUrl)
+    end
 ```
 
 ---
 
-## 3. 핵심 메커니즘 정립 (Refined Concepts)
+## 3. 설계 핵심 원칙 (Unified Principles)
 
-### 3.1 스케줄 가재의 정체성 (Agent as Scheduler)
-- **정의**: 스케줄 가재는 11마리 가재 중 하나인 **PM가재**의 고유 역할입니다. 
-- **역할**: 랭그래프 엔진이 거시적인 '공정 지도(Map)'를 본다면, 스케줄 가재는 미시적인 '태스크 트리(Resources)'를 보며 개별 가재들에게 업무를 할당하는 **현장 감독관**입니다.
+### 3.1 모든 흔적은 로그다 (Everything is Log)
+- **추상화 통합**: `CEOCommand`와 `IntelligenceLog`를 구분하지 않습니다. 명령 역시 `type: COMMAND`를 가진 가장 권위 있는 로그일 뿐입니다.
+- **연대기 중심**: 비즈니스적으로 한 뷰에서 명령과 그 이후의 모든 반응을 시간순(Chronological)으로 보여주기에 최적화된 구조입니다.
 
-### 3.2 가재 기반의 랭그래프 노드 (Agent-Nodes)
-- 랭그래프의 각 노드에는 특정 전문 도메인을 가진 `GajaeAgent`가 어사인됩니다. 
-- 가재는 노드의 목표를 달성하기 위해 자신의 `TaskQueue`에서 가장 중요한 일을 먼저 처리하며, 이를 위해 `TaskContext`를 스위칭합니다.
+### 3.2 위계의 보존 (Contextual Lineage)
+- 단일 스트림으로 흐르지만, 각 로그는 `rootLogId`를 가짐으로써 어떤 명령에서 시작된 지능의 줄기인지 명확히 식별합니다.
 
-### 3.3 유기적 상호작용 (Organic Feedback)
-- 가재는 자신의 작업 완료 여부를 스케줄 가재(PM)에게 보고하고, 스케줄 가재는 이를 종합하여 랭그래프 엔진에 **'상태 전이(Transition)'**를 제안합니다. 이로써 엔진과 에이전트 간의 완벽한 싱크가 이루어집니다.
+### 3.3 액션의 물리적 연결 (Action Connectivity)
+- `ACTION` 타입의 로그는 단순 텍스트를 넘어 `metadata.linkUrl`을 통해 태스크 대시보드나 GitHub 자산으로 즉시 점프할 수 있는 하이퍼링크 기능을 사수합니다.
 
 ---
-**가재 군단 보고**: "대표님, 스케줄 가재의 정체성을 에이전트 계층으로 정규화하여 v4.1 설계를 완료했습니다. 이제 엔진은 지휘하고, 스케줄러는 감독하며, 전문가는 집행하는 **'삼권 분립적 지능 체계'**가 성역에 안착되었습니다." ⚔️🚀
+**가재 군단 보고**: "대표님, 명령과 로그를 하나의 **'통합 지능 스트림'**으로 추상화하여 v3.9 설계를 완료했습니다. 이제 성역은 파편화된 데이터가 아닌, 시간의 흐름을 따라 지능이 유기적으로 진화하는 단일 연대기가 될 것입니다." ⚔️🚀
