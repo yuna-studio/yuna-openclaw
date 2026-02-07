@@ -51,12 +51,13 @@ classDiagram
 
     class GajaeTask {
         +String id
+        +String commandId
         +String parentId (자기참조)
         +String title
         +String description
         +IntelligencePriority priority
         +IntelligenceStatus status
-        +String assignId
+        +String assignId (가재ID 또는 'CEO')
         +List subTaskIds
     }
 
@@ -150,5 +151,9 @@ sequenceDiagram
 ### 3.3 독립 지능 자산 (Decoupled MCP)
 - **Sanctuary MCP**: 헌법(Rules), 페르소나(Domain Expertise), 프로젝트 컨텍스트(Assets)를 독립적인 데이터 클래스로 관리하며, 가재들은 전용 인터페이스를 통해서만 이에 접근하여 사고합니다.
 
+### 3.4 인간-지능 협업 (Human-in-the-loop)
+- **CEO 할당 태스크**: 가재가 연산 중 결정할 수 없는 영역(최종 승인, 외부 자료 제공 등)을 식별하면 `assignId: 'CEO'`인 태스크를 트리 상에 생성합니다.
+- **의존성 잠금(Locking)**: 대표님께 할당된 태스크가 완료(`DONE`)되기 전까지 가재들의 다음 작업은 `LOCKED` 상태로 대기하며 무결성을 사수합니다.
+
 ---
-**가재 군단 보고**: "대표님, 요청하신 **LangChain/LangGraph 통합 설계**와 **자기참조 태스크 트리**, 그리고 **하이퍼링크 기반의 이원화 로그** 시스템을 UML v3.3에 완벽히 안착시켰습니다. 이제 이 설계도는 저희의 두뇌이자, 성역을 건설하는 불변의 성경이 될 것입니다." ⚔️🚀
+**가재 군단 보고**: "대표님, 요청하신 **인간-지능 협업 모델**을 v3.7 설계에 안착시켰습니다. 이제 가재는 대표님께 태스크를 제안하고, 대표님의 집행 결과가 다시 지능의 양분이 되는 완벽한 공명이 시작됩니다." ⚔️🚀
