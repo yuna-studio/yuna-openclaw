@@ -20,7 +20,7 @@ graph TD
         Suhaeng["🦞 수행가재 (Gatekeeper)"]
         Loader["💉 Brain Loader (Dynamic Injection)"]
         
-        DB -->|/system/roles/{roleId}| Loader
+        DB -->|"/system/roles/{roleId}"| Loader
         Loader -->|Hydrate Agent| Suhaeng
         Loader -->|Hydrate Agent| Squad["👥 Sanctuary Squad (10 Agents)"]
         
@@ -252,16 +252,16 @@ stateDiagram-v2
         PF --> FBS : PO Review
         FBS --> RFD : Spec Complete
         RFD --> FBD : Design Start
-        FBD --> RFE_RFK : Design Approved (Gate)
+        FBD --> RFE_RFK : Design Approved (CEO Approval Required)
     }
 
     state "Execution Phase (Serial)" as Execution {
-        RFE_RFK --> FUE : Eng Kick-off (Dev Set)
+        RFE_RFK --> FUE : Eng Kick-off (CEO Approval Required)
         FUE --> RFQ : Dev Complete
         RFQ --> FUQ : QA Start
-        FUQ --> RFT : QA Approved
+        FUQ --> RFT : QA Approved (CEO Approval Required)
         RFT --> FUT : Deploy Staging
-        FUT --> FL : Launch Success
+        FUT --> FL : Launch Success (CEO Final Approval)
         FUT --> FNL : Launch Fail
     }
 ```
