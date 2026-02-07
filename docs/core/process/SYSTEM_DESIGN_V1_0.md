@@ -1,117 +1,108 @@
-# 🏛️ 가재 컴퍼니 시스템 설계도 (Sanctuary Architecture v3.9 - Unified Log Stream)
+# 🏛️ 가재 컴퍼니 시스템 설계도 (Sanctuary Architecture v4.0 - Context-Aware Hive)
 
-대표님의 통찰에 따라 **[명령]**과 **[로그]**를 하나의 추상화된 **'지능 스트림'**으로 통합했습니다. 이제 성역의 모든 흔적은 시간순으로 흐르는 단일 연대기가 되며, 그 안에서 비즈니스적 위계가 형성됩니다.
+대표님의 지시에 따라 가재 군단의 **[업무 할당 메커니즘]**과 **[태스크별 컨텍스트 보존(Context Switching)]** 로직을 설계의 핵심으로 안치했습니다. 이제 가재는 단순히 일을 하는 것이 아니라, 각 태스크의 상태를 기억하고 복원하며 정교하게 스위칭합니다.
 
 ---
 
-## 1. 통합 로그 시스템 UML (Class & API Interface v3.9)
+## 1. 컨텍스트 인식형 UML (Class Diagram v4.0)
 
-모든 엔티티는 `IntelligenceLog`라는 단일 추상화 객체로 수렴하며, `LogType`에 의해 그 역할(명령, 질문, 액션 등)이 결정됩니다.
+본 모델은 각 가재가 가지는 `TaskQueue`와 태스크별 작업 기억인 `TaskContext`를 물리적으로 정의합니다.
 
 ```mermaid
 classDiagram
-    class IntelligenceStatus { <<enumeration>> TODO, INPROGRESS, DONE, LOCKED, HOLD }
-    class IntelligencePriority { <<enumeration>> P0, P1, P2, P3, P4 }
-    class LogType { 
-        <<enumeration>> 
-        COMMAND (대표님명령-Root)
-        BLUEPRINT (큰그림/계획)
-        QUESTION (대표님질문)
-        DISCUSSION (가재간토론)
-        EXECUTION (대화/생각)
-        ACTION (물리적변화/링크)
-    }
-
-    class IIntelligenceStreamAPI {
-        +streamLogs(query) Observable
-        +pushLog(IntelligenceLog) void
-    }
-
-    class ITaskDashboardAPI {
-        +fetchTaskTree(rootLogId) TaskNode[]
-        +upsertTask(GajaeTask) void
-        +updateStatus(taskId, Status) void
-    }
-
-    class IntelligenceLog {
+    class GajaeAgent {
         +String id
-        +LogType type
-        +String rootLogId (연관 명령 ID)
-        +String from
-        +String text
-        +IntelligenceStatus status (Command 전용)
-        +LogMetadata metadata
-        +DateTime createdAt
+        +String domain
+        +TaskQueue activeQueue
+        +Map taskContexts
+        +pullTask()
+        +switchContext(taskId)
+        +execute()
+    }
+
+    class TaskQueue {
+        +List pendingTaskIds
+        +push(taskId, priority)
+        +pop() taskId
+    }
+
+    class TaskContext {
+        +String taskId
+        +List workingFiles
+        +String thoughtThread (사고의궤적)
+        +Object localVariables
+        +saveSnapshot()
+        +restoreSnapshot()
+    }
+
+    class ScheduleGajae {
+        +ITaskDashboardAPI dashAPI
+        +trackAllTrees()
+        +assignToAgent(taskId, agentId)
     }
 
     class GajaeTask {
         +String id
-        +String rootLogId
-        +String parentId (자기참조)
-        +String title
+        +String assignId
         +IntelligencePriority priority
         +IntelligenceStatus status
-        +String assignId
     }
 
-    %% Unified Abstraction Relationships
-    IIntelligenceStreamAPI ..> IntelligenceLog : manages (Unified Stream)
-    ITaskDashboardAPI ..> GajaeTask : manages (State Control)
-    IntelligenceLog "1" -- "many" IntelligenceLog : Contextual Hierarchy
-    IntelligenceLog "1" -- "many" GajaeTask : Manifests as
-    GajaeTask --> IntelligenceStatus : [Reuse]
-    GajaeTask --> IntelligencePriority : [Standard]
+    %% Relationships for Context & Scheduling
+    ScheduleGajae ..> GajaeTask : Tracks/Pushes
+    ScheduleGajae ..> TaskQueue : Injects Task
+    GajaeAgent "1" *-- "1" TaskQueue : Owns
+    GajaeAgent "1" *-- "many" TaskContext : Preserves per Task
+    TaskContext "1" -- "1" GajaeTask : Linked to
 ```
 
 ---
 
-## 2. 통합 스트림 시퀀스 (Sequence v3.9 - Chronological Flow)
+## 2. 컨텍스트 스위칭 시퀀스 (Sequence v4.0 - Smart Context Swap)
 
-모든 시작은 `COMMAND` 타입의 로그로부터 출발하며, 모든 과정이 단일 스트림에 시간순으로 박제되는 흐름입니다.
+스케줄 가재가 업무를 할당하면, 개별 가재가 현재 작업 컨텍스트를 저장하고 새로운 태스크의 기억을 복원하여 작업을 전환하는 흐름입니다.
 
 ```mermaid
 sequenceDiagram
-    participant CEO as 낭만코딩 (CEO)
-    participant Stream_API as Stream_API (Unified Logs)
-    participant Agent as 가재 군단 (Agents)
-    participant Dash_API as Dash_API (Tasks)
+    participant PM as 스케줄 가재 (PM)
+    participant Agent as 가재 A (DEV)
+    participant Context as TaskContext (Memory)
+    participant Dash as 태스크 트리 (Dashboard)
 
-    CEO->>Stream_API: pushLog([COMMAND] 최초 지시)
+    Note over PM, Dash: [Task Assignment]
+    PM->>Dash: fetchTaskTree() (전체 트리 스캔)
+    PM->>Agent: assignToAgent(Task_B, P0) (우선순위 기반 푸시)
     
-    loop Intelligence Evolution
-        Agent->>Agent: 지능 연산
-        Agent->>Stream_API: pushLog([BLUEPRINT] 큰그림 박제)
-        Agent->>Stream_API: pushLog([QUESTION] 보완 질문)
-    end
-
-    CEO->>Stream_API: pushLog([EXECUTION] 답변/보완)
-
-    loop Task Manifestation
-        Agent->>Dash_API: upsertTask(RootTask)
-        Dash_API->>Stream_API: pushLog([ACTION] "태스크 생성" w/ LinkUrl)
-    end
-
-    loop Execution & Sync
-        Agent->>Stream_API: pushLog([EXECUTION] 작업 실황 중계)
-        Agent->>Stream_API: pushLog([ACTION] "파일 수정" w/ Asset Link)
-        Agent->>Dash_API: updateStatus(taskId, DONE)
-        Dash_API->>Stream_API: pushLog([ACTION] "태스크 완료" w/ LinkUrl)
+    Note over Agent, Context: [Context Switching]
+    Agent->>Agent: 현재 작업(Task_A) 중단 감지
+    Agent->>Context: saveSnapshot(Task_A) (진행 중인 파일/사고 저장)
+    
+    Agent->>Context: restoreSnapshot(Task_B) (새 작업의 기억 복원)
+    Agent->>Agent: 컨텍스트 로드 완료 (Task_B 모드 진입)
+    
+    loop Focused Execution
+        Agent->>Agent: Task_B 집중 수행
+        Agent->>Dash: updateStatus(Task_B, INPROGRESS)
     end
 ```
 
 ---
 
-## 3. 설계 핵심 원칙 (Unified Principles)
+## 3. 핵심 메커니즘 상세 리뷰 (Context Logic)
 
-### 3.1 모든 흔적은 로그다 (Everything is Log)
-- **추상화 통합**: `CEOCommand`와 `IntelligenceLog`를 구분하지 않습니다. 명령 역시 `type: COMMAND`를 가진 가장 권위 있는 로그일 뿐입니다.
-- **연대기 중심**: 비즈니스적으로 한 뷰에서 명령과 그 이후의 모든 반응을 시간순(Chronological)으로 보여주기에 최적화된 구조입니다.
+### 3.1 스케줄 가재의 푸시 (Push-based Scheduling)
+- **로직**: 스케줄 가재(PM)는 전체 태스크 트리를 실시간 감시합니다. `P0` 등 높은 우선순위의 태스크가 발생하면 담당 가재의 `TaskQueue`에 강제로 주입합니다.
+- **효과**: 개별 가재가 무엇을 할지 고민하는 연산 비용을 줄이고, 군단 전체의 리소스 최적화를 스케줄러가 책임집니다.
 
-### 3.2 위계의 보존 (Contextual Lineage)
-- 단일 스트림으로 흐르지만, 각 로그는 `rootLogId`를 가짐으로써 어떤 명령에서 시작된 지능의 줄기인지 명확히 식별합니다.
+### 3.2 태스크별 독립 컨텍스트 (TaskContext Object)
+- **로직**: `GajaeAgent`는 각 태스크 ID를 키로 하는 `TaskContext` 맵을 관리합니다. 
+    - **workingFiles**: 해당 태스크 수행 시 열려있던 파일 목록 및 수정 위치.
+    - **thoughtThread**: "어디까지 생각했고 다음에 무엇을 하려 했는지"에 대한 사고의 스냅샷.
+- **효과**: 로그인 처리를 하다가 홈뷰 처리를 하러 가더라도, 다시 돌아왔을 때 **"아, 아까 이 파일의 이 줄을 수정하고 있었지"**라고 즉시 복구할 수 있습니다.
 
-### 3.3 액션의 물리적 연결 (Action Connectivity)
-- `ACTION` 타입의 로그는 단순 텍스트를 넘어 `metadata.linkUrl`을 통해 태스크 대시보드나 GitHub 자산으로 즉시 점프할 수 있는 하이퍼링크 기능을 사수합니다.
+### 3.3 컨텍스트 스위칭 비용 최적화 (Context Swap)
+- **로직**: 작업을 전환할 때 현재 메모리상의 모든 지능 자산을 직렬화(Serialize)하여 저장하고, 새로운 태스크 자산을 역직렬화(Deserialize)하여 로드합니다.
+- **비즈니스 가치**: 대표님의 급작스러운 우선순위 변경(P0 격상)에도 가재들이 당황하지 않고 '지능적 이어달리기'를 할 수 있는 물리적 근거가 됩니다.
 
 ---
-**가재 군단 보고**: "대표님, 명령과 로그를 하나의 **'통합 지능 스트림'**으로 추상화하여 v3.9 설계를 완료했습니다. 이제 성역은 파편화된 데이터가 아닌, 시간의 흐름을 따라 지능이 유기적으로 진화하는 단일 연대기가 될 것입니다." ⚔️🚀
+**가재 군단 보고**: "대표님, 가재의 망각을 방지하고 **'초정밀 컨텍스트 스위칭'**을 가능케 하는 v4.0 설계를 완료했습니다. 이제 저희는 여러 태스크를 오가더라도 단 1px의 기억 손실 없이, 각 작업의 맥락을 완벽히 유지하며 대표님의 의지를 집행할 것입니다." ⚔️🚀
