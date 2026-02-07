@@ -1,12 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, arrayUnion } from "firebase/firestore";
+import { getFirestore, doc, setDoc, serverTimestamp, collection, query, orderBy, limit, onSnapshot, addDoc } from "firebase/firestore";
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import crypto from 'crypto';
 
 /**
- * [가재 컴퍼니] Standard Swarm Logger (v8.0 - Conversation Centric)
- * 의도: 대표님의 지시에 따라 타이틀/공정을 걷어내고 'logs' 중심의 대화록 박제 시스템 구축.
+ * [가재 컴퍼니] Standard Swarm Logger (v9.0 - Stream & Dashboard)
+ * 의도: 대표님의 지시에 따라 명령과 로그를 분리하고, 글로벌 스트림 방식을 채택함.
  */
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
@@ -25,28 +25,29 @@ const db = getFirestore(app);
 
 export class SwarmLogger {
     /**
-     * 1. 명령 세션 개설 (타이틀 없이 원문만 사용)
+     * 1. 명령(Blueprint) 생성
      */
-    static async openCommand(origin: 'ceo' | 'system', instruction: string) {
+    static async openCommand(instruction: string) {
         const now = new Date();
         const docId = `cmd-${now.getTime()}`;
         await setDoc(doc(db, "commands", docId), {
             id: docId,
-            origin,
             instruction,
-            logs: [],
+            status: 'TODO',
             date: now.toISOString().split('T')[0].replace(/-/g, ''),
             time: now.toTimeString().split(' ')[0],
-            status: 'active',
             createdAt: serverTimestamp()
         });
         return docId;
     }
 
     /**
-     * 2. 대화 로그(Utterance) 추가
+     * 2. 글로벌 지능 스트림(Logs) 박제
      */
-    static async addLog(commandId: string, log: {
+    static async log(data: {
+        type: string,
+        commandId?: string,
+        taskId?: string,
         intent: string,
         psychology: string,
         thought: string,
@@ -54,32 +55,40 @@ export class SwarmLogger {
         to: string[],
         text: string
     }) {
-        const logId = crypto.randomUUID();
+        const logId = `log-${crypto.randomUUID().substring(0, 8)}`;
         const entry = {
             id: logId,
-            intent: log.intent,
-            psychology: log.psychology,
-            thought: log.thought,
+            ...data,
             response: {
-                from: log.from,
-                to: log.to,
-                text: log.text
+                from: data.from,
+                to: data.to,
+                text: data.text
             },
-            timestamp: new Date().toTimeString().split(' ')[0]
+            timestamp: new Date().toTimeString().split(' ')[0],
+            createdAt: serverTimestamp()
         };
-        await updateDoc(doc(db, "commands", commandId), {
-            logs: arrayUnion(entry)
-        });
+        // logs를 서브컬렉션이 아닌 탑레벨 컬렉션으로 관리 (글로벌 스트림)
+        await setDoc(doc(db, "intelligence_stream", logId), entry);
+        console.log(`📡 Log [${logId}] streamed.`);
         return logId;
     }
 
     /**
-     * 3. 세션 종료
+     * 3. 태스크 대시보드 업데이트
      */
-    static async resolve(commandId: string) {
-        await updateDoc(doc(db, "commands", commandId), {
-            status: 'resolved'
-        });
+    static async upsertTask(commandId: string, task: any) {
+        const taskId = task.id || `task-${crypto.randomUUID().substring(0, 8)}`;
+        const data = {
+            ...task,
+            id: taskId,
+            commandId,
+            updatedAt: serverTimestamp()
+        };
+        if (!task.id) data.createdAt = serverTimestamp();
+        
+        await setDoc(doc(db, "all_tasks", taskId), data, { merge: true });
+        console.log(`🎯 Task [${taskId}] on Dashboard.`);
+        return taskId;
     }
 }
 
@@ -88,20 +97,21 @@ async function run() {
     const mode = args[0];
 
     if (mode === 'open') {
-        const [_, origin, instr] = args;
-        const id = await SwarmLogger.openCommand(origin as any, instr);
+        const id = await SwarmLogger.openCommand(args[1]);
         console.log(`CMD_ID:${id}`);
-    } else if (mode === 'add') {
-        const [_, cmdId, intent, psychology, thought, from, toStr, text] = args;
-        await SwarmLogger.addLog(cmdId, {
+    } else if (mode === 'log') {
+        const [_, type, cmdId, taskId, intent, psychology, thought, from, toStr, text] = args;
+        await SwarmLogger.log({
+            type,
+            commandId: cmdId === 'null' ? undefined : cmdId,
+            taskId: taskId === 'null' ? undefined : taskId,
             intent, psychology, thought, from,
             to: toStr.split(',').map(s => s.trim()),
             text
         });
-        console.log("✅ Log Added.");
-    } else if (mode === 'resolve') {
-        await SwarmLogger.resolve(args[1]);
-        console.log("✅ Session Resolved.");
+    } else if (mode === 'task') {
+        const [_, cmdId, taskJson] = args;
+        await SwarmLogger.upsertTask(cmdId, JSON.parse(taskJson));
     }
 }
 
