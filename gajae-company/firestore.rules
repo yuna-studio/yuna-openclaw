@@ -2,29 +2,8 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /commands/{document} { allow read, write: if true; }
-    match /meetings/{document} { allow read, write: if true; }
-    match /activities/{document} { allow read, write: if true; }
-    
-    // Core Assets (The Truth)
-    match /sanctuary_core/{document} { allow read, write: if true; }
-    
-    // Tasks
-    match /tasks_dev/{document} { allow read, write: if true; }
-    match /tasks_po/{document} { allow read, write: if true; }
-    match /tasks_pm/{document} { allow read, write: if true; }
-    match /tasks_ux/{document} { allow read, write: if true; }
-    match /tasks_qa/{document} { allow read, write: if true; }
-    match /tasks_hr/{document} { allow read, write: if true; }
-    match /tasks_at/{document} { allow read, write: if true; }
-    match /tasks_ba/{document} { allow read, write: if true; }
-    match /tasks_marketing/{document} { allow read, write: if true; }
-    match /tasks_cs/{document} { allow read, write: if true; }
-    match /tasks_legal/{document} { allow read, write: if true; }
-    match /tasks_host/{document} { allow read, write: if true; }
-
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true; 
     }
   }
 }

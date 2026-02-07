@@ -1,6 +1,6 @@
 /**
- * [가재 컴퍼니] Intelligence Unified Data Model (v3.1)
- * 의도: 대표님의 지시에 따라 '상태(Status)'를 Enum 체계로 정규화함.
+ * [가재 컴퍼니] Intelligence Unified Data Model (v4.1 - Priority Enum)
+ * 의도: 대표님의 지시에 따라 우선순위(Priority)를 Enum 체계로 정규화함.
  */
 
 export enum IntelligenceStatus {
@@ -10,63 +10,48 @@ export enum IntelligenceStatus {
     HOLD = 'HOLD'
 }
 
-// 1. Fivefold Intelligence Protocol (개별 가재의 연산 단위)
-export interface IntelligenceProtocol {
-    authorId: string;
-    authorName: string;
-    intent: string;
-    psychology: string;
-    thought: string;
-    action: string;
-    response: {
-        to: string;
-        message: string;
-    };
+export enum IntelligencePriority {
+    P0 = 'P0', // 즉시 집행 (Critical)
+    P1 = 'P1', // 우선 처리 (High)
+    P2 = 'P2', // 일반 공정 (Medium)
+    P3 = 'P3', // 보조 연산 (Low)
+    P4 = 'P4'  // 향후 검토 (Backlog)
 }
 
-// 2. Swarm Process Step (LangGraph Node Equivalent)
-export interface SwarmStep {
-    id: string;
-    name: string;
-    assigneeId: string;
-    taskIds: string[];
-    criteria: string;
-    status: IntelligenceStatus;
+export interface ResponseObject {
+    from: string;          // 발신 가재 ID
+    to: string[];          // 수신 가재 ID 리스트
+    text: string;          // 답변 메시지
 }
 
-// 3. Atomic Intelligence Task (MCP-Structured)
-export interface GajaeTask {
+export interface IntelligenceLog {
     id: string;
-    meetingId: string;
-    stepId: string;
-    assigneeId: string;
-    title: string;
-    description: string;
-    priority: 'P0' | 'P1' | 'P2' | 'P3';
-    status: IntelligenceStatus;
-    createdAt: any;
+    intent: string;        // 1. 의도
+    psychology: string;    // 2. 심리
+    thought: string;       // 3. 생각
+    response: ResponseObject; // 4. 답변
+    timestamp: string;     // HH:MM:SS
 }
 
-// 4. Meeting Session (가재들의 협업 세션)
-export interface MeetingSession {
+export interface CEOCommandSession {
     id: string;
-    type: 'meeting' | 'command_session' | 'collaboration';
-    topic: string;
+    origin: 'ceo' | 'system';
+    instruction: string;
+    logs: IntelligenceLog[];
     date: string;
     time: string;
-    steps: SwarmStep[];
-    activities: IntelligenceProtocol[];
-    status: 'active' | 'resolved';
+    status: IntelligenceStatus;
     createdAt: any;
 }
 
-// 5. Sanctuary Core Asset (The Law & The Truth)
-export interface SanctuaryAsset {
+// 6. Atomic Intelligence Task (Linked via IDs)
+export interface GajaeTask {
     id: string;
-    name: string;
-    category: 'legal' | 'role' | 'process' | 'template';
-    version: string;
-    content: string;
-    metadata?: any;
-    updatedAt: any;
+    commandId: string;
+    title: string;
+    description: string;
+    priority: IntelligencePriority;
+    status: IntelligenceStatus;
+    assigneeId: string;
+    createdAt: any;
 }

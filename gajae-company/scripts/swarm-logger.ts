@@ -1,11 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, serverTimestamp, updateDoc, arrayUnion, getDoc, arrayRemove } from "firebase/firestore";
+import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, arrayUnion } from "firebase/firestore";
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import crypto from 'crypto';
 
 /**
- * [가재 컴퍼니] Swarm Intelligence Integrated Logger (v6.6 - CLI Ready)
+ * [가재 컴퍼니] Standard Swarm Logger (v8.0 - Conversation Centric)
+ * 의도: 대표님의 지시에 따라 타이틀/공정을 걷어내고 'logs' 중심의 대화록 박제 시스템 구축.
  */
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
@@ -23,65 +24,62 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export class SwarmLogger {
-    static async createCommand(origin: 'ceo' | 'system', title: string, instruction: string) {
+    /**
+     * 1. 명령 세션 개설 (타이틀 없이 원문만 사용)
+     */
+    static async openCommand(origin: 'ceo' | 'system', instruction: string) {
         const now = new Date();
         const docId = `cmd-${now.getTime()}`;
         await setDoc(doc(db, "commands", docId), {
             id: docId,
             origin,
-            type: 'command',
-            title,
             instruction,
+            logs: [],
             date: now.toISOString().split('T')[0].replace(/-/g, ''),
             time: now.toTimeString().split(' ')[0],
-            steps: [],
-            activities: [],
             status: 'active',
             createdAt: serverTimestamp()
         });
         return docId;
     }
 
-    static async setSteps(commandId: string, steps: any[]) {
+    /**
+     * 2. 대화 로그(Utterance) 추가
+     */
+    static async addLog(commandId: string, log: {
+        intent: string,
+        psychology: string,
+        thought: string,
+        from: string,
+        to: string[],
+        text: string
+    }) {
+        const logId = crypto.randomUUID();
+        const entry = {
+            id: logId,
+            intent: log.intent,
+            psychology: log.psychology,
+            thought: log.thought,
+            response: {
+                from: log.from,
+                to: log.to,
+                text: log.text
+            },
+            timestamp: new Date().toTimeString().split(' ')[0]
+        };
         await updateDoc(doc(db, "commands", commandId), {
-            steps: steps.map(s => ({ ...s, taskIds: [] })),
-            updatedAt: serverTimestamp()
+            logs: arrayUnion(entry)
         });
+        return logId;
     }
 
-    static async createTask(commandId: string, stepId: string, taskData: any) {
-        const taskId = `task-${crypto.randomUUID().substring(0, 8)}`;
-        const assignee = taskData.assigneeId.toLowerCase();
-        
-        await setDoc(doc(db, "all_tasks", taskId), { ...taskData, id: taskId, commandId, stepId, createdAt: serverTimestamp() });
-
-        const cmdRef = doc(db, "commands", commandId);
-        const snap = await getDoc(cmdRef);
-        if (snap.exists()) {
-            const steps = snap.data().steps.map((s: any) => 
-                s.id === stepId ? { ...s, taskIds: [...(s.taskIds || []), taskId] } : s
-            );
-            await updateDoc(cmdRef, { steps });
-        }
-
-        const regRef = doc(db, `tasks_${assignee}`, "registry");
-        const regSnap = await getDoc(regRef);
-        if (!regSnap.exists()) {
-            await setDoc(regRef, { activeTaskIds: [taskId] });
-        } else {
-            await updateDoc(regRef, { activeTaskIds: arrayUnion(taskId) });
-        }
-        return taskId;
-    }
-
-    static async addActivity(commandId: string, activity: any) {
+    /**
+     * 3. 세션 종료
+     */
+    static async resolve(commandId: string) {
         await updateDoc(doc(db, "commands", commandId), {
-            activities: arrayUnion({ ...activity, id: crypto.randomUUID(), timestamp: new Date().toTimeString().split(' ')[0] })
+            status: 'resolved'
         });
-    }
-
-    static async closeCommand(commandId: string, finalDecision: string) {
-        await updateDoc(doc(db, "commands", commandId), { finalDecision, status: 'resolved' });
     }
 }
 
@@ -90,20 +88,20 @@ async function run() {
     const mode = args[0];
 
     if (mode === 'open') {
-        const id = await SwarmLogger.createCommand(args[1] as any, args[2], args[3]);
+        const [_, origin, instr] = args;
+        const id = await SwarmLogger.openCommand(origin as any, instr);
         console.log(`CMD_ID:${id}`);
-    } else if (mode === 'steps') {
-        await SwarmLogger.setSteps(args[1], JSON.parse(args[2]));
-        console.log("✅ Steps Configured.");
-    } else if (mode === 'task-add') {
-        const id = await SwarmLogger.createTask(args[1], args[2], JSON.parse(args[3]));
-        console.log(`TASK_ID:${id}`);
-    } else if (mode === 'activity') {
-        await SwarmLogger.addActivity(args[1], JSON.parse(args[2]));
-        console.log("✅ Activity Added.");
-    } else if (mode === 'close') {
-        await SwarmLogger.closeCommand(args[1], args[2]);
-        console.log("✅ Command Resolved.");
+    } else if (mode === 'add') {
+        const [_, cmdId, intent, psychology, thought, from, toStr, text] = args;
+        await SwarmLogger.addLog(cmdId, {
+            intent, psychology, thought, from,
+            to: toStr.split(',').map(s => s.trim()),
+            text
+        });
+        console.log("✅ Log Added.");
+    } else if (mode === 'resolve') {
+        await SwarmLogger.resolve(args[1]);
+        console.log("✅ Session Resolved.");
     }
 }
 
