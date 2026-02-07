@@ -12,30 +12,35 @@
 ```mermaid
 graph TD
     User["👤 CEO (Telegram)"] -->|Message| Bridge["🌉 Telegram Bot API"]
-    Bridge -->|Webhook| PC["🖥️ Sanctuary Engine (Mac)"]
+    Bridge -->|Webhook| PC["🖥️ OpenClaw (Mac)"]
     
-    PC -->|Fetch Persona & Rules| DB[("🔥 Firestore")]
+    PC -->|Fetch Persona & Rules| DB[("🔥 Firestore (Memory)")]
     
-    subgraph "Sanctuary Engine (LangGraph Host)"
+    subgraph "OpenClaw (LangGraph Host)"
         Suhaeng["🦞 수행가재 (Gatekeeper)"]
-        Loader["💉 Brain Loader (Dynamic Injection)"]
         
-        DB -->|"/system/roles/{roleId}"| Loader
-        Loader -->|Hydrate Agent| Suhaeng
-        Loader -->|Hydrate Agent| Squad["👥 Sanctuary Squad (10 Agents)"]
-        
-        subgraph "Cognitive Processing"
-            Suhaeng --> Think{판단과 기록}
-            Think -->|Intent: Work| Orchestrator["⚙️ LangGraph Controller"]
-            Orchestrator -->|Assign| Squad
-            Squad -->|Execute| Tools["🛠️ File/Shell/Git"]
+        subgraph "Cognitive Layer"
+            Think{판단과 기록}
         end
+
+        Suhaeng --> Think
+        Think -.->|"[AGENT_THOUGHT] Log"| DB
+        
+        Think -->|Intent: Casual| SimpleLLM["💬 Chit-Chat"]
+        Think -->|Intent: Work| Orchestrator["⚙️ LangGraph Controller"]
+        
+        Orchestrator -->|Assign Task| Squad["👥 Sanctuary Squad (10 Agents)"]
+        
+        Squad -->|Execute| Tools["🛠️ File/Shell/Git"]
+        
+        %% All agents write to DB
+        SimpleLLM -.->|"[CHAT_LOG]"| DB
+        Squad -.->|"[AGENT_THOUGHT]"| DB
+        Squad -.->|"[AGENT_DISCUSSION]"| DB
+        Tools -.->|"[ACTION_RESULT]"| DB
     end
     
-    Suhaeng -->|Think Log| DB
-    Squad -->|Discussion & Result| DB
-    
-    DB -->|Visual| Dashboard["📊 Web Dashboard"]
+    DB -->|Realtime Stream| Dashboard["📊 Web Dashboard"]
 ```
 
 ---
@@ -65,6 +70,7 @@ classDiagram
 
     class GajaeTask {
         +String id (uuid)
+        +String swarm_id (thread_id)
         +String title
         +String description
         +ProductLifeCycle status
@@ -162,6 +168,7 @@ classDiagram
 ```json
 {
   "id": "task_12345",
+  "swarm_id": "thread_abc_001",
   "title": "Implement Login Feature",
   "description": "User authentication with JWT",
   "status": "FUE",
@@ -222,17 +229,16 @@ classDiagram
 ```mermaid
 sequenceDiagram
     actor CEO as "👤 낭만코딩 (CEO)"
-    participant ATT as "🦞 수행가재 (Thinking Gatekeeper)"
-    participant DB as "🔥 Firestore"
+    participant ATT as "🦞 수행가재 (Gatekeeper)"
+    participant DB as "🔥 Firestore (Log)"
     participant LG as "⚙️ LangGraph"
 
     CEO->>ATT: "배포 진행시켜" (Message)
     
     rect rgb(200, 255, 200)
-    note right of ATT: 🧠 Internal Monologue (Cognitive Step)
+    note right of ATT: 🧠 Internal Monologue
     ATT->>ATT: Analyze Intent: WORK_DIRECTIVE
-    ATT->>ATT: Keyword: "Deploy" -> Target Stage: "FL"
-    ATT->>DB: [AGENT_THOUGHT] "명확한 배포 지시다. 긴급도가 높다."
+    ATT->>DB: [AGENT_THOUGHT] "명확한 배포 지시다."
     end
     
     ATT->>DB: [CEO_COMMAND] "배포 진행시켜"
@@ -240,7 +246,36 @@ sequenceDiagram
     ATT->>CEO: "네, 배포 프로세스를 가동합니다. 🚀" (Ack)
 ```
 
-### 3.3 13단계 키네틱 프로토콜 (Kinetic 13 Protocol)
+### 3.3 멀티 에이전트 오케스트레이션 (Swarm Orchestration)
+**[Rule]**: 업무 지시가 내려지면, LangGraph는 관련 전문 요원을 소집하여 **"토론(Discussion)"**을 진행하며, 모든 발언과 생각은 DB에 기록됩니다.
+
+```mermaid
+sequenceDiagram
+    participant LG as "⚙️ LangGraph"
+    participant Squad as "👥 Agents (PM/PO/DEV)"
+    participant DB as "🔥 Firestore (Log)"
+
+    LG->>Squad: Task Assign (Design Phase)
+    
+    loop Discussion Cycle (Cognitive Stream)
+        Squad->>Squad: 🤔 PM: "Requires clarification on spec."
+        Squad-->>DB: [AGENT_THOUGHT] PM's Internal Monologue
+        
+        Squad->>Squad: 🗣️ PM: "Checking feasibility..."
+        Squad-->>DB: [AGENT_DISCUSSION] PM speaks to Team
+        
+        Squad->>Squad: 🗣️ DEV: "Technical constraint found."
+        Squad-->>DB: [AGENT_DISCUSSION] DEV responds
+        
+        Squad->>Squad: 🛠️ Action: Check codebase
+        Squad-->>DB: [ACTION_RESULT] "Found legacy code in auth.py"
+    end
+    
+    Squad->>LG: Consensus Reached
+    LG-->>DB: [SYSTEM_ALERT] State Transition Ready
+```
+
+### 3.4 13단계 키네틱 프로토콜 (Kinetic 13 Protocol)
 13단계의 상태 머신(State Machine)은 고정되어 있지만, 각 단계의 책임자는 DB에 정의된 `responsibilities`에 따라 행동합니다.
 
 ```mermaid
@@ -278,6 +313,19 @@ stateDiagram-v2
 3.  **Telegram Hook**: 텔레그램 봇 API를 연동하여 `Suhaeng Brain`과 연결합니다.
 4.  **LangGraph Core**: 13단계 상태 머신(StateGraph)을 정의하고 각 노드에 에이전트를 매핑합니다.
 5.  **Chronicle Logger**: 모든 함수 호출(Tool Call)과 대화(Chat)를 가로채어 Firestore에 저장하는 미들웨어를 작성합니다.
+
+---
+
+### 3.5 뇌 부활 프로토콜 (Context Resurrection)
+**[Rule]**: 에이전트는 잠들 수(Pause) 있지만, 죽지는 않습니다. `swarm_id`를 통해 **이전 기억을 완벽하게 복구(Resume)**해야 합니다.
+
+1.  **Sleep (Hibernate)**:
+    *   대화가 종료되거나 작업을 멈출 때, LangGraph는 현재 상태(State Snapshot)를 `checkpoint`로 저장합니다.
+    *   이 `thread_id`는 Task 문서의 `swarm_id` 필드에 영구 저장됩니다.
+2.  **Wake Up (Resume)**:
+    *   CEO가 "로그인 기능 다시 작업해"라고 명령하면, 수행가재는 해당 Task의 `swarm_id`를 조회합니다.
+    *   LangGraph는 `swarm_id`에 해당하는 **마지막 체크포인트**를 로드하여, 에이전트들의 단기 기억(Memory)을 복원합니다.
+    *   *효과*: "아까 말씀하신 JWT 방식 말인데요..."라며 문맥을 이어서 대화할 수 있습니다.
 
 ---
 
