@@ -10,11 +10,19 @@
 
 ```mermaid
 classDiagram
+    class Status {
+        <<enumeration>>
+        TODO
+        INPROGRESS
+        DONE
+        HOLD
+    }
+
     class CEOCommand {
         +String id
         +String title
         +String instruction
-        +String status
+        +Status status
         +DateTime createdAt
         +List activities
         +List steps
@@ -26,7 +34,7 @@ classDiagram
         +String assigneeId
         +List taskIds
         +String criteria
-        +String status
+        +Status status
     }
 
     class AtomicTask {
@@ -34,7 +42,7 @@ classDiagram
         +String title
         +String description
         +String priority
-        +String status
+        +Status status
         +String originId
     }
 
