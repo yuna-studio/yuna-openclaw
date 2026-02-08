@@ -1,4 +1,4 @@
-# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.5 - The Complete Archive)
+# 🏛️ 가재 컴퍼니 시스템 설계 (Sanctuary Architecture v13.6 - The Complete Archive)
 
 **[문서의 목적]**: 본 문서는 **OpenClaw (AI Agent)**에게 시스템 구축을 지시하기 위한 **최종 기술 명세서(Technical Specification)**입니다.
 **[핵심 철학]**: "인간 CEO"와 "11명의 AI 가재 군단"이 **PC 환경**에서 공존하며, **비서가재(Biseo Gajae)**가 지능적 게이트키퍼로서 중재하고, 그 모든 과정은 **크로니클(Chronicle)**로 투명하게 기록됩니다.
@@ -191,7 +191,33 @@ classDiagram
 *   **Focus Tracking:** 비서가재는 항상 `Current Focus` (현재 어떤 Epic/Task를 보고 있는지)를 유지하여 대화의 문맥을 연결함.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
-**[Kinetic 13 Protocol]**
+
+```mermaid
+stateDiagram-v2
+    [*] --> INBOX
+    INBOX --> BACKLOG : Triage by PO (Project/Epic Classification)
+    BACKLOG --> PF : Scheduled by PM (Priority Check)
+
+    state "Planning Phase (Parallel)" as Planning {
+        PF --> FBS : PO Defined Requirements
+        FBS --> RFD : DEV Feasibility Check
+        RFD --> FBD : UX Design Complete
+        FBD --> RFE_RFK : Design Approved (CEO Gate)
+    }
+
+    state "Execution Phase (Serial)" as Execution {
+        RFE_RFK --> FUE : Eng Kick-off
+        FUE --> RFQ : Implementation Done
+        RFQ --> FUQ : QA Start
+        FUQ --> RFT : QA Passed (CEO Gate)
+        RFT --> FUT : Staging Deploy
+        FUT --> FL : Final Launch (CEO Gate)
+    }
+    
+    FL --> [*]
+```
+
+**[Kinetic 13 Protocol Details]**
 *   **PF (Planning First):** 기획가재(PO)가 요구사항 정의.
 *   **FBS (Feasibility Study):** 개발가재(DEV)가 기술 검토.
 *   **RFD (Request for Design):** 디자인가재(UX) 호출.
@@ -242,6 +268,3 @@ docs/
 ---
 
 **[결론]**: 이 설계도는 **비서가재(Brain)**와 **가재 OS(Body)**가 결합된 완전 자율형 조직 시스템입니다. 🦞🚀
- 
- 
- 
