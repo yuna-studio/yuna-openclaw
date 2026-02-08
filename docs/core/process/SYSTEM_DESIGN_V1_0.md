@@ -191,8 +191,19 @@ classDiagram
 *   **Focus Tracking:** 비서가재는 항상 `Current Focus` (현재 어떤 Epic/Task를 보고 있는지)를 유지하여 대화의 문맥을 연결함.
 
 ### 3.3 13단계 공정 & 승인 게이트 (Approval Gate)
-*   각 공정(Step)의 끝에는 **"CEO 승인(Human-in-the-loop)"** 단계가 필수.
-*   담당 가재가 "완료 보고"를 올리면 -> 비서가재가 CEO에게 알림 -> CEO 승인 시 다음 단계로 전이.
+**[Kinetic 13 Protocol]**
+*   **PF (Planning First):** 기획가재(PO)가 요구사항 정의.
+*   **FBS (Feasibility Study):** 개발가재(DEV)가 기술 검토.
+*   **RFD (Request for Design):** 디자인가재(UX) 호출.
+*   **FBD (Finalize by Design):** 디자인 완료 및 CEO 승인.
+*   **RFE_RFK (Request for Eng Kickoff):** 개발 착수 승인 (Gate).
+*   **FUE (Feature Under Eng):** 개발가재(DEV) 구현.
+*   **RFQ (Request for QA):** 구현 완료, 품질가재(QA) 호출.
+*   **FUQ (Feature Under QA):** 테스트 진행.
+*   **RFT (Request for Test):** QA 통과 보고 및 CEO 승인 (Gate).
+*   **FUT (Feature Under Test):** 스테이징 배포 및 최종 확인.
+*   **FL (Feature Launch):** 라이브 배포.
+
 *   **CEO Super Pass:** CEO 명령 시 특정 단계 건너뛰기(Skip) 및 강제 전이 가능.
 
 ### 3.4 뇌 부활 및 재동기화 (Resync Protocol)
