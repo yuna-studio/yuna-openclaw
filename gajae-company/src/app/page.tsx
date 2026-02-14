@@ -1,7 +1,6 @@
-import { ChronicleService } from "@/feature/chronicle/domain/service/chronicle_service";
 import { LiveActivityStream } from "@/feature/chronicle/presentation/component/live_activity_stream";
 import Link from "next/link";
-import { History, Zap, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRight } from "lucide-react";
+import { History, Cpu, BookOpen, Terminal, Sparkles, FolderKanban, ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 /**
@@ -110,14 +109,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Simple Link to Personnel */}
-      <div className="flex justify-center relative z-10 mb-20 border-t border-slate-100 pt-20">
+      {/* Quick Access Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10 mb-20 border-t border-slate-100 pt-20">
         <Link href="/personnel" className="group flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-300 group-hover:border-ghibli-blue group-hover:text-ghibli-blue transition-all duration-500">
                 <Cpu size={32} />
             </div>
             <span className="text-slate-400 group-hover:text-ghibli-blue font-black text-xs uppercase tracking-[0.3em] transition-colors">
                 13인의 지능 노드 탐색 ➔
+            </span>
+        </Link>
+        <Link href="/projects" className="group flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-300 group-hover:border-ghibli-green group-hover:text-ghibli-green transition-all duration-500">
+                <FolderKanban size={32} />
+            </div>
+            <span className="text-slate-400 group-hover:text-ghibli-green font-black text-xs uppercase tracking-[0.3em] transition-colors">
+                진행중인 프로젝트 확인 ➔
             </span>
         </Link>
       </div>
