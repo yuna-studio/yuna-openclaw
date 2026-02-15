@@ -4,13 +4,16 @@ Unit tests for session_log_watcher.py
 모든 필터, 마스킹, 엣지케이스를 커버합니다.
 
 Usage:
-    python -m pytest scripts/test_session_log_watcher.py -v
-    # or simply:
-    python scripts/test_session_log_watcher.py
+    cd gajae-os && python -m pytest tests/ -v
 """
 
+import os
+import sys
 import json
 import pytest
+
+# 부모 디렉토리(gajae-os/)를 import 경로에 추가
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from session_log_watcher import (
     clean_message,
