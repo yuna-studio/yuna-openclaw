@@ -64,3 +64,4 @@ response.json
 audit_followers.js
 check_inactive.*
 gajae-os/planner/state/
+gajae-os/develop/state/
