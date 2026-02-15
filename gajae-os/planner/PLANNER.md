@@ -157,13 +157,11 @@ Researcher의 조사 결과를 읽고:
 
 ## 노션 출력
 
-최종 1-Pager 완성 후 **반드시** Notion에도 페이지를 생성하라.
+최종 1-Pager 완성 후 **반드시** Notion에 페이지를 생성하라. **노션이 유일한 출력**이다.
 
 - **위치**: `2026 Q1` 페이지 하위 (page_id: `ea6034d6-facc-494d-aee7-a1fa9cbec48f`)
 - **아이콘**: 📋
 - **제목**: `📋 [Plan] {기능/아이디어명}`
-- **내용**: 최종 1-Pager 전문을 Notion 블록으로 구조화
+- **내용**: 최종 1-Pager 전문을 heading, callout, table, bullet 등 Notion 블록으로 구조화하여 보기 좋게 작성하라
 - Notion API 사용법: `skills/better-notion/SKILL.md` 참고
-
-**노션 페이지가 메인 출력**이다. 파일은 백업용으로 함께 저장할 것.
-노션 페이지에는 1-Pager 전문을 heading, callout, table, bullet 등 Notion 블록으로 구조화하여 보기 좋게 작성하라.
+- ❌ 로컬 md 파일 저장 불필요
