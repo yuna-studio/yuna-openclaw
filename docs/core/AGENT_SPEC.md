@@ -135,6 +135,7 @@ PO(Product Owner) 레벨의 기획서(1-Pager)를 자동 생성하는 에이전�
 ### 산출물
 - `gajae-os/planner/outputs/YYYY-MM-DD-{기능명}.md` — 최종 1-Pager
 - `gajae-os/planner/outputs/YYYY-MM-DD-{기능명}-research.md` — 시장 조사 보고서
+- **Notion**: `2026 Q1` 하위에 `📋 [Plan] {기능명}` 페이지 자동 생성
 
 ---
 
