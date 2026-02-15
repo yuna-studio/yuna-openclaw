@@ -2,24 +2,21 @@
 """
 🦞 Gajae Planner — LangGraph 기반 PO 기획 에이전트
 
-이 스크립트는 비서가재(main)가 오케스트레이터로서 실행한다.
-각 단계에서 sessions_spawn을 통해 탐정/판사를 호출하는 대신,
-비서가재가 이 파일의 상태를 읽고 다음 단계를 판단하여 spawn한다.
+한 번 실행하면 Phase 1~5 전체를 자동으로 돌린다.
+각 단계: 탐정가재(작업) → 판사가재(검증) → PASS/REVISE 루프
+OpenClaw CLI (openclaw agent) 로 에이전트를 호출한다.
 
-## 상태 파일 기반 실행
-gajae-os/planner/state/{run_id}.json 에 상태를 저장하고,
-비서가재가 상태를 읽어서 다음 단계를 실행한다.
-
-Usage (비서가재가 내부적으로 호출):
-  1. 상태 파일 생성 (init)
-  2. 각 단계를 sessions_spawn으로 실행
-  3. 결과를 상태에 저장
-  4. 다음 단계 판단 (route)
+Usage:
+  python3 graph.py run "아이디어" "환경정보"
+  python3 graph.py resume RUN_ID          # 중단된 실행 재개
+  python3 graph.py status RUN_ID          # 상태 확인
+  python3 graph.py feedback RUN_ID "피드백"  # human input 추가
 """
 
 import os
 import json
 import time
+import subprocess
 from datetime import datetime
 
 STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/planner/state")
@@ -33,6 +30,48 @@ PHASE_NAMES = {
 }
 
 MAX_REVISIONS_PER_PHASE = 2
+
+
+# ── OpenClaw CLI 호출 ───────────────────────────────────
+
+def call_agent(agent_id: str, message: str, timeout: int = 300) -> str:
+    """openclaw agent CLI로 에이전트 호출하고 응답 텍스트 반환"""
+    cmd = [
+        "openclaw", "agent",
+        "--agent", agent_id,
+        "--message", message,
+        "--json",
+        "--timeout", str(timeout),
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout + 30,
+        )
+
+        if result.returncode != 0:
+            print(f"  ⚠️ CLI error (exit {result.returncode}): {result.stderr[:200]}")
+            return f"(error: {result.stderr[:200]})"
+
+        # JSON 파싱 — 응답 텍스트 추출
+        data = json.loads(result.stdout)
+        reply = data.get("result", {})
+        if isinstance(reply, dict):
+            payloads = reply.get("payloads", [])
+            if payloads:
+                return payloads[0].get("text", "")
+        return str(reply)[:3000]
+
+    except subprocess.TimeoutExpired:
+        return "(timeout)"
+    except json.JSONDecodeError:
+        # JSON이 아닌 경우 stdout 그대로
+        return result.stdout[:3000] if result.stdout else "(empty)"
+    except Exception as e:
+        return f"(error: {e})"
 
 
 def init_run(idea: str, context: str) -> str:
@@ -379,30 +418,138 @@ FEEDBACK: (REVISE인 경우 구체적 개선 지시)
 냉정하게 평가하라. 자기 편의적 채점 금지."""
 
 
+# ── Auto Run Loop ───────────────────────────────────────
+
+def run_pipeline(state: dict):
+    """Phase 1~5 전체를 자동으로 실행"""
+    print(f"""
+╔══════════════════════════════════════════════════╗
+║  🦞 Gajae Planner — Auto Pipeline               ║
+╚══════════════════════════════════════════════════╝
+  아이디어: {state['idea'][:60]}
+  환경: {state['context'][:60]}
+  공정: [1]→⚖️→[2]→⚖️→[3]→⚖️→[4]→⚖️→[5]→⚖️→📝Notion
+""")
+
+    while True:
+        na = next_action(state)
+        action = na["action"]
+        phase = na["phase"]
+
+        if action == "done":
+            print("✅ 모든 단계 완료!")
+            break
+
+        if action == "finalize":
+            print("📋 최종 1-Pager 조합...")
+            # Notion 출력은 별도 구현 필요
+            state["status"] = "completed"
+            save_state(state["run_id"], state)
+            print(f"\n{get_summary(state)}")
+            break
+
+        if action == "work":
+            phase_name = PHASE_NAMES[phase]
+            rev = get_phase(state, phase).get("revisions", 0)
+            suffix = f" (수정 {rev}차)" if rev > 0 else ""
+            print(f"\n🔍 [{phase}/5] {phase_name}{suffix} — 탐정가재 작업 중...")
+
+            prompt = na["prompt"]
+            result = call_agent("scout", prompt, timeout=300)
+
+            if result.startswith("(error") or result.startswith("(timeout"):
+                print(f"  ❌ 실패: {result[:100]}")
+                state["status"] = "failed"
+                save_state(state["run_id"], state)
+                break
+
+            record_work_result(state, phase, result)
+            print(f"  ✅ 결과 저장 ({len(result)}자)")
+
+        elif action == "critique":
+            phase_name = PHASE_NAMES[phase]
+            print(f"⚖️  [{phase}/5] {phase_name} — 판사가재 검증 중...")
+
+            prompt = na["prompt"]
+            result = call_agent("judge", prompt, timeout=180)
+
+            # 점수 파싱
+            score = 0.0
+            for line in result.split("\n"):
+                if line.strip().startswith("SCORE:"):
+                    try:
+                        score_str = line.split(":")[1].strip()
+                        score = float(score_str.split("/")[0].strip())
+                    except (ValueError, IndexError):
+                        score = 5.0
+                    break
+
+            record_critique_result(state, phase, result, score)
+
+            p = get_phase(state, phase)
+            if p["status"] == "passed":
+                print(f"  ✅ PASS ({score}/10)")
+            elif p["status"] == "revising":
+                print(f"  🔄 REVISE ({score}/10) — 수정 {p['revisions']}/{MAX_REVISIONS_PER_PHASE}")
+            else:
+                print(f"  ⚠️ 강제 통과 ({score}/10)")
+
+        # 상태 저장
+        save_state(state["run_id"], state)
+
+    # 최종 요약
+    print(f"\n{'='*50}")
+    print(get_summary(state))
+    return state
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("Usage: python3 graph.py init '아이디어' --context '환경'")
-        print("       python3 graph.py status RUN_ID")
+        print("""Usage:
+  python3 graph.py run "아이디어" "환경정보"     # 새 기획 실행
+  python3 graph.py resume RUN_ID              # 중단된 실행 재개
+  python3 graph.py status RUN_ID              # 상태 확인
+  python3 graph.py feedback RUN_ID "피드백"    # human input 추가
+""")
         sys.exit(1)
 
     cmd = sys.argv[1]
-    if cmd == "init":
+
+    if cmd == "run":
         idea = sys.argv[2]
         context = sys.argv[3] if len(sys.argv) > 3 else "1인 개발자"
         run_id = init_run(idea, context)
         print(f"✅ Run initialized: {run_id}")
         state = load_state(run_id)
-        na = next_action(state)
-        print(f"   Next: {na['action']} phase={na['phase']} agent={na['agent']}")
+        run_pipeline(state)
+
+    elif cmd == "resume":
+        run_id = sys.argv[2]
+        state = load_state(run_id)
+        print(f"▶️ Resuming run {run_id}")
+        run_pipeline(state)
 
     elif cmd == "status":
         run_id = sys.argv[2]
         state = load_state(run_id)
         print(get_summary(state))
 
+    elif cmd == "feedback":
+        run_id = sys.argv[2]
+        feedback = sys.argv[3]
+        state = load_state(run_id)
+        inputs = state.setdefault("human_inputs", [])
+        inputs.append({
+            "phase": state["current_phase"],
+            "input": feedback,
+        })
+        save_state(run_id, state)
+        print(f"✅ 피드백 추가 (phase {state['current_phase']}): {feedback}")
+
     elif cmd == "next":
         run_id = sys.argv[2]
         state = load_state(run_id)
         na = next_action(state)
         print(json.dumps(na, ensure_ascii=False, default=str))
+
