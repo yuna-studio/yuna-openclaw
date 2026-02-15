@@ -110,8 +110,14 @@ def init_firebase():
 
 # ── Filters ─────────────────────────────────────────────
 def strip_think_blocks(text: str) -> str:
-    """Remove <think>...</think> blocks from text."""
-    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    """Remove <think>...</think> blocks from text.
+    Also handles unclosed <think> blocks (no closing tag).
+    """
+    # First: paired <think>...</think>
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    # Then: unclosed <think> that runs to end of text
+    text = re.sub(r"<think>.*$", "", text, flags=re.DOTALL)
+    return text.strip()
 
 
 def strip_final_tags(text: str) -> str:
@@ -138,6 +144,27 @@ def strip_inbound_meta(text: str) -> str:
     # "To send an image back..." instruction lines
     text = re.sub(r"To send an image back.*?(?:\n|$)", "", text).strip()
     return text
+
+
+# System-injected user messages to skip
+SYSTEM_USER_PATTERNS = [
+    r"^Pre-compaction memory flush\.",
+    r"^Read HEARTBEAT\.md",
+    r"^The conversation history before this point was compacted",
+    r"^You are running low on context",
+    r"^## Silent Replies",
+    r"^## Heartbeats",
+    r"^## Runtime",
+    r"^## Inbound Context",
+    r"^\[system\]",
+    r"^<system>",
+]
+_SYSTEM_USER_RE = re.compile("|".join(SYSTEM_USER_PATTERNS), re.MULTILINE)
+
+
+def is_system_injected(text: str) -> bool:
+    """Detect system-injected messages sent as user role."""
+    return bool(_SYSTEM_USER_RE.search(text))
 
 
 def extract_text(content) -> str:
@@ -179,6 +206,10 @@ def clean_message(entry: dict) -> dict | None:
 
     # Only user and assistant
     if role not in ("user", "assistant"):
+        return None
+
+    # Skip system-injected messages disguised as user role
+    if role == "user" and is_system_injected(text):
         return None
 
     # Clean metadata from user messages
