@@ -39,7 +39,7 @@ from notion_upload import (
 
 # ── Config ──────────────────────────────────────────────
 
-STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/develop/state")
+STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/architect/state")
 MAX_REVISIONS = 2
 
 PHASE_NAMES = {
@@ -208,6 +208,13 @@ WORK_PROMPTS = {
 {rev}
 {human}
 
+## ⚠️ 중요 제약사항
+- 페이지는 **홈(/) + 라이브 채팅(/live) 단 2개만** 존재
+- 블로그, 아카이브, 어드민 페이지는 **이번 스코프에서 제외**
+- 방송 ON/OFF 없음 — 최근 메시지 타임스탬프 기반 활성 상태 표시
+- Firestore `chat_logs` 컬렉션의 실시간 구독(onSnapshot)이 핵심
+- 모바일 퍼스트 UI
+
 ## 출력: 산출물 & 기술 스택 정의서
 
 ### 1. 프로젝트 산출물 목록
@@ -243,6 +250,11 @@ WORK_PROMPTS = {
 {tech}
 {rev}
 {human}
+
+## ⚠️ 중요 제약사항
+- 페이지는 홈(/) + 라이브(/live) 2개만
+- 블로그, 아카이브, 어드민 제외
+- Firestore `chat_logs` onSnapshot 실시간 구독이 핵심 데이터 흐름
 
 ## 출력: 아키텍처 설계서
 
@@ -352,42 +364,106 @@ Mermaid 문법 정확하게. 한국어 주석.""",
 {rev}
 {human}
 
+## ⚠️ 중요 제약사항
+- **블로그/아카이브 페이지 없음** — 오로지 라이브스트림만
+- **어드민 페이지 없음** — 별도 URL로 나중에 추가
+- **상단 탭/네비게이션 없음** — 단 2개 페이지만 존재
+- **방송 ON/OFF 없음** — "3분 전 업데이트" 같은 자연스러운 활성 상태 표시
+- **모바일 퍼스트** — 대부분 모바일에서 시청
+
+## 데이터 소스: Firestore chat_logs
+logger.py가 1초 폴링으로 Firestore `chat_logs` 컬렉션에 저장:
+```
+{{
+  "role": "user" | "assistant",
+  "content": "메시지 텍스트 (마크다운 포함)",
+  "timestamp": "2026-02-15T12:34:56.789Z",
+  "model": "claude-opus-4-6-thinking",
+  "agent": "main",
+  "sessionId": "abc123"
+}}
+```
+Firestore `onSnapshot`으로 실시간 구독 가능.
+
 ## 출력: 화면 & 네비게이션 설계서
 
-### 1. 페이지 목록
-각 페이지/뷰의:
-| 페이지 | URL 경로 | 설명 | 주요 컴포넌트 |
+### 1. 페이지 목록 (단 2개)
+| 페이지 | URL 경로 | 설명 |
+|---|---|---|
+| **홈 (히어로 뷰)** | `/` | 최신 대화 1쌍만 보여주는 미니멀 뷰 |
+| **라이브 채팅** | `/live` | 텔레그램 스타일 전체 채팅 뷰 |
 
-### 2. 페이지별 상세 (기능 명세)
-각 페이지에 대해:
-- **레이아웃**: 어떤 요소가 어디에 배치되는지
-- **UI 요소 목록**: 모든 버튼, 입력 필드, 표시 영역을 빠짐없이 나열
-- **인터랙션**: 각 버튼/액션의 동작 설명
-- **상태**: 페이지가 표시하는 데이터, 로딩/에러 상태
+### 2. 홈 — 히어로 뷰 (`/`)
+대표님(user)과 가재(assistant)의 **최신 메시지 1쌍만** 크게 보여주는 화면.
 
-### 3. 화면 ↔ ViewModel 매핑 테이블 ⭐
-**각 페이지별로** UI 요소와 ViewModel 메서드를 1:1 매핑하라.
-빠지는 것이 있으면 안 된다.
+- **레이아웃**: 전체 화면(100vh) 중앙 정렬, 다크 배경
+- **UI 요소**:
+  - 상단: 활성 상태 표시 ("🟢 개발중 · 2분 전" 또는 "⚪ 마지막 대화 3시간 전")
+    - 활성 기준: 최근 30분 내 메시지 있으면 "개발중", 없으면 비활성
+  - 중앙: 말풍선 2개 (user 1개 + assistant 1개)
+    - 각 말풍선 **최대 3줄**, 넘으면 말줄임(`...`)
+    - 새 메시지 오면 **페이드인/아웃으로 부드럽게 교체**
+    - assistant 말풍선은 마크다운이므로 코드블록 등은 간략히 표시
+  - 하단: "자세히 보기 →" 버튼 → `/live`로 이동
+  - 하단 고정: ❤️, 🤣 리액션 버튼
 
-| 페이지 | UI 요소 (버튼/영역) | 사용자 액션 | ViewModel 메서드 | 설명 |
+- **실시간 동작**:
+  - Firestore `onSnapshot`으로 `chat_logs` 구독
+  - 새 메시지 감지 → 페이드아웃(이전) → 페이드인(새 메시지)
+  - 활성 상태도 실시간 업데이트 ("방금 전" → "1분 전" → ...)
+
+### 3. 라이브 채팅 — 텔레그램 스타일 (`/live`)
+전체 대화를 채팅 앱처럼 보여주는 화면.
+
+- **레이아웃**: 텔레그램/카카오톡 스타일, 전체 화면
+- **UI 요소**:
+  - 상단 헤더(Fixed): "← 뒤로" + 활성 상태 ("🟢 개발중")
+  - 채팅 영역(Scrollable): 시간순 말풍선 목록
+    - user 말풍선: 우측 정렬
+    - assistant 말풍선: 좌측 정렬, 🦞 아바타
+    - 각 말풍선 **최대 2~3줄**, 넘으면 "더보기 >" 클릭 가능
+    - "더보기" 클릭 시:
+      - **모바일**: 하단 시트(bottom sheet)로 마크다운 풀뷰 (스크롤 가능)
+      - **데스크톱**: 우측 패널에 마크다운 풀뷰 (스크롤 가능)
+    - 마크다운 렌더링: 코드 하이라이팅, 테이블, 리스트 등
+  - 하단(Fixed): ❤️, 🤣 리액션 버튼
+  - 자동 스크롤: 새 메시지 시 하단으로 (사용자가 위로 스크롤 중이면 일시정지)
+
+- **실시간 동작**:
+  - Firestore `onSnapshot` 실시간 구독
+  - 새 메시지 → 하단에 추가, 부드러운 애니메이션
+  - 타이핑 중 표시는 별도 구현 불필요 (logger.py가 완성된 메시지만 올림)
+
+### 4. 화면 ↔ ViewModel 매핑 테이블 ⭐
+
+| 페이지 | UI 요소 | 사용자 액션 | ViewModel 메서드 | 설명 |
 |---|---|---|---|---|
-| LivePage | 메시지 영역 | 페이지 진입 | `LiveViewModel.subscribeMessages()` | 실시간 구독 시작 |
-| LivePage | ❤️ 좋아요 버튼 | 클릭 | `LiveViewModel.sendReaction("heart")` | 리액션 전송 |
-| LivePage | 🤣 ㅋㅋ 버튼 | 클릭 | `LiveViewModel.sendReaction("lol")` | 리액션 전송 |
-| LivePage | 📤 공유 버튼 | 클릭 | `LiveViewModel.shareSnapshot()` | 스냅샷 생성+공유 |
-| ArchivePage | 세션 목록 | 페이지 진입 | `ArchiveViewModel.loadSessions()` | 과거 세션 조회 |
-| ... | ... | ... | ... | ... |
+| 홈 | 활성 상태 | 자동 | `HomeViewModel.getActivityStatus()` | 최근 메시지 타임스탬프 기반 |
+| 홈 | 말풍선 2개 | 자동 갱신 | `HomeViewModel.subscribeLatestPair()` | onSnapshot, 최신 user+assistant 1쌍 |
+| 홈 | 말풍선 교체 | 새 메시지 수신 | `HomeViewModel.onNewMessage()` | 페이드인/아웃 트리거 |
+| 홈 | 자세히 보기 | 클릭 | `HomeViewModel.navigateToLive()` | /live로 라우팅 |
+| 홈 | ❤️ 버튼 | 클릭 | `HomeViewModel.sendReaction('heart')` | Firestore reactions 컬렉션 |
+| 홈 | 🤣 버튼 | 클릭 | `HomeViewModel.sendReaction('lol')` | Firestore reactions 컬렉션 |
+| 라이브 | 채팅 목록 | 자동 갱신 | `LiveViewModel.subscribeMessages()` | onSnapshot, 시간순 |
+| 라이브 | 말풍선 | 더보기 클릭 | `LiveViewModel.expandMessage(id)` | 마크다운 풀뷰 열기 |
+| 라이브 | 마크다운 뷰 | 닫기 | `LiveViewModel.collapseMessage()` | 패널/시트 닫기 |
+| 라이브 | ← 뒤로 | 클릭 | `LiveViewModel.navigateBack()` | /로 복귀 |
+| 라이브 | ❤️ 버튼 | 클릭 | `LiveViewModel.sendReaction('heart')` | 리액션 전송 |
+| 라이브 | 🤣 버튼 | 클릭 | `LiveViewModel.sendReaction('lol')` | 리액션 전송 |
+| 라이브 | 자동 스크롤 | 새 메시지 | `LiveViewModel.autoScroll()` | 사용자 스크롤 상태 감지 |
 
-모든 페이지의 모든 버튼/영역을 빠짐없이 매핑할 것.
+### 5. 화면 전환 규칙
+- `/` → `/live`: "자세히 보기" 버튼 클릭
+- `/live` → `/`: "← 뒤로" 버튼 또는 브라우저 뒤로가기
+- 딥링크: `/live` 직접 접근 가능 (홈 안 거쳐도 됨)
 
-### 4. 화면 전환 규칙
-- 어떤 액션이 어떤 페이지로 이동시키는지
-- 뒤로가기/브라우저 히스토리 동작
-- 딥링크 지원 여부
-
-### 5. 반응형 동작
-- 모바일/태블릿/데스크톱 차이점
-- 숨김/표시 요소""",
+### 6. 반응형 동작
+- **모바일 (< 768px)**: 
+  - 홈: 말풍선이 화면 80% 너비
+  - 라이브: "더보기" → 하단 시트 (bottom sheet)
+- **데스크톱 (≥ 768px)**:
+  - 홈: 말풍선이 max 600px, 중앙 정렬
+  - 라이브: "더보기" → 우측 패널 (채팅:마크다운 = 4:6 비율)""",
 
     # Phase 5: 다이어그램 (DIAGRAM_PHASES)
     5: """너는 UX Engineer다.
@@ -396,23 +472,28 @@ Mermaid 문법 정확하게. 한국어 주석.""",
 {prev}
 {rev}
 
+## ⚠️ 페이지는 홈(/) + 라이브(/live) 2개만. 블로그/어드민 없음.
+
 ## 출력: 화면 네비게이션 플로우차트
 
 사용자가 각 페이지에서 할 수 있는 모든 액션과 그에 따른 화면 전환을 flowchart로 그려라.
 
-- 각 페이지를 노드로
-- 버튼/액션을 엣지 레이블로
-- 조건 분기(로그인 여부, 에러 등)는 diamond로
+- 홈(`/`): 히어로 뷰 — 말풍선 2개, 페이드인/아웃, 자세히보기
+- 라이브(`/live`): 텔레그램 스타일 채팅 — 더보기 클릭 시 마크다운 풀뷰
 
 ```mermaid
 flowchart TD
-    A[메인 페이지] -->|라이브 클릭| B[라이브 뷰]
-    B -->|❤️ 클릭| B
-    B -->|ㅋㅋ 클릭| B
-    B -->|공유 클릭| C{{공유 모달}}
-    C -->|트위터| D[외부 이동]
-    C -->|취소| B
-    B -->|세션 종료| E[아카이브 뷰]
+    A[홈 /] -->|자세히 보기 클릭| B[라이브 /live]
+    A -->|새 메시지 수신| A_fade[페이드인/아웃 교체]
+    A_fade --> A
+    A -->|❤️ 클릭| A_react[리액션 전송]
+    A -->|🤣 클릭| A_react
+    B -->|← 뒤로| A
+    B -->|더보기 클릭| C{{마크다운 풀뷰}}
+    C -->|닫기| B
+    B -->|❤️ 클릭| B_react[리액션 전송]
+    B -->|새 메시지| B_scroll[자동 스크롤]
+    B_scroll --> B
     ...
 ```
 
@@ -429,46 +510,65 @@ Mermaid 문법 정확. 한국어.""",
 {prev}
 {rev}
 
+## ⚠️ 페이지는 홈(/) + 라이브(/live) 2개만. 어드민/블로그 없음.
+
+## Firestore 데이터 구조 (chat_logs)
+```
+{{
+  "role": "user" | "assistant",
+  "content": "마크다운 텍스트",
+  "timestamp": "ISO-8601",
+  "model": "...",
+  "agent": "main",
+  "sessionId": "..."
+}}
+```
+
 ## 출력: 요구사항별 시퀀스 다이어그램
 
-P0 기능 각각에 대해 시퀀스 다이어그램을 그려라.
-액터: 사용자, View(Page), ViewModel, UseCase/Repository, Firestore, (외부 서비스)
+핵심 기능 각각에 대해 시퀀스 다이어그램을 그려라.
+액터: 사용자, View(Page), ViewModel, UseCase/Repository, Firestore
 
 **Phase 4의 화면↔ViewModel 매핑 테이블과 일치해야 한다.**
-매핑 테이블에 있는 모든 ViewModel 메서드가 시퀀스 다이어그램에 등장해야 한다.
+매핑 테이블에 있는 모든 ViewModel 메서드가 시퀀스에 등장해야 한다.
 
-### 시퀀스 1: 실시간 대화 스트림 구독
+### 시퀀스 1: 홈 — 최신 메시지 쌍 실시간 구독
 ```mermaid
 sequenceDiagram
     actor User
-    participant LP as LivePage
-    participant LVM as LiveViewModel
+    participant HP as 홈 페이지
+    participant HVM as HomeViewModel
     participant Repo as ChatRepository
     participant FS as Firestore
-    User->>LP: 페이지 접속
-    LP->>LVM: subscribeMessages()
-    LVM->>Repo: observeMessages()
-    Repo->>FS: onSnapshot(chat_logs)
+    User->>HP: 페이지 접속
+    HP->>HVM: subscribeLatestPair()
+    HVM->>Repo: observeLatest()
+    Repo->>FS: onSnapshot(chat_logs, orderBy timestamp desc, limit 2)
     FS-->>Repo: 실시간 데이터
-    Repo-->>LVM: Stream<List<ChatMessage>>
-    LVM-->>LP: UI 업데이트
-    LP->>LP: 타이핑 애니메이션
-    LP-->>User: 텍스트 표시
+    Repo-->>HVM: latestPair
+    HVM->>HVM: getActivityStatus()
+    HVM-->>HP: UI 업데이트 (페이드인/아웃)
 ```
 
-### 시퀀스 2: 리액션 전송
+### 시퀀스 2: 라이브 — 전체 채팅 스트림 구독
 ```mermaid
 sequenceDiagram
     ...
 ```
 
-### 시퀀스 3: 아카이브 변환
+### 시퀀스 3: 말풍선 더보기 → 마크다운 풀뷰
 ```mermaid
 sequenceDiagram
     ...
 ```
 
-(기획서의 P0 기능 수만큼 시퀀스 다이어그램 작성)
+### 시퀀스 4: 리액션 전송
+```mermaid
+sequenceDiagram
+    ...
+```
+
+(매핑 테이블의 모든 ViewModel 메서드가 시퀀스에 등장해야 함)
 Mermaid 문법 정확. 한국어.""",
 
     7: """너는 Frontend Architect이자 UI/UX Designer다. 디자인 시스템 전문가.
