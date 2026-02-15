@@ -162,6 +162,39 @@ def _prev(state: DocState) -> str:
     return "\n\n".join(parts)
 
 
+def _search_design_refs(state: DocState) -> str:
+    """Phase 7용: 웹 검색으로 디자인 레퍼런스 수집"""
+    import urllib.request, urllib.parse
+
+    queries = [
+        "2025 dark theme design system premium developer tool UI",
+        "terminal aesthetic web design glassmorphism dark mode",
+        "best dark UI design inspiration dribbble behance 2025",
+        "coding live stream web app UI design reference",
+    ]
+
+    results = []
+    for q in queries:
+        try:
+            cmd = ["openclaw", "agent", "--agent", "scout", "--message",
+                   f"웹 검색을 해서 '{q}' 관련 디자인 레퍼런스를 3개 찾아줘. 각각 URL, 사이트 이름, 핵심 디자인 특징을 정리해.",
+                   "--json", "--timeout", "60"]
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+            if r.returncode == 0:
+                data = json.loads(r.stdout)
+                reply = data.get("result", {})
+                if isinstance(reply, dict):
+                    payloads = reply.get("payloads", [])
+                    if payloads:
+                        results.append(payloads[0].get("text", "")[:800])
+        except Exception:
+            pass
+
+    if results:
+        return "\n\n".join(results)
+    return "(웹 검색 결과 없음 — 자체 판단으로 최신 트렌드 반영)"
+
+
 # ── Work Prompts ────────────────────────────────────────
 
 WORK_PROMPTS = {
@@ -438,7 +471,8 @@ sequenceDiagram
 (기획서의 P0 기능 수만큼 시퀀스 다이어그램 작성)
 Mermaid 문법 정확. 한국어.""",
 
-    7: """너는 Frontend Architect다. 디자인 시스템 전문가.
+    7: """너는 Frontend Architect이자 UI/UX Designer다. 디자인 시스템 전문가.
+최신 트렌드를 반영한 **프리미엄급** 디자인 시스템을 설계하라.
 
 ## 기획 문서 요약
 {plan_short}
@@ -451,39 +485,80 @@ Mermaid 문법 정확. 한국어.""",
 {rev}
 {human}
 
-## 출력: 디자인 시스템 분석서
+## 디자인 레퍼런스 (웹 리서치 결과)
+{design_refs}
 
-### 1. 기존 디자인 시스템 확인
-- 프로젝트에 이미 디자인 시스템이 있는가? (Tailwind config, 컴포넌트 라이브러리 등)
-- 있다면: 현재 구조와 커버리지 분석
-- 없다면: 새로 구축해야 할 범위
+## 출력: 디자인 시스템 설계서
 
-### 2. 디자인 토큰
-| 토큰 | 값 | 용도 |
-|---|---|---|
-| color-bg-primary | #0d1117 | 터미널 배경 |
-| color-text-primary | #c9d1d9 | 기본 텍스트 |
-| ... | ... | ... |
+### 1. 디자인 컨셉 & 무드
+- **비주얼 컨셉**: (예: "터미널 감성 + 글래스모피즘", "네온 사이버펑크" 등)
+- **레퍼런스 사이트**: 참고한 디자인 사이트 3~5개 (URL 포함)
+- **핵심 키워드**: 프리미엄, 개발자 감성, 미니멀 등
 
-- 컬러 팔레트 (다크 테마 / 터미널 감성)
-- 타이포그래피 (모노스페이스 폰트)
-- 스페이싱 스케일
-- 브레이크포인트
+### 2. 컬러 시스템
+다크 테마 기반. **고급스러운** 컬러 팔레트:
 
-### 3. 공통 컴포넌트
-이 프로젝트에 필요한 재사용 컴포넌트:
-| 컴포넌트 | 역할 | Props | 상태 |
-- 새로 만들어야 하는지, 기존 것을 확장하는지
+| 토큰 | 값 (HEX) | 용도 | 참고 |
+|---|---|---|---|
+| --color-bg-primary | #0a0e17 | 메인 배경 | GitHub Dark 보다 깊은 톤 |
+| --color-bg-secondary | #111827 | 카드/패널 배경 | |
+| --color-bg-elevated | #1a2332 | 떠있는 요소 | |
+| --color-accent-primary | #6366f1 | 주요 액션 | Indigo 계열 |
+| --color-accent-glow | #818cf8 | 호버/글로우 | |
+| --color-text-primary | #e2e8f0 | 본문 텍스트 | |
+| --color-text-secondary | #94a3b8 | 보조 텍스트 | |
+| --color-text-muted | #64748b | 비활성 | |
+| --color-success | #34d399 | 성공/온라인 | |
+| --color-error | #f87171 | 에러 | |
+| --color-border | #1e293b | 테두리 | |
 
-### 4. 확장/업데이트 필요 여부
-- 기존 시스템과 충돌하는 부분
-- 추가해야 할 토큰/컴포넌트
-- 마이그레이션 필요 여부
+시맨틱 컬러 + 상태 컬러 포함. 최소 15개 이상.
 
-### 5. 접근성 (a11y)
-- 키보드 네비게이션
+### 3. 타이포그래피
+| 용도 | 폰트 | 사이즈 | Weight | Line Height |
+|---|---|---|---|---|
+| 코드/로그 | JetBrains Mono, Fira Code | 14px | 400 | 1.6 |
+| 제목 | Inter, Pretendard | 24-32px | 700 | 1.2 |
+| 본문 | Inter, Pretendard | 16px | 400 | 1.5 |
+| 캡션 | Inter | 12px | 500 | 1.4 |
+
+한글 폰트(Pretendard) + 영문 폰트(Inter) 조합. 코드는 모노스페이스 필수.
+
+### 4. 스페이싱 & 레이아웃
+- 8px 그리드 시스템
+- 스페이싱 스케일: 4, 8, 12, 16, 24, 32, 48, 64
+- 컨테이너 max-width
+- 반응형 breakpoints (sm, md, lg, xl)
+
+### 5. 이펙트 & 모션
+- **그림자**: 레이어별 shadow 정의 (sm, md, lg, glow)
+- **글래스모피즘**: backdrop-blur + 반투명 배경 (사용 조건)
+- **글로우 이펙트**: accent 컬러 기반 box-shadow glow (버튼 호버 등)
+- **애니메이션**: 전환 duration, easing, 타이핑 효과 속도
+- **마이크로 인터랙션**: 버튼 클릭, 리액션 폭발, 스크롤 등
+
+### 6. 공통 컴포넌트 명세
+| 컴포넌트 | 역할 | Variants | Props |
+|---|---|---|---|
+| Button | 액션 | primary, ghost, icon | size, loading, glow |
+| Card | 컨테이너 | default, glass, elevated | padding, border |
+| Badge | 상태 표시 | online, offline, live | pulse, color |
+| MessageBubble | 채팅 메시지 | user, ai, system | typing, avatar |
+| ReactionButton | 리액션 | heart, lol | count, burst |
+| ... | ... | ... | ... |
+
+각 컴포넌트의 상태(default, hover, active, disabled, loading) 정의.
+
+### 7. 아이콘 & 에셋
+- 아이콘 라이브러리 선택 (Lucide, Phosphor 등)
+- 커스텀 아이콘 필요 여부
+- 파비콘, OG 이미지 가이드
+
+### 8. 접근성 (a11y)
+- 컬러 대비 비율 (WCAG AA 이상)
+- 키보드 네비게이션 패턴
 - 스크린리더 지원
-- 컬러 대비""",
+- focus 스타일""",
 }
 
 CRITIQUE_CRITERIA = {
@@ -508,9 +583,11 @@ CRITIQUE_CRITERIA = {
         ("ViewModel 매핑 일치", "Phase 4 매핑 테이블의 모든 메서드가 시퀀스에 등장하는가?"),
         ("데이터 흐름 정확성", "View→ViewModel→UseCase→Repository→DB 흐름이 Clean Architecture를 따르는가?"),
         ("Mermaid 문법", "렌더링 가능?")],
-    7: [("토큰 완전성", "컬러/타이포/스페이싱 모두 정의?"),
-        ("컴포넌트 분석", "재사용/신규 구분 명확?"),
-        ("확장 판단", "업데이트 여부가 근거 있게 판단?")],
+    7: [("컬러 시스템 완성도", "시맨틱 컬러 15개 이상? 다크테마 고급스러운가?"),
+        ("타이포그래피", "한글+영문+코드 폰트 조합이 적절한가?"),
+        ("컴포넌트 명세", "Phase 4 UI 요소와 매핑되는 컴포넌트가 모두 있는가?"),
+        ("이펙트 & 모션", "글로우/글래스모피즘/애니메이션 정의가 구체적인가?"),
+        ("프리미엄 퀄리티", "실제로 고급스러운 디자인인가? 촌스럽지 않은가?")],
 }
 
 
@@ -519,6 +596,12 @@ CRITIQUE_CRITERIA = {
 def make_work_prompt(state: DocState) -> str:
     p = state["current_phase"]
     plan = state["plan_content"]
+
+    # Phase 7: 디자인 레퍼런스 웹 검색
+    design_refs = ""
+    if p == 7:
+        design_refs = _search_design_refs(state)
+
     return WORK_PROMPTS[p].format(
         plan=plan,
         plan_short=plan[:1500],
@@ -526,6 +609,7 @@ def make_work_prompt(state: DocState) -> str:
         tech=state["tech_context"],
         rev=_rev_ctx(state),
         human=_human_ctx(state),
+        design_refs=design_refs,
     )
 
 
