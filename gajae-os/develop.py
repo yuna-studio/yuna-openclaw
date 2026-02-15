@@ -247,6 +247,40 @@ def _get_all_source_code() -> str:
     return "\n".join(parts) if parts else "(no source files)"
 
 
+def _extract_design_spec(doc: str) -> dict:
+    """설계서에서 디자인시스템, 아키텍처, 기능/화면 스펙을 Phase 기준으로 추출"""
+    spec = {"design_system": "", "architecture": "", "features": ""}
+
+    # Phase 위치 찾기
+    phase_positions = [(m.start(), m.group()) for m in
+                       re.finditer(r'^#\s+[🔧📊]?\s*Phase\s+(\d+)', doc, re.MULTILINE)]
+
+    for i, (pos, header) in enumerate(phase_positions):
+        phase_num = int(re.search(r'Phase\s+(\d+)', header).group(1))
+        # 다음 Phase까지 또는 문서 끝
+        end = phase_positions[i + 1][0] if i + 1 < len(phase_positions) else len(doc)
+        section = doc[pos:end]
+
+        if phase_num == 7:  # 디자인 시스템
+            spec['design_system'] = section[:3000]
+        elif phase_num in (1, 2, 3):  # 산출물 + 아키텍처
+            spec['architecture'] += section[:2000] + "\n\n"
+        elif phase_num in (4, 5, 6):  # 화면 + 플로우 + 시퀀스
+            spec['features'] += section[:2000] + "\n\n"
+
+    # 아키텍처/기능 길이 제한
+    for k in ('architecture', 'features'):
+        if len(spec[k]) > 5000:
+            spec[k] = spec[k][:5000] + "\n...(이하 생략)"
+
+    # fallback
+    for k in spec:
+        if not spec[k]:
+            spec[k] = "(해당 섹션을 설계서에서 찾지 못함 — 설계서 전문에서 직접 확인할 것)"
+
+    return spec
+
+
 # ── Step Prompts ────────────────────────────────────────
 
 def make_step_prompt(state: DevState) -> str:
@@ -291,13 +325,20 @@ def make_step_prompt(state: DevState) -> str:
 
         # ── 구현 ──
         5: f"""너는 Senior Full-Stack Developer다.
-구현 계획에 따라 코드를 작성하라.
+설계 문서에 **100% 충실하게** 코드를 작성하라.
+설계서와 다른 해석, 임의 변경, 스타일 임의 수정은 금지한다.
+
+## ⚠️ 최우선 규칙: 설계서 = 절대 기준
+1. **디자인시스템**: 설계서에 명시된 컬러코드(hex), 폰트, 간격을 **정확히** 사용하라. 임의 컬러 금지.
+2. **아키텍처**: 설계서에 명시된 폴더 구조, 라우트, 패턴을 **그대로** 따르라.
+3. **컴포넌트**: 설계서에 명시된 모든 컴포넌트를 **빠짐없이** 구현하라.
+4. **기능**: 설계서에 명시된 모든 기능을 구현하라. 설계서에 없는 기능은 추가하지 마라.
 
 ## 이전 리뷰 피드백 (반드시 반영!)
 {prev}
 
-## 설계 문서
-{doc[:6000]}
+## 설계 문서 (이 문서가 유일한 진실!)
+{doc[:8000]}
 
 ## 프로젝트 구조
 ```
@@ -307,60 +348,87 @@ def make_step_prompt(state: DevState) -> str:
 ## 기술 환경
 {state['tech_context']}
 
+## 필수 산출물 (이것 없으면 리뷰 통과 불가)
+1. package.json (dependencies 포함)
+2. next.config.ts 또는 next.config.js
+3. .env.example (필요한 환경변수 목록)
+4. tailwind.config.ts (설계서 디자인시스템 컬러 **정확히** 반영)
+5. src/app/layout.tsx (공통 레이아웃)
+6. 설계서에 명시된 **모든 페이지와 컴포넌트**
+7. ErrorBoundary 또는 error.tsx
+8. 각 async 호출에 에러 핸들링
+
 ## 지시
-1. 필요한 파일을 생성/수정하라.
-2. 각 파일의 전체 코드를 작성하라.
-3. 패키지 설치가 필요하면 명령어를 포함하라.
+1. 설계서의 디자인시스템 섹션에서 컬러코드를 추출하여 tailwind.config에 정확히 반영하라.
+2. 설계서의 화면설계 섹션에서 모든 컴포넌트를 추출하여 빠짐없이 구현하라.
+3. 설계서의 아키텍처 섹션에서 폴더 구조와 패턴을 그대로 따르라.
+4. 각 파일의 전체 코드를 작성하라 — 생략(...)이나 TODO 금지.
 
 ## 출력 형식
 각 파일에 대해:
+
+### 파일: `package.json`
+```json
+// 전체 내용
+```
 
 ### 파일: `src/app/page.tsx`
 ```tsx
 // 전체 코드
 ```
 
-### 파일: `src/components/ChatBubble.tsx`
-```tsx
-// 전체 코드
-```
-
 ### 실행 명령어 (필요시)
 ```bash
-npm install firebase
+npm install ...
 ```""",
 
         # ── 리팩토링 ──
         9: f"""너는 Senior Developer다. 코드를 리팩토링하라.
+⚠️ 설계서의 디자인시스템, 아키텍처를 절대 변경하지 마라.
 
 ## 이전 검토 결과
 {prev}
 
-## 현재 변경된 파일
-{changed}
+## 현재 소스 코드
+{_get_all_source_code()}
 
 ## 지시
 1. 100줄 이상인 함수를 분리하라
 2. 500줄 이상인 파일을 모듈로 나눠라
 3. 반복되는 코드를 유틸로 추출하라
+4. 하드코딩된 문자열을 상수로 추출하라
 
-각 변경에 대해 파일 경로 + 변경 내용을 출력하라.""",
+각 변경에 대해 파일 경로 + 전체 코드를 출력하라.
+
+## 출력 형식
+### 파일: `경로/파일명`
+```tsx
+// 전체 코드
+```""",
 
         13: f"""너는 Senior Developer다. 불필요한 코드를 정리하라.
+⚠️ 설계서의 디자인시스템, 아키텍처를 절대 변경하지 마라.
 
 ## 이전 검토 결과
 {prev}
 
-## 현재 변경된 파일
-{changed}
+## 현재 소스 코드
+{_get_all_source_code()}
 
 ## 지시
 1. 사용되지 않는 import 제거
 2. 주석 처리된 코드 제거
 3. console.log / debug 코드 제거
 4. 사용되지 않는 변수/함수 제거
+5. TODO/FIXME 주석은 구현으로 교체
 
-각 변경에 대해 파일 경로 + 변경 내용을 출력하라.""",
+각 변경에 대해 파일 경로 + 전체 코드를 출력하라.
+
+## 출력 형식
+### 파일: `경로/파일명`
+```tsx
+// 전체 코드
+```""",
 
         18: f"""너는 DevOps Engineer다. 변경사항을 커밋하고 PR을 작성하라.
 
@@ -472,8 +540,12 @@ def _make_review_prompt(state: DevState) -> str:
     title, question, criteria = review_focus.get(step, ("검토", "문제가 없는가?", ["품질"]))
     criteria_text = "\n".join(f"{i+1}. **{c}**" for i, c in enumerate(criteria))
 
+    # 설계서에서 핵심 스펙 추출
+    spec = _extract_design_spec(doc)
+
     return f"""너는 Staff Engineer급 시니어 코드 리뷰어다. 실무 10년+, FAANG 출신.
 너의 역할은 **프로덕션에 나갈 코드의 품질 게이트키퍼**다.
+**설계서가 유일한 진실(Single Source of Truth)이다. 설계서와 다르면 아웃.**
 
 ## ⚠️ 채점 철학 (필독!)
 - **10점은 존재하지 않는다.** 완벽한 코드는 없다. 최대 9점.
@@ -482,23 +554,49 @@ def _make_review_prompt(state: DevState) -> str:
 - **4~5점 = 미흡.** 주요 기능 누락이나 구조적 문제 있음.
 - **1~3점 = 심각.** 빌드 불가, 핵심 기능 미구현, 보안 취약점.
 
-## 🚫 자동 감점 규칙 (해당 시 무조건 감점!)
-1. **설계서 컬러가 코드와 불일치** → 해당 항목 -3점 (예: 설계서는 크림색인데 코드는 다크 테마)
-2. **package.json, next.config.js 등 빌드 필수 파일 누락** → 배포 준비 항목 최대 3점
-3. **ErrorBoundary / 에러 핸들링 없음** → 에러 처리 항목 최대 4점
-4. **하드코딩된 문자열 (예: "AI (Claude)")** → 유지보수성 -2점
-5. **설계서에 명시된 컴포넌트가 누락** → 기능 완전성 -2점 per 컴포넌트
-6. **any 타입 3개 이상 사용** → 타입 안전성 최대 4점
-7. **환경변수 .env.example 없음** → 환경 설정 -2점
-8. **모바일 대응 없음 (미디어쿼리/반응형 없음)** → 모바일 UX 최대 4점
+## 🔴 설계서 준수 = 최우선 (이것부터 확인!)
+
+아래 설계서 스펙을 코드와 **한 줄씩 대조**하라. 하나라도 불일치하면 REVISE다.
+
+### 디자인시스템 스펙 (설계서 원문)
+{spec['design_system']}
+
+### 아키텍처/기술 스펙 (설계서 원문)
+{spec['architecture']}
+
+### 기능/화면 스펙 (설계서 원문)
+{spec['features']}
+
+## 🚫 자동 감점 규칙 (해당 시 무조건 감점, 예외 없음!)
+
+### A. 설계서 불일치 (치명적)
+1. **디자인시스템 컬러 불일치** → 전체 점수 상한 5점
+   - 설계서에 정의된 컬러코드(hex)가 tailwind.config나 CSS에 정확히 반영되어야 함
+   - 예: 설계서 "크림 #FAF6F0"인데 코드가 "#030712"이면 즉시 5점 이하
+2. **설계서 폰트/타이포 불일치** → -2점
+3. **설계서 컴포넌트 누락** → -2점/개 (설계서에 있는 컴포넌트가 코드에 없으면)
+4. **설계서 페이지/라우트 누락** → -3점/개
+5. **설계서 아키텍처 위반** → 전체 점수 상한 5점
+   - 예: 설계서는 App Router인데 Pages Router 사용, ViewModel 패턴 미준수 등
+
+### B. 코드 품질 (중요)
+6. **package.json 또는 next.config 누락** → 전체 점수 상한 4점 (빌드 불가)
+7. **ErrorBoundary / 에러 핸들링 없음** → 에러 처리 항목 최대 4점
+8. **하드코딩된 문자열** (예: "AI (Claude)", 고정 URL) → -2점
+9. **any 타입 3개 이상** → 타입 안전성 최대 4점
+10. **.env.example 없음** → -2점
+
+### C. UX (중요)
+11. **모바일 미대응** (반응형 CSS 없음) → 모바일 항목 최대 4점
+12. **로딩/에러 상태 없음** → UX 항목 -2점
 
 ## [Step {step}] {title}
 
 ## 핵심 질문
 {question}
 
-## 설계 문서 (원본 — 이 스펙과 코드를 1:1 대조하라!)
-{doc[:3000]}
+## 설계 문서 (전문 — 모든 섹션을 읽고 코드와 대조하라!)
+{doc[:8000]}
 
 ## 이전 단계 결과
 {prev}
@@ -511,36 +609,45 @@ def _make_review_prompt(state: DevState) -> str:
 ## 변경된 파일
 {changed}
 
-## 실제 소스 코드 (리뷰 대상 — 꼼꼼히 읽어라!)
+## 실제 소스 코드 (리뷰 대상 — 한 줄씩 읽어라!)
 {_get_all_source_code()}
 
 ## 평가 항목 (각 1~10점, 위 감점 규칙 적용!)
 {criteria_text}
 
-## 출력 형식 (반드시)
+## 출력 형식 (반드시 이 순서대로!)
 
-### 설계서 대조 체크리스트
-- [ ] 컬러 일치 여부: (설계서 컬러 vs 코드 컬러)
-- [ ] 컴포넌트 목록 일치: (설계서 컴포넌트 vs 실제 파일)
-- [ ] 필수 파일 존재: package.json, next.config, .env.example, README
-- [ ] 에러 핸들링: ErrorBoundary, try/catch, fallback UI
+### 1. 설계서 준수 체크 (가장 먼저!)
+| 설계서 항목 | 설계서 값 | 코드 값 | 일치? |
+|---|---|---|---|
+| 메인 컬러 | (설계서 hex) | (코드 hex) | ✅/❌ |
+| 배경색 | ... | ... | ... |
+| 폰트 | ... | ... | ... |
+| 페이지 라우트 | ... | ... | ... |
+| 컴포넌트 A | 설계서에 있음 | 파일 있음/없음 | ... |
+| 컴포넌트 B | ... | ... | ... |
+| 아키텍처 패턴 | ... | ... | ... |
 
-### 점수표
+### 2. 감점 적용
+해당되는 자동 감점 규칙 번호와 감점 내역을 나열하라.
+
+### 3. 점수표
 SCORE: [평균 점수, 소수점 1자리]
 
 | 항목 | 점수 | 감점 사유 |
 |---|---|---|
-| ... | X/10 | 구체적으로 어떤 코드의 몇 번째 줄이 문제인지 |
+| ... | X/10 | 구체적으로 어떤 파일의 어떤 부분이 문제인지 |
 
 VERDICT: [PASS/REVISE]
 
-ISSUES: (발견된 구체적 문제 — 파일명:줄번호 포함)
+ISSUES: (발견된 구체적 문제 — 파일명 포함)
 FIXES: (각 문제에 대한 구체적 수정 코드 제시)
 
 ## 판정 기준
 - 7점 이상: PASS
 - 7점 미만: REVISE (구체적 수정 지시 필수)
-- **감점 규칙에 해당하는 항목이 있으면 반드시 감점하라. 예외 없음.**"""
+- **설계서 불일치 항목이 1개라도 있으면 해당 카테고리 전체가 REVISE 대상이다.**
+- **감점 규칙에 해당하면 반드시 감점. 예외 없음. 인정도 없음.**"""
 
 
 # ── LangGraph Nodes ─────────────────────────────────────
