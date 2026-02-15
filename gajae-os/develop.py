@@ -117,8 +117,13 @@ def call_agent(agent_id: str, message: str, timeout: int = 300) -> str:
         if isinstance(reply, dict):
             payloads = reply.get("payloads", [])
             if payloads:
-                return payloads[0].get("text", "")
-        return str(reply)[:3000]
+                text = payloads[0].get("text", "")
+                if not text:
+                    print(f"  ⚠️ payloads[0].text is empty, keys: {list(payloads[0].keys())}")
+                return text
+            else:
+                print(f"  ⚠️ No payloads in result, keys: {list(reply.keys())}")
+        return str(reply)[:30000]
     except subprocess.TimeoutExpired:
         return "(timeout)"
     except json.JSONDecodeError:
@@ -558,6 +563,9 @@ def node_work(state: DevState) -> dict:
 
     # Exec 단계: 실제 코드 작성
     if step in EXEC_STEPS and step != 18:
+        # 디버그: 결과 저장
+        with open('/tmp/develop_step5_output.txt', 'w') as f:
+            f.write(result)
         _apply_code_changes(result)
 
     # Step 18: 커밋 + PR
@@ -570,9 +578,10 @@ def node_work(state: DevState) -> dict:
 
 def _apply_code_changes(result: str):
     """탐정가재 출력에서 코드 블록 추출 → 파일 생성"""
-    # "### 파일: `path`" + 코드블록 패턴 매칭
+    # "### 파일: `path`" + (설명 텍스트) + 코드블록 패턴 매칭
+    # 설명 줄이 끼어있을 수 있으므로 유연하게 매칭
     file_pattern = re.findall(
-        r'###\s*파일:\s*`([^`]+)`\s*\n```\w*\n(.*?)```',
+        r'###\s*파일:\s*`([^`]+)`[^\n]*\n(?:(?!```)[^\n]*\n)*```\w*\n(.*?)```',
         result, re.DOTALL
     )
     if not file_pattern:
@@ -587,7 +596,10 @@ def _apply_code_changes(result: str):
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         with open(full_path, 'w') as f:
             f.write(code)
-        print(f"  📄 {filepath}")
+        print(f"  📄 {filepath} ({len(code)}자)")
+
+    if not file_pattern:
+        print(f"  ⚠️ 파일 패턴 매칭 실패! 출력 시작: {result[:200]}")
 
     # bash 명령어 실행
     bash_blocks = re.findall(r'```bash\n(.*?)```', result, re.DOTALL)
