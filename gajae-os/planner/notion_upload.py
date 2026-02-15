@@ -25,18 +25,41 @@ def api(method, path, body=None):
     url = f"https://api.notion.com/v1/{path}"
     data = json.dumps(body).encode() if body else None
     req = urllib.request.Request(url, data=data, headers=HEADERS, method=method)
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode()
+        print(f"Notion API Error {e.code}: {error_body[:500]}")
+        raise
 
 
 def text(content):
-    """Split into chunks of 2000 chars (Notion rich_text limit per item)."""
+    """Split into chunks respecting Notion's 2000-char limit (UTF-16 counted)."""
     if not content:
         return [{"text": {"content": ""}}]
+    
+    # Notion counts length in UTF-16 code units, not Python chars.
+    # Characters outside BMP (emoji, some CJK) use 2 UTF-16 units.
+    MAX = 2000
     chunks = []
-    for i in range(0, len(content), 2000):
-        chunks.append({"text": {"content": content[i:i+2000]}})
-    return chunks
+    current = []
+    current_len = 0  # UTF-16 length
+    
+    for ch in content:
+        # UTF-16 length of this character
+        ch_len = len(ch.encode('utf-16-le')) // 2
+        if current_len + ch_len > MAX and current:
+            chunks.append({"text": {"content": "".join(current)}})
+            current = []
+            current_len = 0
+        current.append(ch)
+        current_len += ch_len
+    
+    if current:
+        chunks.append({"text": {"content": "".join(current)}})
+    
+    return chunks or [{"text": {"content": ""}}]
 
 
 def append_blocks(page_id, blocks):
