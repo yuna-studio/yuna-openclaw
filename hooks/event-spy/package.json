@@ -1,0 +1,9 @@
+{
+  "name": "event-spy",
+  "version": "0.1.0",
+  "description": "Logs all events for debugging",
+  "main": "handler.js",
+  "author": "Gajae",
+  "license": "MIT",
+  "type": "module"
+}

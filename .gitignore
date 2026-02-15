@@ -56,3 +56,10 @@ build/
 .firebase-service-account.json
 session_log_watcher.offsets.json
 __pycache__/
+
+# Temp/generated files
+audio.*
+audio_*
+response.json
+audit_followers.js
+check_inactive.*

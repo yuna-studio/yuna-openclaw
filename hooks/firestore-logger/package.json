@@ -1,0 +1,9 @@
+{
+  "name": "firestore-logger",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "type": "module",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
