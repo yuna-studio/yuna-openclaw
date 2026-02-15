@@ -47,6 +47,12 @@ class PlannerState(TypedDict):
     phase_scores: dict          # {"1": 8.3, ...}
     phase_revisions: dict       # {"1": 0, "2": 1, ...}
 
+    # Diagram (Phase 3 이후 생성)
+    diagrams: dict              # {"flowchart": "...", "sequence": "...", ...}
+    diagram_critique: str       # 판사 검증 결과
+    diagram_score: float        # 점수
+    diagram_revisions: int      # 수정 횟수
+
     status: str                 # running / completed / failed
     notion_url: str
 
@@ -324,21 +330,28 @@ def node_critique(state: PlannerState) -> dict:
     }
 
 
-def route_after_critique(state: PlannerState) -> Literal["revise", "next_phase", "finalize"]:
-    """판사 검증 후 분기"""
+def route_after_critique(state: PlannerState) -> Literal["revise", "next_phase", "finalize", "diagram"]:
+    """판사 검증 후 분기 — Phase 3 PASS 시 다이어그램 생성"""
     phase = state["current_phase"]
     score = state["phase_scores"].get(str(phase), 0)
     rev = state["phase_revisions"].get(str(phase), 0)
 
-    if score >= 7:
-        print(f"  ✅ PASS ({score}/10)")
-        return "finalize" if phase >= 5 else "next_phase"
-    elif rev >= MAX_REVISIONS_PER_PHASE:
-        print(f"  ⚠️ 최대 수정 도달, 강제 통과 ({score}/10)")
-        return "finalize" if phase >= 5 else "next_phase"
-    else:
+    passed = score >= 7 or rev >= MAX_REVISIONS_PER_PHASE
+
+    if not passed:
         print(f"  🔄 REVISE ({score}/10) — 수정 {rev + 1}/{MAX_REVISIONS_PER_PHASE}")
         return "revise"
+
+    if score >= 7:
+        print(f"  ✅ PASS ({score}/10)")
+    else:
+        print(f"  ⚠️ 최대 수정 도달, 강제 통과 ({score}/10)")
+
+    # Phase 3 PASS → 다이어그램 생성
+    if phase == 3:
+        return "diagram"
+
+    return "finalize" if phase >= 5 else "next_phase"
 
 
 def node_revise(state: PlannerState) -> dict:
@@ -354,6 +367,173 @@ def node_next_phase(state: PlannerState) -> dict:
     return {"current_phase": state["current_phase"] + 1}
 
 
+def node_diagram(state: PlannerState) -> dict:
+    """Phase 3 PASS 후: UX 다이어그램 생성 (Mermaid flowchart + sequence)"""
+    phase3 = state["phase_results"].get("3", "")
+    phase2 = state["phase_results"].get("2", "")
+    phase1 = state["phase_results"].get("1", "")
+    rev = state.get("diagram_revisions", 0)
+    prev_critique = state.get("diagram_critique", "")
+
+    revision_ctx = ""
+    if rev > 0 and prev_critique:
+        revision_ctx = f"""
+## ⚠️ 판사가재 피드백 ({rev}차 반려)
+{prev_critique}
+
+위 피드백을 반영하여 다이어그램을 수정하라. 같은 실수 반복 금지."""
+
+    suffix = f" (수정 {rev}차)" if rev > 0 else ""
+    print(f"\n📊 UX 다이어그램 생성{suffix} — 탐정가재 작업 중...")
+
+    prompt = f"""너는 UX Designer + System Architect다.
+
+아래 기획 결과를 기반으로 **Mermaid 다이어그램 2개**를 그려라.
+
+## 아이디어
+{state['idea']}
+
+## [1] Background & Opportunity (요약)
+{phase1[:800]}
+
+## [2] Hypothesis Setting
+{phase2[:800]}
+
+## [3] Solution & MVP Spec (전체)
+{phase3}
+{revision_ctx}
+
+## 출력 1: User Flow (Flowchart)
+사용자의 전체 여정을 flowchart로 그려라.
+- 진입점(SNS/검색) → 핵심 경험 → 전환/이탈 분기
+- 의사결정 지점은 diamond(조건)로 표현
+- 각 단계에서 핵심 감정/동기를 주석으로
+
+형식 (반드시 이대로):
+```mermaid
+flowchart TD
+    A[...] --> B{{...}}
+    ...
+```
+
+## 출력 2: Sequence Diagram
+주요 액터(사용자, Frontend, Firestore, AI) 간 데이터 흐름을 그려라.
+- 실시간 스트림 구독, 리액션 전송, 블로그 변환 등 핵심 시나리오
+
+형식 (반드시 이대로):
+```mermaid
+sequenceDiagram
+    actor User
+    ...
+```
+
+## 중요
+- Mermaid 문법 정확하게. syntax error 절대 금지.
+- 한국어 사용. 노드 텍스트는 한국어로.
+- 두 다이어그램을 위 형식으로 출력하라."""
+
+    result = call_agent("scout", prompt, timeout=300)
+
+    # Parse mermaid blocks
+    diagrams = {}
+    import re
+    mermaid_blocks = re.findall(r'```mermaid\n(.*?)```', result, re.DOTALL)
+    for block in mermaid_blocks:
+        block = block.strip()
+        if block.startswith("flowchart"):
+            diagrams["flowchart"] = block
+        elif block.startswith("sequenceDiagram"):
+            diagrams["sequence"] = block
+        elif block.startswith("graph"):
+            diagrams["flowchart"] = block
+
+    if not diagrams:
+        # fallback: 전체 결과 저장
+        diagrams["raw"] = result
+
+    print(f"  ✅ 다이어그램 {len(diagrams)}개 생성")
+    return {"diagrams": diagrams}
+
+
+def node_diagram_critique(state: PlannerState) -> dict:
+    """판사가재가 다이어그램 vs 기획 정합성 검증"""
+    print(f"⚖️  다이어그램 정합성 검증 — 판사가재...")
+
+    phase3 = state["phase_results"].get("3", "")
+    phase2 = state["phase_results"].get("2", "")
+    diagrams = state.get("diagrams", {})
+
+    diagram_text = ""
+    for name, content in diagrams.items():
+        diagram_text += f"\n### {name}\n```mermaid\n{content}\n```\n"
+
+    prompt = f"""너는 서울대 경영학과 창업 심사위원이다. UX/시스템 정합성 검증관.
+
+## 검증 과제
+아래 **다이어그램**이 **기획 문서와 일치하는지** 검증하라.
+
+## [2] Hypothesis Setting
+{phase2[:800]}
+
+## [3] Solution & MVP Spec
+{phase3}
+
+## 생성된 다이어그램
+{diagram_text}
+
+## 검증 항목 (각 1~10점)
+1. **User Flow 완전성** — P0 기능이 모두 플로우에 반영되었는가?
+2. **Sequence Diagram 정확성** — 데이터 흐름이 기술 제약(Firestore, CSR/SSG)과 일치하는가?
+3. **가설 연결** — 다이어그램이 가설(Hypothesis)의 핵심 시나리오를 시각화하는가?
+
+## 출력 형식 (반드시)
+SCORE: [평균 점수, 소수점 1자리]
+
+| 항목 | 점수 | 코멘트 |
+|---|---|---|
+| User Flow 완전성 | X/10 | ... |
+| Sequence Diagram 정확성 | X/10 | ... |
+| 가설 연결 | X/10 | ... |
+
+VERDICT: [PASS/REVISE/REJECT]
+
+FEEDBACK: (구체적 수정 지시. PASS면 칭찬 한줄)
+
+## 판정 기준
+- 7점 이상: PASS
+- 5~6점: REVISE (Mermaid syntax 에러도 REVISE)
+- 5점 미만: REJECT"""
+
+    result = call_agent("judge", prompt, timeout=180)
+    score = parse_score(result)
+
+    return {
+        "diagram_critique": result,
+        "diagram_score": score,
+    }
+
+
+def route_after_diagram_critique(state: PlannerState) -> Literal["diagram_revise", "next_phase"]:
+    """다이어그램 검증 후 분기"""
+    score = state.get("diagram_score", 0)
+    rev = state.get("diagram_revisions", 0)
+
+    if score >= 7:
+        print(f"  ✅ 다이어그램 PASS ({score}/10)")
+        return "next_phase"
+    elif rev >= MAX_REVISIONS_PER_PHASE:
+        print(f"  ⚠️ 다이어그램 최대 수정, 강제 통과 ({score}/10)")
+        return "next_phase"
+    else:
+        print(f"  🔄 다이어그램 REVISE ({score}/10) — 수정 {rev + 1}/{MAX_REVISIONS_PER_PHASE}")
+        return "diagram_revise"
+
+
+def node_diagram_revise(state: PlannerState) -> dict:
+    """다이어그램 수정 카운트 증가"""
+    return {"diagram_revisions": (state.get("diagram_revisions", 0) + 1)}
+
+
 def node_finalize(state: PlannerState) -> dict:
     """완료 표시"""
     print("\n✅ 전체 파이프라인 완료!")
@@ -364,6 +544,12 @@ def node_finalize(state: PlannerState) -> dict:
         s = state["phase_scores"].get(str(i), 0)
         r = state["phase_revisions"].get(str(i), 0)
         print(f"   [{i}] {PHASE_NAMES[i]}: {s}/10 (수정 {r}회)")
+    # 다이어그램 결과
+    d_score = state.get("diagram_score", 0)
+    d_rev = state.get("diagram_revisions", 0)
+    d_count = len(state.get("diagrams", {}))
+    if d_count:
+        print(f"   [📊] UX Diagrams: {d_score}/10 ({d_count}개, 수정 {d_rev}회)")
     return {"status": "completed"}
 
 
@@ -377,6 +563,9 @@ def build_graph():
     graph.add_node("revise", node_revise)
     graph.add_node("next_phase", node_next_phase)
     graph.add_node("finalize", node_finalize)
+    graph.add_node("diagram", node_diagram)
+    graph.add_node("diagram_critique", node_diagram_critique)
+    graph.add_node("diagram_revise", node_diagram_revise)
 
     graph.set_entry_point("work")
     graph.add_edge("work", "critique")
@@ -388,12 +577,25 @@ def build_graph():
             "revise": "revise",
             "next_phase": "next_phase",
             "finalize": "finalize",
+            "diagram": "diagram",
         }
     )
 
     graph.add_edge("revise", "work")
     graph.add_edge("next_phase", "work")
     graph.add_edge("finalize", END)
+
+    # Diagram sub-flow: diagram → diagram_critique → pass/revise
+    graph.add_edge("diagram", "diagram_critique")
+    graph.add_conditional_edges(
+        "diagram_critique",
+        route_after_diagram_critique,
+        {
+            "diagram_revise": "diagram_revise",
+            "next_phase": "next_phase",
+        }
+    )
+    graph.add_edge("diagram_revise", "diagram")
 
     return graph.compile()
 
@@ -440,7 +642,7 @@ def main():
   Run ID: {run_id}
   아이디어: {idea[:60]}
   환경: {context[:60]}
-  공정: [1]→⚖️→[2]→⚖️→[3]→⚖️→[4]→⚖️→[5]→⚖️→END
+  공정: [1]→⚖️→[2]→⚖️→[3]→⚖️→📊→⚖️→[4]→⚖️→[5]→⚖️→END
 """)
 
         initial: PlannerState = {
@@ -452,6 +654,10 @@ def main():
             "phase_critiques": {},
             "phase_scores": {},
             "phase_revisions": {},
+            "diagrams": {},
+            "diagram_critique": "",
+            "diagram_score": 0.0,
+            "diagram_revisions": 0,
             "status": "running",
             "notion_url": "",
         }
