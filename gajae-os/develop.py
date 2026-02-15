@@ -216,6 +216,32 @@ def _get_file_content(filepath: str) -> str:
         return f"(error reading {filepath})"
 
 
+def _get_all_source_code() -> str:
+    """변경된 모든 소스 파일의 코드를 합쳐서 반환"""
+    try:
+        result = subprocess.run(
+            "find . -type f \\( -name '*.tsx' -o -name '*.ts' -o -name '*.css' \\) "
+            "-not -path '*/node_modules/*' -not -path '*/.next/*' -not -path '*/.git/*'",
+            shell=True, capture_output=True, text=True, cwd=PROJECT_DIR, timeout=10,
+        )
+        files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+    except:
+        return "(error listing files)"
+
+    parts = []
+    total = 0
+    for fpath in sorted(files):
+        content = _get_file_content(fpath.lstrip('./'))
+        chunk = f"\n### 파일: `{fpath}`\n```\n{content}\n```\n"
+        if total + len(chunk) > 15000:
+            parts.append(f"\n... ({len(files) - len(parts)}개 파일 생략)")
+            break
+        parts.append(chunk)
+        total += len(chunk)
+
+    return "\n".join(parts) if parts else "(no source files)"
+
+
 # ── Step Prompts ────────────────────────────────────────
 
 def make_step_prompt(state: DevState) -> str:
@@ -262,11 +288,11 @@ def make_step_prompt(state: DevState) -> str:
         5: f"""너는 Senior Full-Stack Developer다.
 구현 계획에 따라 코드를 작성하라.
 
-## 구현 계획
-{state.get('implementation_plan', prev)}
+## 이전 리뷰 피드백 (반드시 반영!)
+{prev}
 
-## 설계 문서 요약
-{doc[:3000]}
+## 설계 문서
+{doc[:6000]}
 
 ## 프로젝트 구조
 ```
@@ -447,6 +473,9 @@ def _make_review_prompt(state: DevState) -> str:
 
 ## 변경된 파일
 {changed}
+
+## 실제 소스 코드 (리뷰 대상)
+{_get_all_source_code()}
 
 ## 평가 항목 (각 1~10점)
 {criteria_text}
