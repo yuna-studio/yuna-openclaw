@@ -176,13 +176,28 @@ def read_doc_from_notion(url: str) -> str:
 # ── Helpers ─────────────────────────────────────────────
 
 def _prev_results(state: DevState, limit: int = 3) -> str:
-    """최근 N개 step 결과"""
+    """최근 N개 step 결과 + REVISE 피드백 포함"""
     parts = []
-    start = max(1, state["current_step"] - limit)
-    for i in range(start, state["current_step"]):
+    current = state["current_step"]
+    start = max(1, current - limit)
+
+    # 기본: 이전 N개 step
+    for i in range(start, current):
         r = state["step_results"].get(str(i), "")
         if r:
             parts.append(f"## [Step {i}] {STEP_NAMES[i]}\n{r[:2000]}")
+
+    # REVISE 피드백: 현재 step 이후의 리뷰 결과도 포함
+    # (Step 5로 돌아갔을 때 Step 6,7,8의 피드백을 받아야 함)
+    revisions = state.get("step_revisions", {})
+    if revisions.get(str(current), 0) > 0:
+        # REVISE된 경우 — 이후 리뷰 step 피드백 수집
+        for i in range(current + 1, min(current + 5, 19)):
+            r = state["step_results"].get(str(i), "")
+            if r and i in REVIEW_STEPS:
+                score = state["step_scores"].get(str(i), "?")
+                parts.append(f"## ⚠️ [Step {i}] {STEP_NAMES[i]} — REVISE 피드백 (점수: {score}/10)\n{r[:3000]}")
+
     return "\n\n".join(parts)
 
 
