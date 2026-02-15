@@ -709,8 +709,12 @@ def save_run(run_id: str, state: dict):
 def main():
     if len(sys.argv) < 2:
         print("""Usage:
-  python3 graph.py run "노션_설계문서_URL" "기술환경"
-  python3 graph.py status RUN_ID""")
+  python3 graph.py run "노션_설계문서_URL" "기술환경" [--start N]
+  python3 graph.py status RUN_ID
+
+Examples:
+  python3 graph.py run "https://notion.so/..." --start 5   # 설계서가 있으면 5번(구현)부터
+  python3 graph.py run "https://notion.so/..."              # 1번(계획)부터 풀 파이프라인""")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -718,7 +722,15 @@ def main():
     if cmd == "run":
         doc_url = sys.argv[2]
         tech = sys.argv[3] if len(sys.argv) > 3 else "Next.js 15, TypeScript, Firestore, Tailwind CSS, Vercel"
+
+        # --start N 옵션: 특정 단계부터 시작
+        start_step = 1
+        for i, arg in enumerate(sys.argv):
+            if arg == "--start" and i + 1 < len(sys.argv):
+                start_step = int(sys.argv[i + 1])
+
         run_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+        skipped = f"  ⏭️  Step 1~{start_step-1} 스킵 (설계서가 계획서 역할)\n" if start_step > 1 else ""
 
         print(f"""
 ╔══════════════════════════════════════════════════╗
@@ -728,7 +740,8 @@ def main():
   설계서: {doc_url[:60]}
   기술: {tech[:60]}
   프로젝트: {PROJECT_DIR}
-  공정: 📖→[1]📋→[2~4]⚖️→[5]🔨→[6~8]⚖️→[9]🔨→[10~11]⚖️→[12]⚖️→[13]🔨→[14~15]⚖️→[16~17]⚖️→[18]🔨→END
+  시작: Step {start_step} ({STEP_NAMES[start_step]})
+{skipped}  공정: 📖→[{start_step}]→...→[18]🔨→END
 """)
 
         initial: DevState = {
@@ -736,7 +749,7 @@ def main():
             "doc_content": "",
             "tech_context": tech,
             "human_inputs": [],
-            "current_step": 1,
+            "current_step": start_step,
             "step_results": {},
             "step_scores": {},
             "step_revisions": {},
