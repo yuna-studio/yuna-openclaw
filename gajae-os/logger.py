@@ -23,8 +23,8 @@ from firebase_admin import credentials, firestore
 AGENTS_DIR = os.path.expanduser("~/.openclaw/agents")
 POLL_INTERVAL = 1  # seconds
 FIRESTORE_COLLECTION = "chat_logs"
-PID_FILE = os.path.expanduser("~/.openclaw/session_log_watcher.pid")
-OFFSET_FILE = os.path.expanduser("~/.openclaw/session_log_watcher.offsets.json")
+PID_FILE = os.path.expanduser("~/.openclaw/gajae-os-logger.pid")
+OFFSET_FILE = os.path.expanduser("~/.openclaw/gajae-os-logger.offsets.json")
 
 # 필터링할 시스템 타입
 SKIP_TYPES = {"session", "model_change", "thinking_level_change", "custom"}

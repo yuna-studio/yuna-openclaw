@@ -15,7 +15,7 @@ import pytest
 # 부모 디렉토리(gajae-os/)를 import 경로에 추가
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from session_log_watcher import (
+from logger import (
     clean_message,
     extract_text,
     is_system_injected,
