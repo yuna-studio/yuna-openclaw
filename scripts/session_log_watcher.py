@@ -167,6 +167,119 @@ def is_system_injected(text: str) -> bool:
     return bool(_SYSTEM_USER_RE.search(text))
 
 
+# ── Sensitive Data Redaction ────────────────────────────
+
+# API 키 / 토큰 패턴
+_API_KEY_PATTERNS = [
+    (r"sk-[A-Za-z0-9_-]{20,}", "[API_KEY]"),              # OpenAI
+    (r"sk-ant-[A-Za-z0-9_-]{20,}", "[API_KEY]"),           # Anthropic
+    (r"AIza[A-Za-z0-9_-]{30,}", "[API_KEY]"),              # Google
+    (r"ghp_[A-Za-z0-9]{30,}", "[GITHUB_TOKEN]"),           # GitHub PAT
+    (r"gho_[A-Za-z0-9]{30,}", "[GITHUB_TOKEN]"),           # GitHub OAuth
+    (r"github_pat_[A-Za-z0-9_]{30,}", "[GITHUB_TOKEN]"),   # GitHub fine-grained
+    (r"xoxb-[A-Za-z0-9-]+", "[SLACK_TOKEN]"),              # Slack bot
+    (r"xoxp-[A-Za-z0-9-]+", "[SLACK_TOKEN]"),              # Slack user
+    (r"AKIA[A-Z0-9]{16}", "[AWS_KEY]"),                    # AWS access key
+    (r"glpat-[A-Za-z0-9_-]{20,}", "[GITLAB_TOKEN]"),       # GitLab
+    (r"npm_[A-Za-z0-9]{30,}", "[NPM_TOKEN]"),              # npm
+]
+
+# 이메일
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}")
+
+# IP 주소 (내부/외부 모두)
+_IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+# localhost, 127.x, 0.0.0.0은 마스킹 제외
+_SAFE_IPS = {"127.0.0.1", "0.0.0.0", "255.255.255.255"}
+
+# 절대 경로 (파일 확장자 포함 시 마스킹, 디렉토리만이면 축약)
+# /Users/xxx/path/to/file.ext → …/file.ext
+# /Users/xxx/some/deep/path/ → …/path/
+# /home/xxx/... 등
+_ABS_PATH_WITH_EXT = re.compile(
+    r"(?<!\w)"                         # 단어 문자 뒤가 아닌
+    r"((?:/[A-Za-z0-9._~@-]+){2,})"   # /xxx/yyy/zzz 형태
+    r"(?!\w)"                          # 단어 문자 앞이 아닌
+)
+
+# 파일 확장자 목록 (마스킹 대상)
+_SENSITIVE_EXTENSIONS = {
+    ".json", ".key", ".pem", ".p12", ".pfx", ".env",
+    ".cfg", ".conf", ".ini", ".yml", ".yaml", ".toml",
+    ".sh", ".bash", ".zsh", ".py", ".js", ".ts",
+    ".jsonl", ".log", ".csv", ".db", ".sqlite",
+    ".cert", ".crt", ".secret",
+}
+
+# key=value 패턴
+_KEY_VALUE_RE = re.compile(
+    r"(?i)(password|passwd|secret|token|api_key|apikey|auth|credential|private_key)"
+    r"\s*[=:]\s*"
+    r"['\"]?([^\s'\"]{4,})['\"]?"
+)
+
+# 특정 프로젝트/인프라 키워드 (필요 시 추가)
+_PROJECT_REDACTIONS: dict[str, str] = {
+    # "my-secret-project-id": "[PROJECT_ID]",
+}
+
+
+def redact_sensitive(text: str) -> str:
+    """민감 정보를 마스킹한다."""
+
+    # 1) API 키 / 토큰
+    for pattern, replacement in _API_KEY_PATTERNS:
+        text = re.sub(pattern, replacement, text)
+
+    # 2) key=value 시크릿
+    text = _KEY_VALUE_RE.sub(lambda m: f"{m.group(1)}=[REDACTED]", text)
+
+    # 3) 이메일
+    text = _EMAIL_RE.sub("[EMAIL]", text)
+
+    # 4) IP 주소 (안전한 것 제외)
+    def _mask_ip(m):
+        ip = m.group(0)
+        if ip in _SAFE_IPS:
+            return ip
+        return "[IP_ADDR]"
+    text = _IP_RE.sub(_mask_ip, text)
+
+    # 5) 절대 경로 → 축약
+    def _mask_path(m):
+        path = m.group(1)
+        parts = path.rsplit("/", 1)
+        basename = parts[-1] if len(parts) > 1 else parts[0]
+        _, ext = os.path.splitext(basename)
+
+        # 확장자가 민감 목록에 있으면 → …/filename.ext
+        if ext.lower() in _SENSITIVE_EXTENSIONS:
+            return f"…/{basename}"
+
+        # /Users/xxx 또는 /home/xxx 로 시작하면 → 홈 경로 축약
+        home_match = re.match(r"^/(Users|home)/[^/]+", path)
+        if home_match:
+            remainder = path[len(home_match.group(0)):]
+            # 남은 경로에서 마지막 2 세그먼트만 보존
+            segs = [s for s in remainder.split("/") if s]
+            if len(segs) > 2:
+                return "…/" + "/".join(segs[-2:])
+            elif segs:
+                return "…/" + "/".join(segs)
+            else:
+                return "~/…"
+
+        return path  # 그 외 경로는 유지
+
+    text = _ABS_PATH_WITH_EXT.sub(_mask_path, text)
+
+    # 6) 프로젝트별 커스텀 치환
+    for keyword, replacement in _PROJECT_REDACTIONS.items():
+        text = text.replace(keyword, replacement)
+
+    return text
+
+
 def extract_text(content) -> str:
     """Extract plain text from message content (string or list of parts)."""
     if isinstance(content, str):
@@ -228,6 +341,9 @@ def clean_message(entry: dict) -> dict | None:
     # Skip heartbeat / NO_REPLY
     if text.strip() in ("HEARTBEAT_OK", "NO_REPLY"):
         return None
+
+    # 민감 정보 마스킹
+    text = redact_sensitive(text)
 
     return {
         "role": role,
