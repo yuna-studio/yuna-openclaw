@@ -278,8 +278,9 @@ flowchart TB
 ```
 
 ### 출력 2: 클래스 다이어그램
-핵심 엔티티, 유즈케이스, 어댑터의 관계.
+핵심 엔티티, ViewModel, 유즈케이스, 어댑터의 관계.
 인터페이스와 구현체 구분.
+**ViewModel 클래스는 반드시 포함** — 각 화면(Page)에 대응하는 ViewModel과 그 메서드를 명시.
 
 ```mermaid
 classDiagram
@@ -289,12 +290,23 @@ classDiagram
         +string role
         +timestamp createdAt
     }}
+    class LiveViewModel {{
+        +subscribeMessages()
+        +sendReaction(type)
+        +shareSnapshot()
+        +dispose()
+    }}
+    class ArchiveViewModel {{
+        +loadSessions()
+        +getSessionDetail(id)
+    }}
+    LiveViewModel --> ChatMessage
     ...
 ```
 
 Mermaid 문법 정확하게. 한국어 주석.""",
 
-    4: """너는 UX Engineer다.
+    4: """너는 UX Engineer + Frontend Architect다.
 
 ## 기획 문서 요약
 {plan_short}
@@ -313,18 +325,34 @@ Mermaid 문법 정확하게. 한국어 주석.""",
 각 페이지/뷰의:
 | 페이지 | URL 경로 | 설명 | 주요 컴포넌트 |
 
-### 2. 페이지별 상세
+### 2. 페이지별 상세 (기능 명세)
 각 페이지에 대해:
 - **레이아웃**: 어떤 요소가 어디에 배치되는지
-- **인터랙션**: 버튼/액션 목록과 각각의 동작
+- **UI 요소 목록**: 모든 버튼, 입력 필드, 표시 영역을 빠짐없이 나열
+- **인터랙션**: 각 버튼/액션의 동작 설명
 - **상태**: 페이지가 표시하는 데이터, 로딩/에러 상태
 
-### 3. 화면 전환 규칙
+### 3. 화면 ↔ ViewModel 매핑 테이블 ⭐
+**각 페이지별로** UI 요소와 ViewModel 메서드를 1:1 매핑하라.
+빠지는 것이 있으면 안 된다.
+
+| 페이지 | UI 요소 (버튼/영역) | 사용자 액션 | ViewModel 메서드 | 설명 |
+|---|---|---|---|---|
+| LivePage | 메시지 영역 | 페이지 진입 | `LiveViewModel.subscribeMessages()` | 실시간 구독 시작 |
+| LivePage | ❤️ 좋아요 버튼 | 클릭 | `LiveViewModel.sendReaction("heart")` | 리액션 전송 |
+| LivePage | 🤣 ㅋㅋ 버튼 | 클릭 | `LiveViewModel.sendReaction("lol")` | 리액션 전송 |
+| LivePage | 📤 공유 버튼 | 클릭 | `LiveViewModel.shareSnapshot()` | 스냅샷 생성+공유 |
+| ArchivePage | 세션 목록 | 페이지 진입 | `ArchiveViewModel.loadSessions()` | 과거 세션 조회 |
+| ... | ... | ... | ... | ... |
+
+모든 페이지의 모든 버튼/영역을 빠짐없이 매핑할 것.
+
+### 4. 화면 전환 규칙
 - 어떤 액션이 어떤 페이지로 이동시키는지
 - 뒤로가기/브라우저 히스토리 동작
 - 딥링크 지원 여부
 
-### 4. 반응형 동작
+### 5. 반응형 동작
 - 모바일/태블릿/데스크톱 차이점
 - 숨김/표시 요소""",
 
@@ -364,26 +392,35 @@ Mermaid 문법 정확. 한국어.""",
 ## 기획 문서 요약
 {plan_short}
 
-## 이전 단계 (아키텍처 + 화면 설계)
+## 이전 단계 (아키텍처 + 화면 설계 + 매핑 테이블)
 {prev}
 {rev}
 
 ## 출력: 요구사항별 시퀀스 다이어그램
 
 P0 기능 각각에 대해 시퀀스 다이어그램을 그려라.
-액터: 사용자, Frontend, Backend/API, Firestore, (외부 서비스)
+액터: 사용자, View(Page), ViewModel, UseCase/Repository, Firestore, (외부 서비스)
+
+**Phase 4의 화면↔ViewModel 매핑 테이블과 일치해야 한다.**
+매핑 테이블에 있는 모든 ViewModel 메서드가 시퀀스 다이어그램에 등장해야 한다.
 
 ### 시퀀스 1: 실시간 대화 스트림 구독
 ```mermaid
 sequenceDiagram
     actor User
-    participant FE as Frontend
+    participant LP as LivePage
+    participant LVM as LiveViewModel
+    participant Repo as ChatRepository
     participant FS as Firestore
-    User->>FE: 페이지 접속
-    FE->>FS: onSnapshot(chat_logs)
-    FS-->>FE: 실시간 데이터
-    FE->>FE: 타이핑 애니메이션
-    FE-->>User: 텍스트 표시
+    User->>LP: 페이지 접속
+    LP->>LVM: subscribeMessages()
+    LVM->>Repo: observeMessages()
+    Repo->>FS: onSnapshot(chat_logs)
+    FS-->>Repo: 실시간 데이터
+    Repo-->>LVM: Stream<List<ChatMessage>>
+    LVM-->>LP: UI 업데이트
+    LP->>LP: 타이핑 애니메이션
+    LP-->>User: 텍스트 표시
 ```
 
 ### 시퀀스 2: 리액션 전송
@@ -457,16 +494,19 @@ CRITIQUE_CRITERIA = {
         ("관심사 분리", "각 모듈의 책임이 명확한가?"),
         ("폴더 구조", "실제로 구현 가능한 구조인가?")],
     3: [("오버롤 다이어그램 정확성", "아키텍처 설계와 일치?"),
-        ("클래스 다이어그램 완전성", "핵심 엔티티가 빠짐없는가?"),
+        ("클래스 다이어그램 완전성", "핵심 엔티티 + ViewModel 클래스가 빠짐없는가?"),
+        ("ViewModel 메서드", "각 화면에 대응하는 ViewModel과 메서드가 있는가?"),
         ("Mermaid 문법", "렌더링 가능한가?")],
     4: [("페이지 완전성", "기획서의 모든 화면이 반영?"),
-        ("인터랙션 명세", "버튼/액션 동작이 구체적?"),
+        ("UI 요소 완전성", "모든 버튼, 입력, 표시 영역이 나열됐는가?"),
+        ("화면↔ViewModel 1:1 매핑", "모든 UI 요소에 대응하는 ViewModel 메서드가 있는가? 누락된 매핑은 없는가?"),
         ("반응형 고려", "모바일 대응?")],
     5: [("플로우 완전성", "모든 페이지/액션/전환 포함?"),
         ("조건 분기", "에러/로딩 등 예외 경로?"),
         ("Mermaid 문법", "렌더링 가능?")],
     6: [("P0 커버리지", "모든 P0 기능에 시퀀스가 있는가?"),
-        ("데이터 흐름 정확성", "액터 간 통신이 현실적?"),
+        ("ViewModel 매핑 일치", "Phase 4 매핑 테이블의 모든 메서드가 시퀀스에 등장하는가?"),
+        ("데이터 흐름 정확성", "View→ViewModel→UseCase→Repository→DB 흐름이 Clean Architecture를 따르는가?"),
         ("Mermaid 문법", "렌더링 가능?")],
     7: [("토큰 완전성", "컬러/타이포/스페이싱 모두 정의?"),
         ("컴포넌트 분석", "재사용/신규 구분 명확?"),
