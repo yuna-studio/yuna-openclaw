@@ -169,56 +169,120 @@ def is_system_injected(text: str) -> bool:
 
 # ── Sensitive Data Redaction ────────────────────────────
 
-# API 키 / 토큰 패턴
+# ─── 1. API 키 / 토큰 / 시크릿 패턴 ───
 _API_KEY_PATTERNS = [
-    (r"sk-[A-Za-z0-9_-]{20,}", "[API_KEY]"),              # OpenAI
-    (r"sk-ant-[A-Za-z0-9_-]{20,}", "[API_KEY]"),           # Anthropic
-    (r"AIza[A-Za-z0-9_-]{30,}", "[API_KEY]"),              # Google
-    (r"ghp_[A-Za-z0-9]{30,}", "[GITHUB_TOKEN]"),           # GitHub PAT
-    (r"gho_[A-Za-z0-9]{30,}", "[GITHUB_TOKEN]"),           # GitHub OAuth
-    (r"github_pat_[A-Za-z0-9_]{30,}", "[GITHUB_TOKEN]"),   # GitHub fine-grained
-    (r"xoxb-[A-Za-z0-9-]+", "[SLACK_TOKEN]"),              # Slack bot
-    (r"xoxp-[A-Za-z0-9-]+", "[SLACK_TOKEN]"),              # Slack user
-    (r"AKIA[A-Z0-9]{16}", "[AWS_KEY]"),                    # AWS access key
-    (r"glpat-[A-Za-z0-9_-]{20,}", "[GITLAB_TOKEN]"),       # GitLab
-    (r"npm_[A-Za-z0-9]{30,}", "[NPM_TOKEN]"),              # npm
+    # OpenAI (sk-proj, sk-svcacct 등 포함)
+    (r"sk-(?:proj-|svcacct-|ant-)?[A-Za-z0-9_-]{20,}", "[API_KEY]"),
+    # Google API / Firebase
+    (r"AIza[A-Za-z0-9_-]{30,}", "[GOOGLE_KEY]"),
+    # GitHub
+    (r"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}", "[GITHUB_TOKEN]"),
+    (r"github_pat_[A-Za-z0-9_]{30,}", "[GITHUB_TOKEN]"),
+    # Slack
+    (r"xox[bpras]-[A-Za-z0-9-]+", "[SLACK_TOKEN]"),
+    # AWS
+    (r"AKIA[A-Z0-9]{16}", "[AWS_KEY]"),
+    (r"(?:aws_secret_access_key|aws_session_token)\s*[=:]\s*\S+", "[AWS_SECRET]"),
+    # GitLab
+    (r"glpat-[A-Za-z0-9_-]{20,}", "[GITLAB_TOKEN]"),
+    # npm
+    (r"npm_[A-Za-z0-9]{30,}", "[NPM_TOKEN]"),
+    # Telegram bot token (숫자:영문, suffix 34-43자)
+    (r"(?<![A-Za-z0-9])\d{8,10}:[A-Za-z0-9_-]{34,43}(?![A-Za-z0-9])", "[TELEGRAM_BOT_TOKEN]"),
+    # Discord bot token (base64-ish)
+    (r"[MN][A-Za-z0-9]{23,}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}", "[DISCORD_TOKEN]"),
+    # Firebase/GCP service account private key fragment
+    (r"-----BEGIN (?:RSA )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA )?PRIVATE KEY-----", "[PRIVATE_KEY]"),
+    # JWT (3-part base64 dot-separated, 100+ chars)
+    (r"eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}", "[JWT_TOKEN]"),
+    # Stripe
+    (r"(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9]{20,}", "[STRIPE_KEY]"),
+    # Supabase / generic long hex tokens
+    (r"sbp_[A-Za-z0-9]{30,}", "[SUPABASE_TOKEN]"),
+    # Vercel
+    (r"vercel_[A-Za-z0-9_-]{20,}", "[VERCEL_TOKEN]"),
+    # Cloudflare
+    (r"cf_[A-Za-z0-9_-]{30,}", "[CF_TOKEN]"),
+    # Generic long hex secret (40+ chars, likely a key)
+    (r"\b[0-9a-f]{40,}\b", "[HEX_SECRET]"),
 ]
 
-# 이메일
-_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}")
+# ─── 2. 이메일 ───
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
-# IP 주소 (내부/외부 모두)
-_IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
-# localhost, 127.x, 0.0.0.0은 마스킹 제외
-_SAFE_IPS = {"127.0.0.1", "0.0.0.0", "255.255.255.255"}
-
-# 절대 경로 (파일 확장자 포함 시 마스킹, 디렉토리만이면 축약)
-# /Users/xxx/path/to/file.ext → …/file.ext
-# /Users/xxx/some/deep/path/ → …/path/
-# /home/xxx/... 등
-_ABS_PATH_WITH_EXT = re.compile(
-    r"(?<!\w)"                         # 단어 문자 뒤가 아닌
-    r"((?:/[A-Za-z0-9._~@-]+){2,})"   # /xxx/yyy/zzz 형태
-    r"(?!\w)"                          # 단어 문자 앞이 아닌
+# ─── 3. 전화번호 ───
+_PHONE_PATTERNS = re.compile(
+    r"(?:"
+    # 한국 휴대폰: 010-1234-5678, 010 1234 5678, 01012345678
+    r"01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}"
+    r"|"
+    # 한국 유선: 02-1234-5678, 031-123-4567 등
+    r"0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}"
+    r"|"
+    # 국제 형식: +82-10-1234-5678, +1-234-567-8901
+    r"\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}"
+    r")"
 )
 
-# 파일 확장자 목록 (마스킹 대상)
-_SENSITIVE_EXTENSIONS = {
-    ".json", ".key", ".pem", ".p12", ".pfx", ".env",
-    ".cfg", ".conf", ".ini", ".yml", ".yaml", ".toml",
-    ".sh", ".bash", ".zsh", ".py", ".js", ".ts",
-    ".jsonl", ".log", ".csv", ".db", ".sqlite",
-    ".cert", ".crt", ".secret",
+# ─── 4. IP 주소 ───
+_IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+_SAFE_IPS = {"127.0.0.1", "0.0.0.0", "255.255.255.255"}
+
+# ─── 5. 절대 경로 ───
+_ABS_PATH_RE = re.compile(
+    r"(?<!\w)"
+    r"((?:/[A-Za-z0-9._~@-]+){2,})"
+    r"(?!\w)"
+)
+
+# ─── 6. 단독 파일명 (경로 없이 확장자 붙은 파일명) ───
+# 앞: 슬래시나 ASCII 단어문자 뒤가 아닌 (한글 뒤는 OK)
+# 뒤: ASCII 단어문자 앞이 아닌 (한글 앞은 OK)
+_SENSITIVE_FILE_EXTS = [
+    "json", "jsonl", "key", "pem", "p12", "pfx",
+    "env", "cfg", "conf", "ini", "yml", "yaml", "toml",
+    "sh", "bash", "zsh", "py", "js", "ts", "tsx", "jsx",
+    "log", "csv", "db", "sqlite", "sql",
+    "cert", "crt", "secret", "bak",
+    "tar", "gz", "zip", "rar",
+]
+_STANDALONE_FILE_RE = re.compile(
+    r"(?<![/A-Za-z0-9_])"
+    r"(\.?[A-Za-z0-9_.-]+\.(?:" + "|".join(_SENSITIVE_FILE_EXTS) + r"))"
+    r"(?![A-Za-z0-9_])"
+)
+
+# 파일명 화이트리스트 (마스킹 제외 — 코드 대화에서 자주 쓰이는 일반 파일명)
+_FILE_WHITELIST = {
+    "package.json", "tsconfig.json", "setup.py", "requirements.txt",
+    "Makefile", "Dockerfile", "docker-compose.yml", "docker-compose.yaml",
+    ".gitignore", ".env.example", "README.md", "LICENSE",
+    "index.js", "index.ts", "main.py", "app.py", "app.js",
+    "SKILL.md", "AGENTS.md", "SOUL.md", "USER.md", "MEMORY.md",
+    "HEARTBEAT.md", "TOOLS.md", "IDENTITY.md", "BOOTSTRAP.md",
+    "firestore.rules", "firebase.json",
 }
 
-# key=value 패턴
+# 파일 확장자 (경로 내 확장자 감지용)
+_SENSITIVE_EXTENSIONS = {
+    ".json", ".jsonl", ".key", ".pem", ".p12", ".pfx", ".env",
+    ".cfg", ".conf", ".ini", ".yml", ".yaml", ".toml",
+    ".sh", ".bash", ".zsh", ".py", ".js", ".ts", ".tsx", ".jsx",
+    ".log", ".csv", ".db", ".sqlite", ".sql",
+    ".cert", ".crt", ".secret", ".bak",
+    ".tar", ".gz", ".zip", ".rar",
+}
+
+# ─── 7. key=value 시크릿 ───
 _KEY_VALUE_RE = re.compile(
-    r"(?i)(password|passwd|secret|token|api_key|apikey|auth|credential|private_key)"
+    r"(?i)(password|passwd|secret|token|api_key|apikey|api[-_]?secret"
+    r"|auth|credential|private_key|access_key|client_secret"
+    r"|db_password|database_url|redis_url|mongo_uri|connection_string)"
     r"\s*[=:]\s*"
     r"['\"]?([^\s'\"]{4,})['\"]?"
 )
 
-# 특정 프로젝트/인프라 키워드 (필요 시 추가)
+# ─── 8. 프로젝트별 커스텀 치환 ───
 _PROJECT_REDACTIONS: dict[str, str] = {
     # "my-secret-project-id": "[PROJECT_ID]",
 }
@@ -227,7 +291,7 @@ _PROJECT_REDACTIONS: dict[str, str] = {
 def redact_sensitive(text: str) -> str:
     """민감 정보를 마스킹한다."""
 
-    # 1) API 키 / 토큰
+    # 1) API 키 / 토큰 (가장 먼저 — 다른 패턴에 걸리기 전에)
     for pattern, replacement in _API_KEY_PATTERNS:
         text = re.sub(pattern, replacement, text)
 
@@ -237,7 +301,10 @@ def redact_sensitive(text: str) -> str:
     # 3) 이메일
     text = _EMAIL_RE.sub("[EMAIL]", text)
 
-    # 4) IP 주소 (안전한 것 제외)
+    # 4) 전화번호
+    text = _PHONE_PATTERNS.sub("[PHONE]", text)
+
+    # 5) IP 주소 (안전한 것 제외)
     def _mask_ip(m):
         ip = m.group(0)
         if ip in _SAFE_IPS:
@@ -245,12 +312,16 @@ def redact_sensitive(text: str) -> str:
         return "[IP_ADDR]"
     text = _IP_RE.sub(_mask_ip, text)
 
-    # 5) 절대 경로 → 축약
+    # 6) 절대 경로 → 축약
     def _mask_path(m):
         path = m.group(1)
         parts = path.rsplit("/", 1)
         basename = parts[-1] if len(parts) > 1 else parts[0]
         _, ext = os.path.splitext(basename)
+
+        # 화이트리스트 파일은 유지
+        if basename in _FILE_WHITELIST:
+            return basename
 
         # 확장자가 민감 목록에 있으면 → …/filename.ext
         if ext.lower() in _SENSITIVE_EXTENSIONS:
@@ -260,7 +331,6 @@ def redact_sensitive(text: str) -> str:
         home_match = re.match(r"^/(Users|home)/[^/]+", path)
         if home_match:
             remainder = path[len(home_match.group(0)):]
-            # 남은 경로에서 마지막 2 세그먼트만 보존
             segs = [s for s in remainder.split("/") if s]
             if len(segs) > 2:
                 return "…/" + "/".join(segs[-2:])
@@ -269,11 +339,27 @@ def redact_sensitive(text: str) -> str:
             else:
                 return "~/…"
 
-        return path  # 그 외 경로는 유지
+        return path
 
-    text = _ABS_PATH_WITH_EXT.sub(_mask_path, text)
+    text = _ABS_PATH_RE.sub(_mask_path, text)
 
-    # 6) 프로젝트별 커스텀 치환
+    # 7) 단독 파일명 (화이트리스트 제외)
+    def _mask_file(m):
+        fname = m.group(1)
+        if fname in _FILE_WHITELIST:
+            return fname
+        return f"[FILE:{os.path.splitext(fname)[1]}]"
+
+    text = _STANDALONE_FILE_RE.sub(_mask_file, text)
+
+    # 7b) dotenv 파일 (.env, .env.local, .env.production 등)
+    text = re.sub(
+        r"(?<![/A-Za-z0-9_])(\.env(?:\.[A-Za-z0-9_]+)?)(?![A-Za-z0-9_.])",
+        lambda m: m.group(1) if m.group(1) in _FILE_WHITELIST else "[DOTENV]",
+        text,
+    )
+
+    # 8) 프로젝트별 커스텀 치환
     for keyword, replacement in _PROJECT_REDACTIONS.items():
         text = text.replace(keyword, replacement)
 
