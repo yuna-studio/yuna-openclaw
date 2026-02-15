@@ -165,4 +165,5 @@ Researcher의 조사 결과를 읽고:
 - **내용**: 최종 1-Pager 전문을 Notion 블록으로 구조화
 - Notion API 사용법: `skills/better-notion/SKILL.md` 참고
 
-파일 저장과 노션 생성 **둘 다** 수행할 것.
+**노션 페이지가 메인 출력**이다. 파일은 백업용으로 함께 저장할 것.
+노션 페이지에는 1-Pager 전문을 heading, callout, table, bullet 등 Notion 블록으로 구조화하여 보기 좋게 작성하라.
