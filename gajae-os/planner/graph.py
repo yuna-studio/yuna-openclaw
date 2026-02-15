@@ -2,58 +2,27 @@
 """
 🦞 Gajae Planner — LangGraph 기반 PO 기획 에이전트
 
-공정 (매 단계 판사가재 검증):
-  [1] Background & Opportunity (탐정가재) → 판사 검증 → PASS면 다음
-  [2] Hypothesis Setting (탐정가재)       → 판사 검증 → PASS면 다음
-  [3] Solution & MVP Spec (탐정가재)      → 판사 검증 → PASS면 다음
-  [4] Success Metrics (탐정가재)          → 판사 검증 → PASS면 다음
-  [5] GTM & Operations (탐정가재)         → 판사 검증 → PASS면 다음
-  [6] Notion 출력
-  
-  각 단계 REVISE 시 해당 단계로 루프 (최대 2회/단계)
+이 스크립트는 비서가재(main)가 오케스트레이터로서 실행한다.
+각 단계에서 sessions_spawn을 통해 탐정/판사를 호출하는 대신,
+비서가재가 이 파일의 상태를 읽고 다음 단계를 판단하여 spawn한다.
 
-Usage:
-  python3 gajae-os/planner/graph.py "바이브코딩 라이브스트림 웹사이트" \\
-    --context "Next.js, Firestore 연동, 1인 개발자, 2주"
+## 상태 파일 기반 실행
+gajae-os/planner/state/{run_id}.json 에 상태를 저장하고,
+비서가재가 상태를 읽어서 다음 단계를 실행한다.
+
+Usage (비서가재가 내부적으로 호출):
+  1. 상태 파일 생성 (init)
+  2. 각 단계를 sessions_spawn으로 실행
+  3. 결과를 상태에 저장
+  4. 다음 단계 판단 (route)
 """
 
 import os
 import json
 import time
-import argparse
-import urllib.request
-from typing import TypedDict, Literal
-from langgraph.graph import StateGraph, END
+from datetime import datetime
 
-
-# ── State ───────────────────────────────────────────────
-
-class PlannerState(TypedDict):
-    idea: str
-    context: str
-
-    # 각 단계 결과물
-    background: str        # [1]
-    hypothesis: str        # [2]
-    solution_spec: str     # [3]
-    metrics_plan: str      # [4]
-    gtm_plan: str          # [5]
-
-    # 검증 관련
-    current_phase: int             # 현재 단계 (1~5)
-    phase_revision_counts: dict    # {1: 0, 2: 1, ...} 단계별 수정 횟수
-    phase_critiques: dict          # {1: "...", 2: "..."} 단계별 피드백
-    phase_scores: dict             # {1: 8.0, 2: 6.5, ...}
-
-    # 최종
-    final_plan: str
-    notion_url: str
-
-
-# ── OpenClaw 호출 ──────────────────────────────────────
-
-GATEWAY_URL = "http://127.0.0.1:18789"
-MAX_REVISIONS_PER_PHASE = 2
+STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/planner/state")
 
 PHASE_NAMES = {
     1: "Background & Opportunity",
@@ -63,137 +32,243 @@ PHASE_NAMES = {
     5: "GTM & Operations",
 }
 
-
-def _get_gateway_token() -> str:
-    config_path = os.path.expanduser("~/.openclaw/openclaw.json")
-    with open(config_path) as f:
-        config = json.load(f)
-    return config.get("gateway", {}).get("auth", {}).get("token", "")
+MAX_REVISIONS_PER_PHASE = 2
 
 
-def call_agent(agent_id: str, task: str, label: str = "", timeout: int = 300) -> str:
-    """OpenClaw 서브에이전트를 spawn하고 결과를 기다린다."""
-    token = _get_gateway_token()
+def init_run(idea: str, context: str) -> str:
+    """새 기획 실행을 초기화하고 run_id 반환"""
+    os.makedirs(STATE_DIR, exist_ok=True)
+    run_id = datetime.now().strftime("%Y%m%d-%H%M%S")
 
-    payload = {
-        "task": task,
-        "agentId": agent_id,
-        "model": "google-antigravity/gemini-3-pro-high",
-        "runTimeoutSeconds": timeout,
+    state = {
+        "run_id": run_id,
+        "idea": idea,
+        "context": context,
+        "current_phase": 1,
+        "status": "running",  # running / completed / failed
+        "phases": {},  # {1: {result, critique, score, revisions}, ...}
+        "notion_url": "",
+        "created_at": datetime.now().isoformat(),
     }
-    if label:
-        payload["label"] = label
 
-    data = json.dumps(payload).encode()
-    req = urllib.request.Request(
-        f"{GATEWAY_URL}/api/sessions/spawn",
-        data=data,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        },
-        method="POST",
-    )
+    path = os.path.join(STATE_DIR, f"{run_id}.json")
+    with open(path, "w") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
 
-    with urllib.request.urlopen(req, timeout=timeout + 30) as resp:
-        result = json.loads(resp.read().decode())
-
-    if result.get("status") != "accepted":
-        raise RuntimeError(f"Spawn failed: {result}")
-
-    run_id = result["runId"]
-
-    # Poll for completion
-    start = time.time()
-    while time.time() - start < timeout:
-        time.sleep(5)
-        try:
-            poll_req = urllib.request.Request(
-                f"{GATEWAY_URL}/api/sessions/runs/{run_id}",
-                headers={"Authorization": f"Bearer {token}"},
-            )
-            with urllib.request.urlopen(poll_req, timeout=10) as resp:
-                run_data = json.loads(resp.read().decode())
-            if run_data.get("status") in ("completed", "failed", "error"):
-                return run_data.get("findings", run_data.get("output", ""))
-        except Exception:
-            pass
-
-    return "(timeout)"
+    return run_id
 
 
-# ── Phase Prompts ──────────────────────────────────────
+def load_state(run_id: str) -> dict:
+    path = os.path.join(STATE_DIR, f"{run_id}.json")
+    with open(path) as f:
+        return json.load(f)
 
-def _revision_context(state: PlannerState) -> str:
-    """현재 단계에 대한 이전 판사 피드백이 있으면 반환"""
+
+def save_state(run_id: str, state: dict):
+    path = os.path.join(STATE_DIR, f"{run_id}.json")
+    with open(path, "w") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+
+def get_phase(state: dict, phase: int) -> dict:
+    return state["phases"].setdefault(str(phase), {
+        "result": "",
+        "critique": "",
+        "score": 0,
+        "revisions": 0,
+        "status": "pending",  # pending / working / reviewing / passed / failed
+    })
+
+
+def next_action(state: dict) -> dict:
+    """현재 상태에서 다음에 할 일을 반환.
+    
+    Returns:
+        {
+            "action": "work" | "critique" | "finalize" | "notion" | "done",
+            "phase": int,
+            "agent": "scout" | "judge" | None,
+            "prompt": str,
+        }
+    """
     phase = state["current_phase"]
-    critique = state["phase_critiques"].get(phase, "")
-    rev_count = state["phase_revision_counts"].get(phase, 0)
-    if critique and rev_count > 0:
-        return f"""
-## ⚠️ 판사가재 피드백 ({rev_count}차 반려)
-{critique}
 
-위 피드백을 반영하여 이 단계를 개선하라. 이전과 같은 실수를 반복하지 마라."""
+    if state["status"] == "completed":
+        return {"action": "done", "phase": phase, "agent": None, "prompt": ""}
+
+    if phase > 5:
+        return {"action": "finalize", "phase": 5, "agent": None, "prompt": ""}
+
+    p = get_phase(state, phase)
+
+    if p["status"] in ("pending", "revising"):
+        # 작업 필요
+        prompt = _make_work_prompt(state, phase)
+        return {"action": "work", "phase": phase, "agent": "scout", "prompt": prompt}
+
+    elif p["status"] == "working_done":
+        # 검증 필요
+        prompt = _make_critique_prompt(state, phase)
+        return {"action": "critique", "phase": phase, "agent": "judge", "prompt": prompt}
+
+    elif p["status"] == "passed":
+        # 다음 단계로
+        state["current_phase"] = phase + 1
+        save_state(state["run_id"], state)
+        return next_action(state)  # 재귀
+
+    return {"action": "done", "phase": phase, "agent": None, "prompt": ""}
+
+
+def record_work_result(state: dict, phase: int, result: str):
+    """탐정가재 작업 결과 저장"""
+    p = get_phase(state, phase)
+    p["result"] = result
+    p["status"] = "working_done"
+    save_state(state["run_id"], state)
+
+
+def record_critique_result(state: dict, phase: int, critique: str, score: float):
+    """판사가재 검증 결과 저장 및 분기 결정"""
+    p = get_phase(state, phase)
+    p["critique"] = critique
+    p["score"] = score
+
+    if score >= 7:
+        p["status"] = "passed"
+        if phase >= 5:
+            state["current_phase"] = 6  # finalize로
+    elif p["revisions"] >= MAX_REVISIONS_PER_PHASE:
+        p["status"] = "passed"  # 강제 통과
+        if phase >= 5:
+            state["current_phase"] = 6
+    else:
+        p["revisions"] += 1
+        p["status"] = "revising"
+
+    save_state(state["run_id"], state)
+
+
+def get_summary(state: dict) -> str:
+    """현재 상태 요약"""
+    lines = [f"📋 기획: {state['idea'][:50]}"]
+    lines.append(f"   현재 단계: [{state['current_phase']}/5]")
+    for i in range(1, 6):
+        p = state["phases"].get(str(i), {})
+        status = p.get("status", "pending")
+        score = p.get("score", 0)
+
+    # human_inputs 표시
+    inputs = state.get("human_inputs", [])
+    if inputs:
+        lines.append(f"   대표님 피드백: {len(inputs)}건")
+
+        rev = p.get("revisions", 0)
+        icon = {"pending": "⏳", "working": "🔍", "working_done": "📝",
+                "reviewing": "⚖️", "passed": "✅", "revising": "🔄",
+                "failed": "❌"}.get(status, "❓")
+        lines.append(f"   [{i}] {PHASE_NAMES[i]}: {icon} {status} (score: {score}, rev: {rev})")
+    return "\n".join(lines)
+
+
+# ── Prompt Builders ─────────────────────────────────────
+
+def _revision_context(state: dict, phase: int) -> str:
+    p = get_phase(state, phase)
+    if p["critique"] and p["revisions"] > 0:
+        return f"""
+## ⚠️ 판사가재 피드백 ({p['revisions']}차 반려)
+{p['critique']}
+
+위 피드백을 반영하여 개선하라. 같은 실수 반복 금지."""
     return ""
 
 
-def _make_phase1_prompt(state: PlannerState) -> str:
-    return f"""너는 Market Research Analyst다.
+def _human_context(state: dict, phase: int) -> str:
+    """대표님이 이 대화에서 준 피드백을 프롬프트에 주입"""
+    inputs = state.get("human_inputs", [])
+    relevant = [h for h in inputs if h.get("phase", 0) <= phase]
+    if not relevant:
+        return ""
+    lines = "\n".join(f"- {h['input']}" for h in relevant)
+    return f"""
+## 📌 대표님 지시사항 (반드시 반영)
+{lines}"""
+
+
+def _get_previous_results(state: dict, up_to_phase: int) -> str:
+    """이전 단계 결과물들을 컨텍스트로 제공"""
+    parts = []
+    key_map = {1: "background", 2: "hypothesis", 3: "solution", 4: "metrics", 5: "gtm"}
+    for i in range(1, up_to_phase):
+        p = state["phases"].get(str(i), {})
+        if p.get("result"):
+            parts.append(f"## [{i}] {PHASE_NAMES[i]}\n{p['result'][:1500]}")
+    return "\n\n".join(parts)
+
+
+def _make_work_prompt(state: dict, phase: int) -> str:
+    idea = state["idea"]
+    context = state["context"]
+    prev = _get_previous_results(state, phase)
+    revision = _revision_context(state, phase)
+
+    human = _human_context(state, phase)
+
+    if phase == 1:
+        return f"""너는 Market Research Analyst다.
 
 /Users/openclaw-kong/.openclaw/workspace/gajae-os/planner/RESEARCHER.md 파일을 읽고 형식을 참고하라.
 
 ## 조사 대상
-{state['idea']}
+{idea}
 
 ## 환경
-{state['context']}
-{_revision_context(state)}
+{context}
+{revision}
+{human}
 
 ## 지시
 - web_search를 최소 5회 이상 사용하라
 - 경쟁사 최소 3개 분석하라
 - 데이터 없으면 "데이터 없음"으로 표시. 추측 금지.
-- 결과를 텍스트로 반환하라 (파일 저장 불필요)
 
 ## 출력 형식
 ### Context (맥락)
 ### Problem Statement
-### Competitor Benchmark (최소 3개)
+### Competitor Benchmark (최소 3개, 표로)
 ### 우리만의 Edge"""
 
+    elif phase == 2:
+        return f"""너는 전략가(Strategist)다.
 
-def _make_phase2_prompt(state: PlannerState) -> str:
-    return f"""너는 전략가(Strategist)다.
-
-## 시장 조사 결과
-{state['background']}
+## 이전 단계 결과
+{prev}
 
 ## 아이디어
-{state['idea']}
-{_revision_context(state)}
+{idea}
+{revision}
+{human}
 
 ## 출력 형식
 - **Belief**: "우리는 [기능/변경]을 하면, [타겟 유저]가 [행동]을 할 것이다"
 - **Expected Outcome**: "[핵심 KPI]가 [X%] 개선될 것이다"
-- **근거**: 시장 조사의 어떤 데이터가 이 가설을 뒷받침하는지 명시
+- **근거**: 시장 조사 데이터에서 이 가설을 뒷받침하는 부분 명시
 
-모호한 표현 금지. 구체적 수치와 근거를 대라."""
+모호한 표현 금지. 구체적 수치와 근거."""
 
-
-def _make_phase3_prompt(state: PlannerState) -> str:
-    return f"""너는 Product Designer다.
+    elif phase == 3:
+        return f"""너는 Product Designer다.
 
 ## 제약 조건 (반드시 준수)
 - 1인 개발자
-- {state['context']}
+- {context}
 - P0 판정 기준: "이것 없이 가설 검증 불가능한가?" → 아니면 P1으로
 
-## 입력
-- 아이디어: {state['idea']}
-- 가설: {state['hypothesis']}
-- 시장 조사: {state['background'][:1500]}
-{_revision_context(state)}
+## 이전 단계 결과
+{prev}
+{revision}
+{human}
 
 ## 출력 형식
 - **User Flow**: 3~5단계로 기술
@@ -201,14 +276,13 @@ def _make_phase3_prompt(state: PlannerState) -> str:
 - **Nice-to-Have (P1)**: P0에서 쳐낸 것들
 - **Technical Constraint**: 기존 시스템과 충돌 가능성"""
 
+    elif phase == 4:
+        return f"""너는 Data Scientist다.
 
-def _make_phase4_prompt(state: PlannerState) -> str:
-    return f"""너는 Data Scientist다.
-
-## 입력
-- 아이디어: {state['idea']}
-- MVP 스펙: {state['solution_spec']}
-{_revision_context(state)}
+## 이전 단계 결과
+{prev}
+{revision}
+{human}
 
 ## 출력 형식
 - **Primary Metric**: 이 기능의 성패를 가를 단 하나의 숫자
@@ -218,51 +292,29 @@ def _make_phase4_prompt(state: PlannerState) -> str:
   - Stop: Counter Metric이 [Y] 이상 악화되면 롤백
   - 관찰 기간: 최소 [N]일
 
-1인 개발자 환경에서 운영 리소스 증가를 Counter Metric에 반드시 포함하라.
-모호한 표현 금지. 측정 가능한 구체적 수치를 제시하라."""
+1인 개발자 운영 리소스 증가를 Counter Metric에 포함.
+모호한 표현 금지. 측정 가능한 구체적 수치."""
 
+    elif phase == 5:
+        return f"""너는 Growth Hacker다.
 
-def _make_phase5_prompt(state: PlannerState) -> str:
-    return f"""너는 Growth Hacker다.
-
-## 입력
-- 아이디어: {state['idea']}
-- MVP 스펙: {state['solution_spec']}
-- 메트릭: {state['metrics_plan']}
-{_revision_context(state)}
+## 이전 단계 결과
+{prev}
+{revision}
+{human}
 
 ## 출력 형식
-- **Aha-Moment**: 유저가 "이거 좋다!"를 느끼는 결정적 순간. 어떻게 유도?
-- **Manual Process**: 자동화 전 수동으로 해야 할 것 (1인 운영 관점)
+- **Aha-Moment**: 유저가 "이거 좋다!"를 느끼는 결정적 순간
+- **Manual Process**: 자동화 전 수동으로 해야 할 것 (1인 운영)
 - **Launch Plan**: 어디에 어떻게 알릴 것인가
 - **Viral Loop**: 제품 내 공유/추천 장치"""
 
-
-PHASE_PROMPT_BUILDERS = {
-    1: _make_phase1_prompt,
-    2: _make_phase2_prompt,
-    3: _make_phase3_prompt,
-    4: _make_phase4_prompt,
-    5: _make_phase5_prompt,
-}
-
-PHASE_STATE_KEYS = {
-    1: "background",
-    2: "hypothesis",
-    3: "solution_spec",
-    4: "metrics_plan",
-    5: "gtm_plan",
-}
+    return ""
 
 
-# ── Critique Prompt ─────────────────────────────────────
+def _make_critique_prompt(state: dict, phase: int) -> str:
+    content = get_phase(state, phase)["result"]
 
-def _make_critique_prompt(state: PlannerState) -> str:
-    phase = state["current_phase"]
-    phase_name = PHASE_NAMES[phase]
-    content = state[PHASE_STATE_KEYS[phase]]
-
-    # 단계별 평가 기준
     criteria = {
         1: [
             ("시장 데이터 충분성", "실제 데이터/소스가 있는가? 추측이 아닌가?"),
@@ -297,12 +349,12 @@ def _make_critique_prompt(state: PlannerState) -> str:
     )
 
     return f"""너는 냉정한 PO Critic이다.
-아래 [{phase}] {phase_name} 결과물을 검토하라.
+[{phase}] {PHASE_NAMES[phase]} 결과물을 검토하라.
 
 ## 아이디어
 {state['idea']}
 
-## [{phase}] {phase_name} 결과물
+## [{phase}] {PHASE_NAMES[phase]} 결과물
 {content}
 
 ## 평가 항목 (각 1~10점)
@@ -317,361 +369,40 @@ SCORE: [평균 점수, 소수점 1자리]
 
 VERDICT: [PASS/REVISE/REJECT]
 
-FEEDBACK: (REVISE인 경우 구체적 개선 지시. 무엇을 어떻게 고쳐야 하는지.)
+FEEDBACK: (REVISE인 경우 구체적 개선 지시)
 
 ## 판정 기준
 - 평균 7점 이상: PASS
 - 평균 5~6점: REVISE
 - 평균 5점 미만: REJECT
 
-자기 편의적 채점 금지. 냉정하게 평가하라."""
-
-
-# ── Nodes ───────────────────────────────────────────────
-
-def node_work(state: PlannerState) -> dict:
-    """탐정가재가 현재 단계 작업 수행"""
-    phase = state["current_phase"]
-    phase_name = PHASE_NAMES[phase]
-    rev = state["phase_revision_counts"].get(phase, 0)
-    suffix = f" (수정 {rev}차)" if rev > 0 else ""
-    print(f"🔍 [{phase}/5] {phase_name}{suffix} — 탐정가재 작업 중...")
-
-    prompt = PHASE_PROMPT_BUILDERS[phase](state)
-    result = call_agent("scout", prompt, label=f"plan-phase{phase}")
-
-    return {PHASE_STATE_KEYS[phase]: result}
-
-
-def node_critique(state: PlannerState) -> dict:
-    """판사가재가 현재 단계 검증"""
-    phase = state["current_phase"]
-    phase_name = PHASE_NAMES[phase]
-    print(f"⚖️  [{phase}/5] {phase_name} — 판사가재 검증 중...")
-
-    prompt = _make_critique_prompt(state)
-    result = call_agent("judge", prompt, label=f"plan-critique-phase{phase}")
-
-    # 점수 파싱
-    score = 0.0
-    for line in result.split("\n"):
-        if line.strip().startswith("SCORE:"):
-            try:
-                score_str = line.split(":")[1].strip()
-                # "7.5/10" 또는 "7.5" 둘 다 처리
-                score = float(score_str.split("/")[0].strip())
-            except (ValueError, IndexError):
-                score = 5.0
-            break
-
-    # 상태 업데이트
-    new_critiques = dict(state["phase_critiques"])
-    new_critiques[phase] = result
-
-    new_scores = dict(state["phase_scores"])
-    new_scores[phase] = score
-
-    new_revisions = dict(state["phase_revision_counts"])
-    # revision count는 route에서 올림
-
-    return {
-        "phase_critiques": new_critiques,
-        "phase_scores": new_scores,
-    }
-
-
-def route_after_critique(state: PlannerState) -> Literal["revise", "next_phase", "finalize"]:
-    """판사 검증 후 분기: 수정 / 다음 단계 / 완료"""
-    phase = state["current_phase"]
-    score = state["phase_scores"].get(phase, 0)
-    rev_count = state["phase_revision_counts"].get(phase, 0)
-
-    if score >= 7:
-        print(f"  ✅ PASS ({score}/10)")
-        if phase >= 5:
-            return "finalize"
-        return "next_phase"
-    elif rev_count >= MAX_REVISIONS_PER_PHASE:
-        print(f"  ⚠️ 최대 수정 횟수 도달 ({rev_count}/{MAX_REVISIONS_PER_PHASE}), 다음으로 진행")
-        if phase >= 5:
-            return "finalize"
-        return "next_phase"
-    else:
-        print(f"  🔄 REVISE ({score}/10) — 수정 {rev_count + 1}/{MAX_REVISIONS_PER_PHASE}")
-        return "revise"
-
-
-def node_revise(state: PlannerState) -> dict:
-    """수정 카운트 올리고 다시 work로"""
-    phase = state["current_phase"]
-    new_revisions = dict(state["phase_revision_counts"])
-    new_revisions[phase] = new_revisions.get(phase, 0) + 1
-    return {"phase_revision_counts": new_revisions}
-
-
-def node_next_phase(state: PlannerState) -> dict:
-    """다음 단계로 이동"""
-    return {"current_phase": state["current_phase"] + 1}
-
-
-def node_finalize(state: PlannerState) -> dict:
-    """최종 1-Pager 조합"""
-    print("📋 최종 1-Pager 조합 중...")
-
-    avg_score = sum(state["phase_scores"].values()) / max(len(state["phase_scores"]), 1)
-    total_revisions = sum(state["phase_revision_counts"].values())
-
-    plan = f"""# 📋 PO's 1-Pager: {state['idea']}
-> 전체 평균 점수: {avg_score:.1f}/10
-> 총 수정 횟수: {total_revisions}
-> 단계별 점수: {json.dumps(state['phase_scores'], ensure_ascii=False)}
-
----
-
-## 1. Background & Opportunity
-{state['background']}
-
----
-
-## 2. Hypothesis
-{state['hypothesis']}
-
----
-
-## 3. Solution & MVP Spec
-{state['solution_spec']}
-
----
-
-## 4. Success Metrics
-{state['metrics_plan']}
-
----
-
-## 5. Go-to-Market & Operations
-{state['gtm_plan']}
-
----
-
-## 단계별 검증 결과
-"""
-    for p in range(1, 6):
-        score = state["phase_scores"].get(p, 0)
-        critique = state["phase_critiques"].get(p, "")
-        revisions = state["phase_revision_counts"].get(p, 0)
-        plan += f"""
-### [{p}] {PHASE_NAMES[p]} — {score}/10 (수정 {revisions}회)
-{critique}
-"""
-
-    return {"final_plan": plan}
-
-
-def node_notion(state: PlannerState) -> dict:
-    """노션에 페이지 생성"""
-    print("📝 Notion 페이지 생성 중...")
-
-    notion_key_path = os.path.expanduser("~/.config/notion/api_key")
-    if not os.path.exists(notion_key_path):
-        print("  ⚠️ Notion API 키 없음, 스킵")
-        return {"notion_url": "(no notion key)"}
-
-    with open(notion_key_path) as f:
-        notion_key = f.read().strip()
-
-    avg_score = sum(state["phase_scores"].values()) / max(len(state["phase_scores"]), 1)
-
-    # Notion 블록 구성
-    children = []
-
-    # 요약 callout
-    children.append({
-        "type": "callout",
-        "callout": {
-            "icon": {"type": "emoji", "emoji": "🦞"},
-            "rich_text": [{"text": {"content":
-                f"전체 평균: {avg_score:.1f}/10 | "
-                f"단계별: {json.dumps({PHASE_NAMES[k]: v for k, v in state['phase_scores'].items()}, ensure_ascii=False)}"
-            }}]
-        }
-    })
-
-    # 각 단계 내용
-    sections = [
-        ("1. Background & Opportunity", state["background"]),
-        ("2. Hypothesis", state["hypothesis"]),
-        ("3. Solution & MVP Spec", state["solution_spec"]),
-        ("4. Success Metrics", state["metrics_plan"]),
-        ("5. GTM & Operations", state["gtm_plan"]),
-    ]
-
-    for heading, body in sections:
-        children.append({
-            "type": "heading_2",
-            "heading_2": {"rich_text": [{"text": {"content": heading}}]}
-        })
-        if body:
-            for chunk in [body[i:i+1900] for i in range(0, len(body), 1900)]:
-                children.append({
-                    "type": "paragraph",
-                    "paragraph": {"rich_text": [{"text": {"content": chunk}}]}
-                })
-
-    # 검증 결과
-    children.append({
-        "type": "heading_2",
-        "heading_2": {"rich_text": [{"text": {"content": "📊 단계별 검증 결과"}}]}
-    })
-
-    for p in range(1, 6):
-        score = state["phase_scores"].get(p, 0)
-        rev = state["phase_revision_counts"].get(p, 0)
-        critique = state["phase_critiques"].get(p, "")[:500]
-        children.append({
-            "type": "toggle",
-            "toggle": {
-                "rich_text": [{"text": {"content": f"[{p}] {PHASE_NAMES[p]} — {score}/10 (수정 {rev}회)"}}],
-                "children": [{
-                    "type": "paragraph",
-                    "paragraph": {"rich_text": [{"text": {"content": critique or "(no critique)"}}]}
-                }]
-            }
-        })
-
-    children = children[:95]
-
-    parent_page_id = "ea6034d6-facc-494d-aee7-a1fa9cbec48f"
-
-    payload = json.dumps({
-        "parent": {"page_id": parent_page_id},
-        "icon": {"type": "emoji", "emoji": "📋"},
-        "properties": {
-            "title": {"title": [{"text": {"content": f"📋 [Plan] {state['idea'][:50]}"}}]}
-        },
-        "children": children,
-    }).encode()
-
-    req = urllib.request.Request(
-        "https://api.notion.com/v1/pages",
-        data=payload,
-        headers={
-            "Authorization": f"Bearer {notion_key}",
-            "Notion-Version": "2022-06-28",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode())
-        url = result.get("url", "")
-        print(f"  ✅ Notion: {url}")
-        return {"notion_url": url}
-    except Exception as e:
-        error_body = ""
-        if hasattr(e, "read"):
-            error_body = e.read().decode()[:300]
-        print(f"  ❌ Notion error: {e} {error_body}")
-        return {"notion_url": f"(error: {e})"}
-
-
-# ── Graph ───────────────────────────────────────────────
-
-def build_graph() -> StateGraph:
-    graph = StateGraph(PlannerState)
-
-    # 노드 등록
-    graph.add_node("work", node_work)
-    graph.add_node("critique", node_critique)
-    graph.add_node("revise", node_revise)
-    graph.add_node("next_phase", node_next_phase)
-    graph.add_node("finalize", node_finalize)
-    graph.add_node("notion", node_notion)
-
-    # 흐름
-    graph.set_entry_point("work")
-    graph.add_edge("work", "critique")
-
-    # 판사 검증 후 분기
-    graph.add_conditional_edges(
-        "critique",
-        route_after_critique,
-        {
-            "revise": "revise",
-            "next_phase": "next_phase",
-            "finalize": "finalize",
-        }
-    )
-
-    # revise → 다시 work
-    graph.add_edge("revise", "work")
-
-    # next_phase → 다시 work
-    graph.add_edge("next_phase", "work")
-
-    # finalize → notion → END
-    graph.add_edge("finalize", "notion")
-    graph.add_edge("notion", END)
-
-    return graph.compile()
-
-
-# ── Main ────────────────────────────────────────────────
-
-def main():
-    parser = argparse.ArgumentParser(description="🦞 Gajae Planner — PO 기획 에이전트")
-    parser.add_argument("idea", help="기획할 아이디어/기능")
-    parser.add_argument("--context", default="1인 개발자, 2주", help="환경 정보")
-    args = parser.parse_args()
-
-    print(f"""
-╔══════════════════════════════════════════════════╗
-║  🦞 Gajae Planner v2 — LangGraph Pipeline       ║
-║  매 단계 판사가재 검증 (최대 2회 수정/단계)        ║
-╚══════════════════════════════════════════════════╝
-  아이디어: {args.idea}
-  환경: {args.context}
-
-  공정: [1]→⚖️→[2]→⚖️→[3]→⚖️→[4]→⚖️→[5]→⚖️→📝Notion
-         ↺      ↺      ↺      ↺      ↺
-""")
-
-    graph = build_graph()
-
-    initial_state: PlannerState = {
-        "idea": args.idea,
-        "context": args.context,
-        "background": "",
-        "hypothesis": "",
-        "solution_spec": "",
-        "metrics_plan": "",
-        "gtm_plan": "",
-        "current_phase": 1,
-        "phase_revision_counts": {},
-        "phase_critiques": {},
-        "phase_scores": {},
-        "final_plan": "",
-        "notion_url": "",
-    }
-
-    final = graph.invoke(initial_state)
-
-    avg_score = sum(final["phase_scores"].values()) / max(len(final["phase_scores"]), 1)
-    total_revisions = sum(final["phase_revision_counts"].values())
-
-    print(f"""
-╔══════════════════════════════════════════════════╗
-║  ✅ 기획 완료                                     ║
-╚══════════════════════════════════════════════════╝
-  평균 점수: {avg_score:.1f}/10
-  단계별 점수: {json.dumps({PHASE_NAMES[k]: v for k, v in final['phase_scores'].items()}, ensure_ascii=False)}
-  총 수정: {total_revisions}회
-  Notion: {final['notion_url']}
-""")
-
-    return final
+냉정하게 평가하라. 자기 편의적 채점 금지."""
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) < 2:
+        print("Usage: python3 graph.py init '아이디어' --context '환경'")
+        print("       python3 graph.py status RUN_ID")
+        sys.exit(1)
+
+    cmd = sys.argv[1]
+    if cmd == "init":
+        idea = sys.argv[2]
+        context = sys.argv[3] if len(sys.argv) > 3 else "1인 개발자"
+        run_id = init_run(idea, context)
+        print(f"✅ Run initialized: {run_id}")
+        state = load_state(run_id)
+        na = next_action(state)
+        print(f"   Next: {na['action']} phase={na['phase']} agent={na['agent']}")
+
+    elif cmd == "status":
+        run_id = sys.argv[2]
+        state = load_state(run_id)
+        print(get_summary(state))
+
+    elif cmd == "next":
+        run_id = sys.argv[2]
+        state = load_state(run_id)
+        na = next_action(state)
+        print(json.dumps(na, ensure_ascii=False, default=str))
