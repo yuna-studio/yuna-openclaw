@@ -22,7 +22,7 @@ from langgraph.graph import StateGraph, END
 
 # ── Config ──────────────────────────────────────────────
 
-STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/planner/state")
+# (state persistence removed)
 MAX_REVISIONS_PER_PHASE = 2
 
 PHASE_NAMES = {
@@ -735,15 +735,8 @@ def build_graph():
 
 # ── State Persistence ───────────────────────────────────
 
-def save_run(run_id: str, state: dict):
-    os.makedirs(STATE_DIR, exist_ok=True)
-    path = os.path.join(STATE_DIR, f"{run_id}.json")
-    with open(path, "w") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
-
 
 def load_run(run_id: str) -> dict:
-    path = os.path.join(STATE_DIR, f"{run_id}.json")
     with open(path) as f:
         return json.load(f)
 
@@ -800,7 +793,6 @@ def main():
         }
 
         # human_inputs 파일이 있으면 로드
-        hi_path = os.path.join(STATE_DIR, f"{run_id}.inputs.json")
         if os.path.exists(hi_path):
             with open(hi_path) as f:
                 initial["human_inputs"] = json.load(f)
@@ -809,31 +801,18 @@ def main():
         final = graph.invoke(initial)
 
         # 결과 저장
-        save_run(run_id, dict(final))
-        print(f"\n💾 State saved: {run_id}")
 
-    elif cmd == "status":
-        run_id = sys.argv[2]
-        state = load_run(run_id)
-        print(f"📋 기획: {state['idea'][:50]}")
-        print(f"   상태: {state['status']}")
-        for i in range(1, 6):
-            s = state["phase_scores"].get(str(i), "-")
-            r = state["phase_revisions"].get(str(i), 0)
-            has_result = "✅" if state["phase_results"].get(str(i)) else "⏳"
-            print(f"   [{i}] {PHASE_NAMES[i]}: {has_result} score={s} rev={r}")
+        print(f"\n💾 State saved: {run_id}")
 
     elif cmd == "feedback":
         run_id = sys.argv[2]
         feedback = sys.argv[3]
         phase = int(sys.argv[4]) if len(sys.argv) > 4 else 0
-        hi_path = os.path.join(STATE_DIR, f"{run_id}.inputs.json")
         inputs = []
         if os.path.exists(hi_path):
             with open(hi_path) as f:
                 inputs = json.load(f)
         inputs.append({"phase": phase, "input": feedback})
-        os.makedirs(STATE_DIR, exist_ok=True)
         with open(hi_path, "w") as f:
             json.dump(inputs, f, ensure_ascii=False, indent=2)
         print(f"✅ 피드백 추가: {feedback}")

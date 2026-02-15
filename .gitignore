@@ -63,8 +63,3 @@ audio_*
 response.json
 audit_followers.js
 check_inactive.*
-gajae-os/planner/state/
-gajae-os/architect/state/
-gajae-os/develop/state/
-gajae-os/architect/state/
-gajae-os/develop/state/

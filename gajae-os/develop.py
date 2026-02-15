@@ -39,13 +39,12 @@ from typing import TypedDict, Literal
 from langgraph.graph import StateGraph, END
 
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'planner'))
 from notion_upload import read_page_blocks
 
 
 # ── Config ──────────────────────────────────────────────
 
-STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/develop/state")
+# (state persistence removed)
 PROJECT_DIR = os.path.expanduser("~/.openclaw/workspace/bip")
 MAX_REVISIONS = 2
 
@@ -698,11 +697,6 @@ def build_graph():
 
 # ── State Persistence ───────────────────────────────────
 
-def save_run(run_id: str, state: dict):
-    os.makedirs(STATE_DIR, exist_ok=True)
-    with open(os.path.join(STATE_DIR, f"{run_id}.json"), "w") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
-
 
 # ── Main ────────────────────────────────────────────────
 
@@ -761,20 +755,8 @@ Examples:
 
         graph = build_graph()
         final = graph.invoke(initial)
-        save_run(run_id, dict(final))
+
         print(f"\n💾 State: {run_id}")
-
-    elif cmd == "status":
-        run_id = sys.argv[2]
-        state = json.load(open(os.path.join(STATE_DIR, f"{run_id}.json")))
-        print(f"📋 {state['doc_url'][:50]}")
-        print(f"   상태: {state['status']}")
-        for s in range(1, 19):
-            has = "✅" if state["step_results"].get(str(s)) else "⏳"
-            score = state["step_scores"].get(str(s), "")
-            score_str = f" {score}/10" if score else ""
-            print(f"   [{s:2d}] {STEP_NAMES[s]}: {has}{score_str}")
-
 
 if __name__ == "__main__":
     main()

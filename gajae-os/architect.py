@@ -30,7 +30,6 @@ from typing import TypedDict, Literal
 from langgraph.graph import StateGraph, END
 
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'planner'))
 from notion_upload import (
     api as notion_api, text as notion_text, append_blocks,
     read_page_blocks, markdown_to_blocks, PARENT_PAGE,
@@ -39,7 +38,7 @@ from notion_upload import (
 
 # ── Config ──────────────────────────────────────────────
 
-STATE_DIR = os.path.expanduser("~/.openclaw/workspace/gajae-os/architect/state")
+# (state persistence removed)
 MAX_REVISIONS = 2
 
 PHASE_NAMES = {
@@ -925,7 +924,7 @@ def node_notion_upload(state: DocState) -> dict:
         print(f"  ❌ 노션 업로드 실패: {e}")
         # Save state before crash so we don't lose phase results
         run_id = datetime.now().strftime("%Y%m%d-%H%M%S") + "-rescue"
-        save_run(run_id, dict(state))
+
         print(f"  💾 State rescue: {run_id}")
         raise
 
@@ -1029,11 +1028,6 @@ def build_graph():
 
 # ── State Persistence ───────────────────────────────────
 
-def save_run(run_id: str, state: dict):
-    os.makedirs(STATE_DIR, exist_ok=True)
-    with open(os.path.join(STATE_DIR, f"{run_id}.json"), "w") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
-
 
 # ── Main ────────────────────────────────────────────────
 
@@ -1081,19 +1075,8 @@ def main():
 
         graph = build_graph()
         final = graph.invoke(initial)
-        save_run(run_id, dict(final))
+
         print(f"\n💾 State: {run_id}")
-
-    elif cmd == "status":
-        run_id = sys.argv[2]
-        state = json.load(open(os.path.join(STATE_DIR, f"{run_id}.json")))
-        print(f"📋 {state['plan_url'][:50]}")
-        print(f"   상태: {state['status']}")
-        for p in range(1, 8):
-            s = state["phase_scores"].get(str(p), "-")
-            has = "✅" if state["phase_results"].get(str(p)) else "⏳"
-            print(f"   [{p}] {PHASE_NAMES[p]}: {has} {s}")
-
 
 if __name__ == "__main__":
     main()
