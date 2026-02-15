@@ -53,6 +53,12 @@ class PlannerState(TypedDict):
     diagram_score: float        # 점수
     diagram_revisions: int      # 수정 횟수
 
+    # Notion (최종 공정)
+    notion_page_id: str         # 노션 페이지 ID
+    notion_score: float         # 노션 문서 품질 점수
+    notion_critique: str        # 판사 검증 결과
+    notion_revisions: int       # 재업로드 횟수
+
     status: str                 # running / completed / failed
     notion_url: str
 
@@ -330,8 +336,8 @@ def node_critique(state: PlannerState) -> dict:
     }
 
 
-def route_after_critique(state: PlannerState) -> Literal["revise", "next_phase", "finalize", "diagram"]:
-    """판사 검증 후 분기 — Phase 3 PASS 시 다이어그램 생성"""
+def route_after_critique(state: PlannerState) -> Literal["revise", "next_phase", "notion_upload", "diagram"]:
+    """판사 검증 후 분기 — Phase 3→다이어그램, Phase 5→노션"""
     phase = state["current_phase"]
     score = state["phase_scores"].get(str(phase), 0)
     rev = state["phase_revisions"].get(str(phase), 0)
@@ -351,7 +357,11 @@ def route_after_critique(state: PlannerState) -> Literal["revise", "next_phase",
     if phase == 3:
         return "diagram"
 
-    return "finalize" if phase >= 5 else "next_phase"
+    # Phase 5 PASS → 노션 업로드
+    if phase >= 5:
+        return "notion_upload"
+
+    return "next_phase"
 
 
 def node_revise(state: PlannerState) -> dict:
@@ -550,7 +560,114 @@ def node_finalize(state: PlannerState) -> dict:
     d_count = len(state.get("diagrams", {}))
     if d_count:
         print(f"   [📊] UX Diagrams: {d_score}/10 ({d_count}개, 수정 {d_rev}회)")
+    # 노션 결과
+    notion_url = state.get("notion_url", "")
+    n_score = state.get("notion_score", 0)
+    if notion_url:
+        print(f"   [📝] Notion: {n_score}/10 → {notion_url}")
     return {"status": "completed"}
+
+
+def node_notion_upload(state: PlannerState) -> dict:
+    """노션에 전체 기획 문서 업로드"""
+    print("\n📝 노션 업로드 중...")
+
+    from notion_upload import upload_to_notion, reupload_to_notion
+
+    existing_page = state.get("notion_page_id", "")
+
+    if existing_page:
+        # 재업로드 (REVISE 후)
+        print(f"  ♻️ 기존 페이지 재업로드: {existing_page}")
+        n_blocks = reupload_to_notion(existing_page, state)
+        url = f"https://www.notion.so/{existing_page.replace('-', '')}"
+        print(f"  ✅ 재업로드 완료 ({n_blocks}개 블록)")
+        return {"notion_url": url}
+    else:
+        # 신규 생성
+        page_id, url, n_blocks = upload_to_notion(state)
+        print(f"  ✅ 노션 페이지 생성 ({n_blocks}개 블록)")
+        print(f"  📎 {url}")
+        return {"notion_url": url, "notion_page_id": page_id}
+
+
+def node_notion_review(state: PlannerState) -> dict:
+    """판사가재가 노션 페이지를 읽고 포맷/정합성 검증"""
+    print("⚖️  노션 문서 품질 검증 — 판사가재...")
+
+    from notion_upload import read_page_blocks
+
+    page_id = state.get("notion_page_id", "")
+    if not page_id:
+        print("  ⚠️ 노션 페이지 없음, 스킵")
+        return {"notion_score": 7.0, "notion_critique": "페이지 없음 — 스킵"}
+
+    # 노션에서 실제 렌더링된 내용 읽기
+    page_text = read_page_blocks(page_id)
+
+    prompt = f"""너는 기술 문서 QA 편집장이다. 노션 기획 문서의 품질을 검증하라.
+
+## 검증 대상
+아래는 노션 페이지에서 읽어온 실제 렌더링된 내용이다.
+
+{page_text[:8000]}
+
+## 원본 기획 정보 (비교용)
+- 아이디어: {state['idea']}
+- Phase 수: 5개
+- 다이어그램: {'있음' if state.get('diagrams') else '없음'}
+
+## 검증 항목 (각 1~10점)
+
+1. **구조 완전성** — 5개 Phase + 다이어그램이 모두 존재하는가? 누락된 섹션이 없는가?
+2. **포맷 품질** — 제목(H1/H2/H3), 리스트, 테이블, 코드블록이 제대로 구분되어 있는가? 마크다운이 깨진 곳은 없는가? (예: |로 시작하는 raw text가 테이블 대신 나오거나, ```가 그대로 노출되면 감점)
+3. **가독성** — 한 문단이 너무 길지 않은가? 적절한 구분이 되어 있는가? callout/divider 활용이 적절한가?
+
+## 출력 형식 (반드시)
+SCORE: [평균 점수, 소수점 1자리]
+
+| 항목 | 점수 | 코멘트 |
+|---|---|---|
+| 구조 완전성 | X/10 | ... |
+| 포맷 품질 | X/10 | ... |
+| 가독성 | X/10 | ... |
+
+VERDICT: [PASS/REVISE]
+
+FEEDBACK: (REVISE면 구체적으로 어떤 블록이 깨졌는지. PASS면 칭찬 한줄)
+
+## 판정 기준
+- 7점 이상: PASS — 문서 승인
+- 7점 미만: REVISE — 재업로드 필요"""
+
+    result = call_agent("judge", prompt, timeout=180)
+    score = parse_score(result)
+
+    return {
+        "notion_score": score,
+        "notion_critique": result,
+    }
+
+
+def route_after_notion_review(state: PlannerState) -> Literal["notion_revise", "finalize"]:
+    """노션 검증 후 분기"""
+    score = state.get("notion_score", 0)
+    rev = state.get("notion_revisions", 0)
+
+    if score >= 7:
+        print(f"  ✅ 노션 문서 PASS ({score}/10)")
+        return "finalize"
+    elif rev >= MAX_REVISIONS_PER_PHASE:
+        print(f"  ⚠️ 노션 최대 수정, 강제 통과 ({score}/10)")
+        return "finalize"
+    else:
+        print(f"  🔄 노션 문서 REVISE ({score}/10) — 수정 {rev + 1}/{MAX_REVISIONS_PER_PHASE}")
+        return "notion_revise"
+
+
+def node_notion_revise(state: PlannerState) -> dict:
+    """노션 수정 카운트 증가"""
+    return {"notion_revisions": (state.get("notion_revisions", 0) + 1)}
 
 
 # ── Build Graph ─────────────────────────────────────────
@@ -566,6 +683,9 @@ def build_graph():
     graph.add_node("diagram", node_diagram)
     graph.add_node("diagram_critique", node_diagram_critique)
     graph.add_node("diagram_revise", node_diagram_revise)
+    graph.add_node("notion_upload", node_notion_upload)
+    graph.add_node("notion_review", node_notion_review)
+    graph.add_node("notion_revise", node_notion_revise)
 
     graph.set_entry_point("work")
     graph.add_edge("work", "critique")
@@ -576,16 +696,15 @@ def build_graph():
         {
             "revise": "revise",
             "next_phase": "next_phase",
-            "finalize": "finalize",
-            "diagram": "diagram",
+            "notion_upload": "notion_upload",   # Phase 5 PASS → 노션
+            "diagram": "diagram",               # Phase 3 PASS → 다이어그램
         }
     )
 
     graph.add_edge("revise", "work")
     graph.add_edge("next_phase", "work")
-    graph.add_edge("finalize", END)
 
-    # Diagram sub-flow: diagram → diagram_critique → pass/revise
+    # Diagram sub-flow
     graph.add_edge("diagram", "diagram_critique")
     graph.add_conditional_edges(
         "diagram_critique",
@@ -596,6 +715,20 @@ def build_graph():
         }
     )
     graph.add_edge("diagram_revise", "diagram")
+
+    # Notion sub-flow: upload → review → pass/revise
+    graph.add_edge("notion_upload", "notion_review")
+    graph.add_conditional_edges(
+        "notion_review",
+        route_after_notion_review,
+        {
+            "notion_revise": "notion_revise",
+            "finalize": "finalize",
+        }
+    )
+    graph.add_edge("notion_revise", "notion_upload")
+
+    graph.add_edge("finalize", END)
 
     return graph.compile()
 
@@ -642,7 +775,7 @@ def main():
   Run ID: {run_id}
   아이디어: {idea[:60]}
   환경: {context[:60]}
-  공정: [1]→⚖️→[2]→⚖️→[3]→⚖️→📊→⚖️→[4]→⚖️→[5]→⚖️→END
+  공정: [1]→⚖️→[2]→⚖️→[3]→⚖️→📊→⚖️→[4]→⚖️→[5]→⚖️→📝→⚖️→END
 """)
 
         initial: PlannerState = {
@@ -658,6 +791,10 @@ def main():
             "diagram_critique": "",
             "diagram_score": 0.0,
             "diagram_revisions": 0,
+            "notion_page_id": "",
+            "notion_score": 0.0,
+            "notion_critique": "",
+            "notion_revisions": 0,
             "status": "running",
             "notion_url": "",
         }
