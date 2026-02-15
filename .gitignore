@@ -53,3 +53,5 @@ next-env.d.ts
 .pub-cache/
 .pub/
 build/
+.firebase-service-account.json
+session_log_watcher.offsets.json
