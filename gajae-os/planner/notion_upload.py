@@ -30,7 +30,13 @@ def api(method, path, body=None):
 
 
 def text(content):
-    return [{"text": {"content": content[:2000]}}]
+    """Split into chunks of 2000 chars (Notion rich_text limit per item)."""
+    if not content:
+        return [{"text": {"content": ""}}]
+    chunks = []
+    for i in range(0, len(content), 2000):
+        chunks.append({"text": {"content": content[i:i+2000]}})
+    return chunks
 
 
 def append_blocks(page_id, blocks):

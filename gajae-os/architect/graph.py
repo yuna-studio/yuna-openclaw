@@ -797,29 +797,37 @@ def node_notion_upload(state: DocState) -> dict:
     scores = state["phase_scores"]
     avg = sum(scores.values()) / max(len(scores), 1)
 
-    existing = state.get("notion_page_id", "")
-    if existing:
-        from notion_upload import delete_all_blocks
-        print(f"  ♻️ 재업로드: {existing}")
-        delete_all_blocks(existing)
-        import time; time.sleep(0.5)
-        blocks = _build_blocks(state)
-        append_blocks(existing, blocks)
-        url = f"https://www.notion.so/{existing.replace('-', '')}"
-        print(f"  ✅ {len(blocks)}블록")
-        return {"notion_url": url}
-    else:
-        page = notion_api("POST", "pages", {
-            "parent": {"page_id": PARENT_PAGE},
-            "properties": {"title": {"title": notion_text(f"🔧 Dev Doc (avg {avg:.1f}/10)")}},
-            "icon": {"emoji": "🔧"},
-        })
-        pid = page["id"]
-        blocks = _build_blocks(state)
-        append_blocks(pid, blocks)
-        url = f"https://www.notion.so/{pid.replace('-', '')}"
-        print(f"  ✅ {len(blocks)}블록 → {url}")
-        return {"notion_url": url, "notion_page_id": pid}
+    try:
+        existing = state.get("notion_page_id", "")
+        if existing:
+            from notion_upload import delete_all_blocks
+            print(f"  ♻️ 재업로드: {existing}")
+            delete_all_blocks(existing)
+            import time; time.sleep(0.5)
+            blocks = _build_blocks(state)
+            append_blocks(existing, blocks)
+            url = f"https://www.notion.so/{existing.replace('-', '')}"
+            print(f"  ✅ {len(blocks)}블록")
+            return {"notion_url": url}
+        else:
+            page = notion_api("POST", "pages", {
+                "parent": {"page_id": PARENT_PAGE},
+                "properties": {"title": {"title": notion_text(f"🔧 Dev Doc (avg {avg:.1f}/10)")}},
+                "icon": {"emoji": "🔧"},
+            })
+            pid = page["id"]
+            blocks = _build_blocks(state)
+            append_blocks(pid, blocks)
+            url = f"https://www.notion.so/{pid.replace('-', '')}"
+            print(f"  ✅ {len(blocks)}블록 → {url}")
+            return {"notion_url": url, "notion_page_id": pid}
+    except Exception as e:
+        print(f"  ❌ 노션 업로드 실패: {e}")
+        # Save state before crash so we don't lose phase results
+        run_id = datetime.now().strftime("%Y%m%d-%H%M%S") + "-rescue"
+        save_run(run_id, dict(state))
+        print(f"  💾 State rescue: {run_id}")
+        raise
 
 
 def node_notion_review(state: DocState) -> dict:
