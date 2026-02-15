@@ -7,7 +7,6 @@
 
 ## 1. 런타임 아키텍처 (Runtime Architecture)
 
-**[물리적 환경]**: Mac (PC) + Telegram Bridge + Firestore Database.
 **[코드베이스]**: `gajae-os` (TypeScript + LangGraph.js)
 
 ```mermaid
