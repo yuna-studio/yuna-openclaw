@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 import { db } from "@/lib/firebase";
@@ -13,58 +13,41 @@ import {
   limit,
   where,
   doc,
-  getDoc,
   setDoc,
   increment,
 } from "firebase/firestore";
 
-function formatCount(n: number): string {
-  if (n < 100) return String(n);
-  if (n < 1_000) return "100+";
-  if (n < 10_000) return `${Math.floor(n / 1_000)}천+`;
-  if (n < 100_000) return `${Math.floor(n / 10_000)}만+`;
-  if (n < 1_000_000) return `${Math.floor(n / 10_000)}만+`;
-  if (n < 10_000_000) return `${Math.floor(n / 1_000_000)}백만+`;
-  if (n < 100_000_000) return `${Math.floor(n / 10_000_000)}천만+`;
-  if (n < 1_000_000_000) return `${Math.floor(n / 100_000_000)}억+`;
-  return `${Math.floor(n / 1_000_000_000)}0억+`;
-}
-
-const SESSION_ID = typeof window !== "undefined"
-  ? sessionStorage.getItem("reaction-session") || (() => {
-      const id = Math.random().toString(36).slice(2, 10);
-      sessionStorage.setItem("reaction-session", id);
-      return id;
-    })()
-  : "server";
-
 interface FloatingHeart {
   id: number;
-  x: number;        // 시작 x (vw)
-  drift: number;     // 좌우 흔들림
-  duration: number;  // 올라가는 시간
-  size: number;      // 크기
+  x: number;
+  drift: number;
+  duration: number;
+  size: number;
   delay: number;
 }
 
 export function ReactionBar() {
   const [hearts, setHearts] = useState<FloatingHeart[]>([]);
-  const [count, setCount] = useState(0);
   const [showCheer, setShowCheer] = useState(false);
-  const [heartbeat, setHeartbeat] = useState(false);
   const lastProcessed = useRef<string>("");
   const cheerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const beatTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionId = useRef<string>("");
+  const lastTrigger = useRef<number>(0);
+  const sessionCount = useRef<number>(0);
 
-  // 누적 카운트 실시간 구독
+  const MAX_PER_SESSION = 50;
+  const THROTTLE_MS = 500;
+
+  // 클라이언트에서만 session ID 생성 (하이드레이션 안전)
   useEffect(() => {
-    const counterRef = doc(db, "counters", "reactions");
-    const unsub = onSnapshot(counterRef, (snap) => {
-      if (snap.exists()) {
-        setCount(snap.data().heart || 0);
-      }
-    });
-    return () => unsub();
+    const stored = sessionStorage.getItem("reaction-session");
+    if (stored) {
+      sessionId.current = stored;
+    } else {
+      const id = Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem("reaction-session", id);
+      sessionId.current = id;
+    }
   }, []);
 
   // 실시간 리액션 파티클 구독 (최근 1분)
@@ -79,7 +62,6 @@ export function ReactionBar() {
 
     let isInitial = true;
     const unsub = onSnapshot(q, (snapshot) => {
-      // 첫 스냅샷은 기존 데이터 → 파티클 무시
       if (isInitial) {
         isInitial = false;
         return;
@@ -87,18 +69,13 @@ export function ReactionBar() {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           const data = change.doc.data();
-          if (data.sessionId === SESSION_ID) return;
+          if (data.sessionId === sessionId.current) return;
           if (change.doc.id === lastProcessed.current) return;
           lastProcessed.current = change.doc.id;
           spawnHearts();
-          // 응원 토스트
           setShowCheer(true);
           if (cheerTimer.current) clearTimeout(cheerTimer.current);
           cheerTimer.current = setTimeout(() => setShowCheer(false), 3000);
-          // 두근두근
-          setHeartbeat(true);
-          if (beatTimer.current) clearTimeout(beatTimer.current);
-          beatTimer.current = setTimeout(() => setHeartbeat(false), 3000);
         }
       });
     });
@@ -106,39 +83,51 @@ export function ReactionBar() {
     return () => unsub();
   }, []);
 
-  const spawnHearts = () => {
+  const spawnHearts = useCallback(() => {
     const id = Date.now() + Math.random();
     const newHearts: FloatingHeart[] = Array.from({ length: 3 + Math.floor(Math.random() * 3) }).map((_, i) => ({
       id: id + i,
-      x: 5 + Math.random() * 15,           // 좌측 영역 (5~20vw)
-      drift: (Math.random() - 0.5) * 40,    // 좌우 흔들림
-      duration: 2.5 + Math.random() * 1.5,  // 2.5~4초
-      size: 16 + Math.random() * 16,        // 16~32px
-      delay: Math.random() * 0.3,           // 약간의 딜레이
+      x: 5 + Math.random() * 15,
+      drift: (Math.random() - 0.5) * 40,
+      duration: 2.5 + Math.random() * 1.5,
+      size: 16 + Math.random() * 16,
+      delay: Math.random() * 0.3,
     }));
 
     setHearts((prev) => [...prev, ...newHearts]);
     setTimeout(() => {
       setHearts((prev) => prev.filter((h) => h.id < id));
     }, 5000);
-  };
+  }, []);
 
-  const triggerReaction = async () => {
+  const triggerReaction = useCallback(async () => {
+    const now = Date.now();
+    // 쓰로틀: 0.5초에 1번만
+    if (now - lastTrigger.current < THROTTLE_MS) {
+      spawnHearts();
+      return;
+    }
+    // 세션당 50회 제한
+    if (sessionCount.current >= MAX_PER_SESSION) {
+      spawnHearts();
+      return;
+    }
+    lastTrigger.current = now;
+    sessionCount.current += 1;
+
     spawnHearts();
     try {
-      // 개별 리액션 기록 (파티클 공유용)
       await addDoc(collection(db, "reactions"), {
         type: "heart",
         timestamp: new Date().toISOString(),
-        sessionId: SESSION_ID,
+        sessionId: sessionId.current,
       });
-      // 누적 카운터 +1
       const counterRef = doc(db, "counters", "reactions");
       await setDoc(counterRef, { heart: increment(1) }, { merge: true });
     } catch (e) {
       console.error("Reaction save failed:", e);
     }
-  };
+  }, [spawnHearts]);
 
   return (
     <>
@@ -180,22 +169,17 @@ export function ReactionBar() {
         <div className="relative">
           <button
             onClick={triggerReaction}
-            className="p-3 rounded-full glass shadow-xl hover:shadow-2xl active:scale-90 transition-all group"
+            className="flex items-center gap-1.5 px-3 py-2.5 rounded-full glass shadow-xl hover:shadow-2xl active:scale-90 transition-all group"
             aria-label="응원하기"
           >
             <Heart
-              className={`transition-colors ${heartbeat ? "text-reaction-heart fill-reaction-heart animate-heartbeat" : "text-reaction-heart fill-reaction-heart/20 group-hover:fill-reaction-heart"}`}
-              size={28}
+              className="transition-colors text-reaction-heart fill-reaction-heart animate-heartbeat"
+              size={22}
             />
+            <span className="text-xs font-bold text-text-muted">응원하기</span>
           </button>
-          {/* 카운트 뱃지 — 우측 상단 */}
-          {count > 0 && (
-            <div className="absolute -top-1.5 -right-1.5 bg-reaction-heart rounded-full min-w-[22px] h-[22px] flex items-center justify-center px-1 shadow-sm">
-              <span className="text-white font-bold text-[10px] font-mono leading-none">{formatCount(count)}</span>
-            </div>
-          )}
         </div>
-        {/* 응원 토스트 — 하트 버튼 바로 오른쪽 */}
+        {/* 응원 토스트 */}
         <AnimatePresence>
           {showCheer && (
             <motion.div
@@ -205,7 +189,7 @@ export function ReactionBar() {
               transition={{ duration: 0.2 }}
               className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-md border border-gray-100 whitespace-nowrap"
             >
-              <span className="text-xs text-charcoal/70">누군가 응원하고 있어요 ❤️</span>
+              <span className="text-xs text-text-secondary">누군가 응원하고 있어요 ❤️</span>
             </motion.div>
           )}
         </AnimatePresence>

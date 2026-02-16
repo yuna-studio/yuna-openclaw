@@ -2,13 +2,11 @@
 
 import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
-import { ReactionBar } from "@/components/ui/reaction-bar";
 import Link from "next/link";
 import { ChevronLeft, ArrowDown, Activity, Loader2, User } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
-import { db } from "@/lib/firebase";
 import { rtdb } from "@/lib/firebase";
 import { ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from "firebase/database";
 
@@ -232,7 +230,6 @@ export default function LivePage() {
         )}
       </AnimatePresence>
 
-      <ReactionBar />
     </div>
   );
 }

@@ -26,9 +26,3 @@ export const UI_TEXT = {
   USER_NAME: "낭만코딩",
   TYPING: "생각을 정리하는 중...",
 };
-
-export const ANIMATION = {
-  PULSE_FAST: "animate-pulse",
-  BOUNCE: "animate-bounce",
-  SPIN: "animate-spin",
-};

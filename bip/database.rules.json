@@ -6,7 +6,7 @@
       ".read": true,
       "$uid": {
         ".write": true,
-        ".validate": "newData.hasChild('joinedAt')"
+        ".validate": "!newData.exists() || newData.hasChild('joinedAt')"
       }
     }
   }

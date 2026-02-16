@@ -1,37 +1,58 @@
-# 🦞 Gajae OS (가재 운영체제)
+# 🦞 가재 컴퍼니 — Gajae Company
 
-> **"인간 CEO와 11명의 AI 가재 군단이 공존하는 자율형 조직 시스템"**
+> **1명의 사람과 3마리의 AI 가재가 만드는 바이브 코딩 쇼케이스**
 
-## 📚 Core Documents (헌법 및 가이드)
+## 🔴 Live
 
-*   **[🏛️ 시스템 설계도 (Constitution)](docs/core/process/SYSTEM_DESIGN_V1_0.md)**: 시스템 아키텍처, 데이터 모델, 13단계 공정, 가재 역할 등 모든 기술적 명세. **(필독)**
-*   **[💖 가재 문화 (Culture)](docs/core/CULTURE.md)**: 가재 컴퍼니의 15대 리더십 원칙 및 정신.
-*   **[🎨 디자인 시스템 (Sanctuary DS)](docs/business/common/design/SANCTUARY_DS.md)**: UX/UI 디자인 원칙 및 가이드라인.
+**[gajae-company-bip.web.app](https://gajae-company-bip.web.app)**
 
----
+기획부터 배포까지, AI와 나누는 모든 대화를 실시간으로 공개합니다.
 
-## 🛠️ Project Structure
+## 팀
+
+| 이름 | 역할 |
+|------|------|
+| 낭만코딩 | CEO · 텔레그램으로 지시 |
+| 비서가재 🦞 | 총괄 · 판단 · 실행 |
+| 탐정가재 🔍 | 조사 · 기획 · 개발 |
+| 판사가재 ⚖️ | 품질 검수 · 브랜드 가드 |
+
+## 구조
 
 ```
 yuna-openclaw/
-├── gajae-os/               # 시스템 코드 (TypeScript + LangGraph.js)
-├── docs/                   # 문서 저장소
-│   ├── core/               # 핵심 문서 (Process, Role, Culture)
-│   ├── epics/              # 프로젝트/에픽별 산출물
-│   └── business/           # 비즈니스/디자인 자료
-└── README.md               # 메인 가이드
+├── gajae-os/          # AI 에이전트 파이프라인 (Python)
+│   ├── planner.py     # 기획 파이프라인 (LangGraph)
+│   ├── architect.py   # 설계 파이프라인
+│   ├── develop.py     # 개발 파이프라인
+│   ├── logger.py      # Firestore 채팅 로그 업로더
+│   ├── notion_upload.py
+│   └── tests/
+├── scripts/           # 유틸리티 스크립트
+│   └── seed_projects.py
+├── docs/
+│   └── core/AGENT_SPEC.md  # Planner 에이전트 스펙
+└── bip/               # 프론트엔드 (Next.js, .gitignore)
 ```
 
-## 🚀 Getting Started
+## 기술 스택
 
-1.  **gajae-os 실행:**
-    ```bash
-    cd gajae-os
-    npm install
-    npm start
-    ```
-2.  **비서가재 호출:**
-    *   텔레그램 봇을 통해 명령을 내립니다. ("로그인 기능 만들어줘")
+- **에이전트**: OpenClaw + LangGraph (Python)
+- **프론트엔드**: Next.js 15 + Tailwind CSS + Framer Motion
+- **데이터**: Firebase Firestore (채팅 로그, 리액션, 포트폴리오)
+- **실시간**: Firestore onSnapshot + RTDB (접속자 수)
+- **배포**: Firebase Hosting (static export)
+- **문서**: Notion API (기획서, 설계서 자동 업로드)
+
+## 작동 방식
+
+```
+텔레그램 → 비서가재 판단 → ⚡ 직접 처리
+                          → 🔄 파이프라인 (탐정 → 판사 → 배포)
+```
+
+모든 대화가 Firestore에 기록되고, 웹사이트에서 실시간으로 공개됩니다.
 
 ---
-*Powered by OpenClaw & LangGraph.js*
+
+*Built with [OpenClaw](https://openclaw.ai) · © 2026 가재 컴퍼니*

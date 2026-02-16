@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ReactionBar } from "@/components/ui/reaction-bar";
 
 export const metadata: Metadata = {
-  title: "Vibe Coding Live",
-  description: "낭만코딩의 AI 페어 프로그래밍 실시간 중계 - Stealth Live Stream",
+  title: "낭만코딩 — 바이브 코딩, 전 과정 실시간 공개",
+  description: "기획부터 배포까지, AI와 나누는 모든 대화를 실시간으로 공개합니다.",
   icons: {
     icon: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦞</text></svg>",
   },
   openGraph: {
-      title: "Vibe Coding Live",
-      description: "AI가 코딩하는 과정을 실시간으로 훔쳐보세요.",
-      type: "website",
-  }
+    title: "낭만코딩 — 바이브 코딩, 전 과정 실시간 공개",
+    description: "기획부터 배포까지, AI와 나누는 모든 대화를 실시간으로 공개합니다.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +30,7 @@ export default function RootLayout({
         className={`antialiased bg-background text-text-primary selection:bg-primary/20 font-sans`}
       >
         {children}
+        <ReactionBar />
       </body>
     </html>
   );

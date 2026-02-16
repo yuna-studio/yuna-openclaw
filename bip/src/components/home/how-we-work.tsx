@@ -37,7 +37,8 @@ export function HowWeWork() {
         >
           <span className="text-3xl">💬</span>
           <p className="text-sm font-bold text-text-primary mt-2">&ldquo;이거 만들어줘&rdquo;</p>
-          <p className="text-[11px] text-text-muted mt-1">텔레그램으로 한 마디.</p>
+          <p className="text-[11px] text-text-muted mt-1">침대에서, 육아 중에, 이동 중에.</p>
+          <p className="text-[11px] text-text-muted">텔레그램 한 줄이면 개발이 시작돼요.</p>
         </motion.div>
 
         <div className="flex justify-center">

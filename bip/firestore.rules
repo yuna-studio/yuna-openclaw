@@ -7,12 +7,25 @@ service cloud.firestore {
     }
     match /reactions/{docId} {
       allow read: if true;
-      allow create: if true;
+      // create만 허용 + 정확히 3개 필드만 + type은 heart만
+      allow create: if request.resource.data.keys().hasAll(['type','timestamp','sessionId'])
+                    && request.resource.data.keys().size() == 3
+                    && request.resource.data.type == 'heart'
+                    && request.resource.data.sessionId is string
+                    && request.resource.data.sessionId.size() <= 20
+                    && request.resource.data.timestamp is string
+                    && request.resource.data.timestamp.size() <= 30;
       allow update, delete: if false;
     }
     match /counters/{docId} {
       allow read: if true;
-      allow write: if true;
+      // create: heart=1만 허용 (최초 생성)
+      allow create: if request.resource.data.keys().size() == 1
+                    && request.resource.data.heart == 1;
+      // update: +1 증가만 허용
+      allow update: if request.resource.data.keys().size() == 1
+                    && request.resource.data.heart == resource.data.heart + 1;
+      allow delete: if false;
     }
     // 프로젝트 (제품 단위)
     match /projects/{projectId} {
