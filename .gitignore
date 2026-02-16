@@ -63,4 +63,9 @@ audio_*
 response.json
 audit_followers.js
 check_inactive.*
-bip/
+# bip build output & dependencies
+bip/out/
+bip/node_modules/
+bip/.next/
+bip/.env.local
+bip/.firebase/

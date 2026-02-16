@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 44, 62, 80;
+  --background-start-rgb: 250, 246, 240;
+  --background-end-rgb: 250, 246, 240;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Custom Scrollbar Hide */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Prose overflow control */
+.prose pre,
+.prose table {
+    overflow-x: auto;
+    max-width: 100%;
+    white-space: pre;
+}
+.prose pre code {
+    white-space: pre;
+    word-break: normal;
+}
+.prose code {
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+.prose p,
+.prose li,
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* 채팅 버블 안에서 prose 간격 최소화 */
+.prose p {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
+.prose ol, .prose ul {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    padding-left: 1.25em;
+}
+.prose li {
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
+}
+.prose h1, .prose h2, .prose h3, .prose h4 {
+    margin-top: 0.5em;
+    margin-bottom: 0.25em;
+}
+.prose blockquote {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
+.prose hr {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* 두근두근 하트비트 */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.3); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  60% { transform: scale(1); }
+}
+.animate-heartbeat {
+  animation: heartbeat 0.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5));
+}

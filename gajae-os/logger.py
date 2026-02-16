@@ -158,6 +158,8 @@ SYSTEM_USER_PATTERNS = [
     r"^## Inbound Context",
     r"^\[system\]",
     r"^<system>",
+    r"^System: \[",
+    r"^Conversation info \(untrusted metadata\)",
 ]
 _SYSTEM_USER_RE = re.compile("|".join(SYSTEM_USER_PATTERNS), re.MULTILINE)
 
@@ -165,6 +167,40 @@ _SYSTEM_USER_RE = re.compile("|".join(SYSTEM_USER_PATTERNS), re.MULTILINE)
 def is_system_injected(text: str) -> bool:
     """Detect system-injected messages sent as user role."""
     return bool(_SYSTEM_USER_RE.search(text))
+
+
+def _extract_user_from_mixed(text: str) -> str | None:
+    """Extract actual user input from mixed system+user messages.
+    
+    Examples:
+        "System: [2026-...] Exec completed ...\n\n안된것같은데"
+        -> "안된것같은데"
+        
+        "Conversation info...\n```json\n...\n```\n\n유저입력"
+        -> "유저입력"
+    """
+    # Split by double newline and find non-system parts
+    parts = re.split(r'\n{2,}', text)
+    user_parts = []
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        # Skip system blocks
+        if _SYSTEM_USER_RE.search(part):
+            continue
+        # Skip JSON code blocks
+        if part.startswith('```'):
+            continue
+        # Skip media/image tags
+        if part.startswith('[media attached:') or part.startswith('<media:'):
+            continue
+        if part.startswith('To send an image back'):
+            continue
+        user_parts.append(part)
+    
+    result = '\n\n'.join(user_parts).strip()
+    return result if result else None
 
 
 # ── Sensitive Data Redaction ────────────────────────────
@@ -408,8 +444,16 @@ def clean_message(entry: dict) -> dict | None:
         return None
 
     # Skip system-injected messages disguised as user role
+    # But extract actual user input if mixed with system prefix
     if role == "user" and is_system_injected(text):
-        return None
+        # Try to extract user input after system block
+        # Pattern: "System: [...] ...\n\nactual user message" or
+        #          "Conversation info...\n```json\n...\n```\n\nactual user message"
+        user_input = _extract_user_from_mixed(text)
+        if user_input:
+            text = user_input
+        else:
+            return None
 
     # Clean metadata from user messages
     if role == "user":
@@ -490,6 +534,7 @@ def poll_once(db):
 
         batch = db.batch()
         batch_count = 0
+        BATCH_LIMIT = 450  # Firestore batch limit is 500, use 450 for safety
 
         for line in new_lines:
             line = line.strip()
@@ -513,13 +558,26 @@ def poll_once(db):
             batch.set(doc_ref, cleaned)
             batch_count += 1
 
+            # Firestore batch limit
+            if batch_count >= BATCH_LIMIT:
+                try:
+                    batch.commit()
+                    total_uploaded += batch_count
+                except Exception as e:
+                    print(f"[ERROR] Batch commit failed: {e}", flush=True)
+                batch = db.batch()
+                batch_count = 0
+
         if batch_count > 0:
-            batch.commit()
-            total_uploaded += batch_count
+            try:
+                batch.commit()
+                total_uploaded += batch_count
+            except Exception as e:
+                print(f"[ERROR] Batch commit failed: {e}", flush=True)
 
     if total_uploaded > 0:
         now = datetime.now().strftime("%H:%M:%S")
-        print(f"[{now}] Uploaded {total_uploaded} messages")
+        print(f"[{now}] Uploaded {total_uploaded} messages", flush=True)
 
 
 def main():

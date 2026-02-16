@@ -1,0 +1,13 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "viewers": {
+      ".read": true,
+      "$uid": {
+        ".write": true,
+        ".validate": "newData.hasChild('joinedAt')"
+      }
+    }
+  }
+}
