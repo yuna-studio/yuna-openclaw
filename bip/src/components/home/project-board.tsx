@@ -14,7 +14,7 @@ interface Project {
 }
 
 const INITIAL_PROJECTS: Project[] = [
-  { id: "1", title: "가재컴퍼니 사옥", desc: "홈페이지 리뉴얼 프로젝트", status: "dev", link: "/" },
+  { id: "1", title: "가재 컴퍼니 사옥", desc: "홈페이지 리뉴얼 프로젝트", status: "dev", link: "/" },
   { id: "2", title: "비서가재 AI", desc: "텔레그램 봇 연동 시스템", status: "shipped", link: "#" },
   { id: "3", title: "탐정가재 로그 분석기", desc: "에러 로그 자동 분석 툴", status: "hold", link: "#" },
 ];

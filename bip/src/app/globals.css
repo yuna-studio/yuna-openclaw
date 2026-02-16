@@ -102,3 +102,19 @@ body {
   animation: heartbeat 0.8s ease-in-out infinite;
   filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5));
 }
+
+@keyframes shimmer {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(150%); }
+}
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 0.5s step-end infinite;
+}
