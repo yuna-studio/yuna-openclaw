@@ -14,5 +14,15 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
     }
+    // 프로젝트 (제품 단위)
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if false; // 서버(admin SDK)만 쓰기
+    }
+    // 프로젝트별 작업 문서
+    match /projects/{projectId}/works/{workId} {
+      allow read: if true;
+      allow write: if false; // 서버(admin SDK)만 쓰기
+    }
   }
 }

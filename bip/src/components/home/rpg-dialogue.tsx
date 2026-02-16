@@ -90,7 +90,7 @@ export function RPGDialogue() {
   const modelName = isUser ? "인간의 두뇌" : (lastMessage?.model || "AI");
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 z-10 relative">
+    <div className="w-full max-w-2xl mx-auto px-4 pb-8 z-10 relative">
       {/* 섹션 헤더 */}
       <div className="flex items-center gap-2 mb-3">
         <div className="flex items-center gap-1.5 bg-green-500/10 px-2.5 py-1 rounded-full">

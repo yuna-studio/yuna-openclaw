@@ -21,8 +21,8 @@ const config: Config = {
         
         text: {
           primary: "#2C3E50",   // Dark Navy (본문)
-          secondary: "#5D6D7E", // Slate (보조)
-          muted: "#95A5A6",     // Light Gray (비활성)
+          secondary: "#4A5568", // Slate (보조) — 진하게
+          muted: "#6B7280",     // Gray (비활성) — 진하게
         },
         
         status: {
