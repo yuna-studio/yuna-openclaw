@@ -666,8 +666,68 @@ def route_after_notion_review(state: PlannerState) -> Literal["notion_revise", "
 
 
 def node_notion_revise(state: PlannerState) -> dict:
-    """노션 수정 카운트 증가"""
-    return {"notion_revisions": (state.get("notion_revisions", 0) + 1)}
+    """탐정가재가 판사 피드백 기반으로 기획 내용 수정 → 카운트 증가"""
+    rev = state.get("notion_revisions", 0)
+    critique = state.get("notion_critique", "")
+    print(f"\n🔍 노션 문서 수정 (수정 {rev + 1}차) — 탐정가재 작업 중...")
+
+    # 판사 피드백에서 문제점 파악하고 탐정가재에게 수정 지시
+    all_results = ""
+    for i in range(1, 6):
+        result = state["phase_results"].get(str(i), "")
+        if result:
+            all_results += f"\n## [{i}] {PHASE_NAMES[i]}\n{result[:2000]}\n"
+
+    diagrams = state.get("diagrams", {})
+    diagram_text = ""
+    for name, content in diagrams.items():
+        diagram_text += f"\n### {name}\n```mermaid\n{content}\n```\n"
+
+    prompt = f"""너는 기획 문서 편집자다.
+
+## 상황
+노션에 업로드된 기획서가 판사가재 검증에서 REVISE 판정을 받았다.
+판사 피드백을 반영하여 **기획 내용 자체를 보완/수정**하라.
+
+## 판사가재 피드백 (반드시 반영)
+{critique}
+
+## 현재 기획 내용
+{all_results}
+
+## 현재 다이어그램
+{diagram_text}
+
+## 지시
+1. 판사 피드백에서 지적한 **누락된 Phase나 섹션**이 있으면 내용을 보충하라
+2. 잘린(Truncated) 내용이 있으면 완전한 버전으로 다시 작성하라
+3. 기존 내용 중 잘 된 부분은 유지하고, 문제된 부분만 수정하라
+
+## 출력 형식
+수정이 필요한 Phase만 아래 형식으로 출력하라:
+
+### Phase N: [제목]
+(수정된 전체 내용)
+
+수정 없는 Phase는 출력하지 마라."""
+
+    result = call_agent("scout", prompt, timeout=300)
+
+    # 탐정가재 응답에서 수정된 Phase 결과 반영
+    import re
+    new_results = dict(state["phase_results"])
+    for match in re.finditer(r'### Phase (\d+):\s*[^\n]*\n(.*?)(?=### Phase \d+:|$)', result, re.DOTALL):
+        phase_num = match.group(1)
+        phase_content = match.group(2).strip()
+        if phase_content and phase_num in new_results:
+            new_results[phase_num] = phase_content
+            print(f"  ✏️ Phase {phase_num} 내용 수정됨 ({len(phase_content)}자)")
+
+    print(f"  ✅ 수정 완료")
+    return {
+        "notion_revisions": rev + 1,
+        "phase_results": new_results,
+    }
 
 
 # ── Build Graph ─────────────────────────────────────────
@@ -793,6 +853,7 @@ def main():
         }
 
         # human_inputs 파일이 있으면 로드
+        hi_path = f"/tmp/gajae-planner-{run_id}-human-inputs.json"
         if os.path.exists(hi_path):
             with open(hi_path) as f:
                 initial["human_inputs"] = json.load(f)
