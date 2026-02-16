@@ -6,38 +6,43 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        // Design System Colors (Warm Cream Tone)
-        background: "#FAF6F0", // Warm Cream
-        panel: "#FFFFFF",      // White
-        overlay: "rgba(250, 246, 240, 0.8)", 
-        
+        // Sanbaram Studio Design System
+        background: "#FAF6F0", // Cream
         primary: {
-          DEFAULT: "#4A5D23", // Earth Green (카키)
-          glow: "rgba(74, 93, 35, 0.3)",
+          DEFAULT: "#4A5D23", // Khaki Green
+          hover: "#3A4A1C",
+          light: "#E8F0E4",
         },
-        
+        secondary: {
+          DEFAULT: "#6BA3BE", // Sky Blue
+          hover: "#5A8CA3",
+        },
         text: {
-          primary: "#2C3E50",   // Dark Navy (본문)
-          secondary: "#5D6D7E", // Slate (보조)
-          muted: "#95A5A6",     // Light Gray (비활성)
+          primary: "#3D3529", // Charcoal
+          secondary: "#7A7265",
+          muted: "#A6A095",
         },
-        
+        accent: {
+          highlight: "#E67E22", // RPG Dialogue Highlight
+        },
+        // Legacy Support for components
+        panel: "#FFFFFF",
+        overlay: "rgba(250, 246, 240, 0.8)",
         status: {
-          live: "#E74C3C",    // Red
-          success: "#27AE60", // Green
+          live: "#E74C3C",
+          success: "#27AE60",
         },
-        
         reaction: {
-          heart: "#E91E63", // Pink
-          lol: "#F1C40F",   // Yellow
+          heart: "#E91E63",
+          lol: "#F1C40F",
         },
-        
         border: {
-          DEFAULT: "#E5E7EB",   // Light Gray
-          highlight: "#D7DBDD", // Darker Gray
+          DEFAULT: "#E5E7EB",
+          highlight: "#4A5D23", // Primary for borders
         }
       },
       fontFamily: {
@@ -45,14 +50,20 @@ const config: Config = {
         mono: ["JetBrains Mono", "monospace"],
       },
       animation: {
-        "pulse-fast": "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "float": "float 3s ease-in-out infinite",
+        "tilt": "tilt 10s infinite linear",
       },
       keyframes: {
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
-        }
+        },
+        tilt: {
+          "0%, 50%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(1deg)" },
+          "75%": { transform: "rotate(-1deg)" },
+        },
       }
     },
   },
