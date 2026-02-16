@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 
 export function RPGDialogue() {
-  const { messages, loading } = useLiveChat(1); // 최신 메시지 1개만 가져옴
+  const { messages, loading } = useLiveChat(3); // 최신 메시지 3개
   const lastMessage = messages[messages.length - 1];
   
   // 메시지 내용이 없거나 로딩 중일 때 보여줄 기본 텍스트
@@ -16,14 +16,21 @@ export function RPGDialogue() {
     ? "통신 연결 중입니다... 잠시만 기다려주세요." 
     : (lastMessage?.content || "현재 대화 내용이 없습니다. 라이브를 시작해보세요!");
 
-  // 캐릭터 이미지 결정 (role에 따라)
-  const profileImage = lastMessage?.role === "user" 
-    ? "/profile-nangman.jpg" 
-    : "/profile-secretary.jpg"; // 기본값은 비서가재
+  // 에이전트별 프로필
+  const agent = lastMessage?.agent || "main";
+  const isUser = lastMessage?.role === "user" && (agent === "main" || !lastMessage?.agent);
+  
+  const PROFILES: Record<string, { image: string; name: string }> = {
+    human: { image: "/profile-nangman.jpg", name: "낭만코딩 (CEO)" },
+    main: { image: "/profile-secretary.jpg", name: "비서가재 🦞" },
+    scout: { image: "/profile-scout.jpg", name: "탐정가재 🔍" },
+    judge: { image: "/profile-judge.jpg", name: "판사가재 ⚖️" },
+  };
 
-  const characterName = lastMessage?.role === "user" 
-    ? "낭만코더 (CEO)" 
-    : `비서가재 (${lastMessage?.model || 'AI'})`;
+  const profileKey = isUser ? "human" : (agent === "scout" ? "scout" : agent === "judge" ? "judge" : "main");
+  const profile = PROFILES[profileKey] || PROFILES.main;
+  const profileImage = profile.image;
+  const characterName = profile.name;
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 z-10 relative">
