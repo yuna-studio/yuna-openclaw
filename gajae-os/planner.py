@@ -66,11 +66,15 @@ class PlannerState(TypedDict):
 # ── OpenClaw CLI ────────────────────────────────────────
 
 def call_agent(agent_id: str, message: str, timeout: int = 300) -> str:
-    """openclaw agent CLI로 에이전트 호출하고 응답 텍스트 반환"""
+    """openclaw agent CLI로 에이전트 호출하고 응답 텍스트 반환.
+    매 호출마다 고유 session-id를 생성하여 독립 세션으로 실행."""
+    import uuid
+    session_id = f"planner-{agent_id}-{uuid.uuid4().hex[:8]}"
     cmd = [
         "openclaw", "agent",
         "--agent", agent_id,
         "--message", message,
+        "--session-id", session_id,
         "--json",
         "--timeout", str(timeout),
     ]

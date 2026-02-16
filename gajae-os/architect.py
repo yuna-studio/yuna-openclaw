@@ -82,10 +82,13 @@ class DocState(TypedDict):
 # ── OpenClaw CLI ────────────────────────────────────────
 
 def call_agent(agent_id: str, message: str, timeout: int = 300) -> str:
+    import uuid
+    session_id = f"architect-{agent_id}-{uuid.uuid4().hex[:8]}"
     cmd = [
         "openclaw", "agent",
         "--agent", agent_id,
         "--message", message,
+        "--session-id", session_id,
         "--json",
         "--timeout", str(timeout),
     ]
