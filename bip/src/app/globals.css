@@ -38,6 +38,11 @@ body {
     scrollbar-width: none;
 }
 
+/* 스크롤 앵커링 — prepend 시 위치 유지 */
+#chat-messages > * {
+    overflow-anchor: auto;
+}
+
 /* Prose overflow control */
 .prose pre,
 .prose table {

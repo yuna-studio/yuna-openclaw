@@ -4,7 +4,7 @@
 
 ## 🔴 Live
 
-**[gajae-company-bip.web.app](https://gajae-company-bip.web.app)**
+**[nangman.live](https://nangman.live)**
 
 기획부터 배포까지, AI와 나누는 모든 대화를 실시간으로 공개합니다.
 
@@ -41,7 +41,8 @@ yuna-openclaw/
 - **프론트엔드**: Next.js 15 + Tailwind CSS + Framer Motion
 - **데이터**: Firebase Firestore (채팅 로그, 리액션, 포트폴리오)
 - **실시간**: Firestore onSnapshot + RTDB (접속자 수)
-- **배포**: Firebase Hosting (static export)
+- **배포**: Firebase Hosting + Cloudflare DNS
+- **도메인**: nangman.live (GoDaddy + Cloudflare)
 - **문서**: Notion API (기획서, 설계서 자동 업로드)
 
 ## 작동 방식

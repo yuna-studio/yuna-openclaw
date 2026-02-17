@@ -34,8 +34,9 @@ export default function LivePage() {
   const [initialScrollDone, setInitialScrollDone] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const prevScrollHeightRef = useRef<number>(0);
+  const loadingMoreRef = useRef(false);
 
   // Presence: RTDB 기반 접속자 관리 (onDisconnect로 자동 정리)
   useEffect(() => {
@@ -44,17 +45,14 @@ export default function LivePage() {
     const viewerRef = ref(rtdb, `viewers/${viewerId}`);
     const countRef = ref(rtdb, "viewers");
 
-    // 접속 등록 + 연결 끊기면 자동 삭제
     set(viewerRef, { joinedAt: rtdbTimestamp() });
     onDisconnect(viewerRef).remove();
 
-    // 접속자 수 실시간 구독
     const unsub = onValue(countRef, (snap) => {
       const val = snap.val();
       setViewerCount(val ? Object.keys(val).length : 0);
     });
 
-    // 수동 정리 (탭 닫기)
     const cleanup = () => { set(viewerRef, null); };
     window.addEventListener("beforeunload", cleanup);
 
@@ -67,58 +65,62 @@ export default function LivePage() {
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
-    if (!loading && messages.length > 0 && !initialScrollDone) {
+    const el = scrollRef.current;
+    if (!loading && messages.length > 0 && !initialScrollDone && el) {
       requestAnimationFrame(() => {
-        window.scrollTo(0, document.body.scrollHeight);
+        el.scrollTop = el.scrollHeight;
         setInitialScrollDone(true);
       });
     }
   }, [loading, messages.length, initialScrollDone]);
 
-  // 스크롤 감지
+  // 스크롤 감지 (컨테이너 div 기반)
   const handleScroll = useCallback(() => {
-    const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 150;
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
     setShowScrollButton(!isAtBottom);
 
-    // 상단 200px 이내 → 과거 메시지 로드
-    if (window.scrollY < 200 && hasMore && !loadingMore && initialScrollDone) {
-      prevScrollHeightRef.current = document.body.scrollHeight;
-      loadMore().then(() => {
-        // 스크롤 위치 유지
-        requestAnimationFrame(() => {
-          const diff = document.body.scrollHeight - prevScrollHeightRef.current;
-          if (diff > 0) {
-            window.scrollTo(0, window.scrollY + diff);
-          }
-        });
+    // 상단 200px 이내 → 과거 메시지 로드 (스크롤 보정 없음 — overflow-anchor가 처리)
+    if (el.scrollTop < 200 && hasMore && !loadingMore && !loadingMoreRef.current && initialScrollDone) {
+      loadingMoreRef.current = true;
+      loadMore().finally(() => {
+        loadingMoreRef.current = false;
       });
     }
   }, [hasMore, loadingMore, loadMore, initialScrollDone]);
 
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
   useEffect(() => {
-    if (initialScrollDone && !showScrollButton) {
+    const el = scrollRef.current;
+    if (initialScrollDone && !showScrollButton && el) {
       requestAnimationFrame(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
       });
       clearNewCount();
     }
   }, [messages.length, initialScrollDone, showScrollButton, clearNewCount]);
 
   const scrollToBottom = useCallback(() => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
     clearNewCount();
   }, [clearNewCount]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background relative selection:bg-primary/20">
+    <div className="flex flex-col h-[100dvh] bg-background relative selection:bg-primary/20">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-14 glass z-40 flex items-center px-4 backdrop-blur-md bg-white/70 border-b border-gray-200 transition-all">
+      <header className="h-14 shrink-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/70 border-b border-gray-200">
         <Link href="/" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-16">
           <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">{UI_TEXT.EXIT}</span>
@@ -140,65 +142,71 @@ export default function LivePage() {
         </div>
       </header>
 
-      {/* LIVE 뱃지 — 앱바 아래 간격 띄워서 플로팅 */}
-      <div className="fixed top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
+      {/* LIVE 뱃지 */}
+      <div className="absolute top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
         <div className="flex items-center gap-1.5 bg-green-500/15 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm border border-green-500/10 pointer-events-auto">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
           <span className="text-[10px] font-bold text-green-600 tracking-wider">LIVE</span>
         </div>
       </div>
 
-      {/* Chat Stream — 시간순 (오래된 위, 최신 아래) */}
-      <div className="flex-1 w-full max-w-3xl mx-auto p-4 pt-24 pb-32 min-h-screen">
-        {/* 과거 메시지 로딩 */}
-        {loadingMore && (
-          <div className="flex items-center justify-center py-4 gap-2">
-            <Loader2 className="text-primary animate-spin" size={18} />
-            <span className="text-text-muted text-xs font-mono">{UI_TEXT.LOADING_SIGNAL}</span>
+      {/* 스크롤 컨테이너 — div 기반 (iOS Safari 호환) */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto overscroll-contain"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <div className="w-full max-w-3xl mx-auto p-4 pt-12 pb-32">
+          {/* 과거 메시지 로딩 */}
+          {loadingMore && (
+            <div className="flex items-center justify-center py-4 gap-2">
+              <Loader2 className="text-primary animate-spin" size={18} />
+              <span className="text-text-muted text-xs font-mono">{UI_TEXT.LOADING_SIGNAL}</span>
+            </div>
+          )}
+
+          {!hasMore && messages.length > 0 && (
+            <div className="text-center py-6">
+              <span className="text-text-muted text-xs font-mono">여기서부터 이야기가 시작됐어요 ✨</span>
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
+              <Activity className="text-primary animate-spin" size={32} />
+              <span className="text-text-muted font-mono text-sm animate-pulse">{UI_TEXT.SYNCING}</span>
+            </div>
+          )}
+
+          <div id="chat-messages">
+            {messages.map((msg, idx) => {
+              const prevMsg = idx > 0 ? messages[idx - 1] : null;
+              const showHeader = !prevMsg || prevMsg.role !== msg.role;
+
+              const currentDate = getDateKey(msg.timestamp);
+              const prevDate = prevMsg ? getDateKey(prevMsg.timestamp) : "";
+              const showDate = idx === 0 || (prevDate && currentDate !== prevDate);
+
+              return (
+                <div key={msg.id}>
+                  {showDate && currentDate && (
+                    <DateDivider date={formatDateLabel(currentDate)} />
+                  )}
+                  <ChatBubble
+                    message={msg}
+                    isLatest={idx === messages.length - 1}
+                    showHeader={showHeader || !!showDate}
+                  />
+                </div>
+              );
+            })}
           </div>
-        )}
 
-        {!hasMore && messages.length > 0 && (
-          <div className="text-center py-6">
-            <span className="text-text-muted text-xs font-mono">여기서부터 이야기가 시작됐어요 ✨</span>
-          </div>
-        )}
-
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-40 gap-4">
-            <Activity className="text-primary animate-spin" size={32} />
-            <span className="text-text-muted font-mono text-sm animate-pulse">{UI_TEXT.SYNCING}</span>
-          </div>
-        )}
-
-        <div>
-          {messages.map((msg, idx) => {
-            const prevMsg = idx > 0 ? messages[idx - 1] : null;
-            const showHeader = !prevMsg || prevMsg.role !== msg.role;
-
-            const currentDate = getDateKey(msg.timestamp);
-            const prevDate = prevMsg ? getDateKey(prevMsg.timestamp) : "";
-            const showDate = idx === 0 || (prevDate && currentDate !== prevDate);
-
-            return (
-              <div key={msg.id}>
-                {showDate && currentDate && (
-                  <DateDivider date={formatDateLabel(currentDate)} />
-                )}
-                <ChatBubble
-                  message={msg}
-                  isLatest={idx === messages.length - 1}
-                  showHeader={showHeader || !!showDate}
-                />
-              </div>
-            );
-          })}
+          <div ref={bottomRef} className="h-1" />
         </div>
-
-        <div ref={bottomRef} className="h-1" />
       </div>
 
-      {/* 새 메시지 알림 (화면 전체 중앙) — 안 본 새 메시지가 있을 때만 */}
+      {/* 새 메시지 알림 */}
       <AnimatePresence>
         {newCount > 0 && showScrollButton && (
           <motion.button
@@ -214,7 +222,7 @@ export default function LivePage() {
         )}
       </AnimatePresence>
 
-      {/* 아래로 가기 버튼 (우측 하단, 하트와 같은 높이) — 스크롤 올렸을 때, 새 메시지 없을 때 */}
+      {/* 아래로 가기 버튼 */}
       <AnimatePresence>
         {showScrollButton && newCount === 0 && (
           <motion.button
