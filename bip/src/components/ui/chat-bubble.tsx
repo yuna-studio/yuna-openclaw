@@ -118,6 +118,31 @@ function formatTime(timestamp: string): string {
   }
 }
 
+function maskToken(value: string): string {
+  if (!value) return value;
+  if (value.length <= 8) return "****";
+  return `${value.slice(0, 3)}***${value.slice(-3)}`;
+}
+
+function maskUids(text: string): string {
+  let out = text;
+
+  // uid: XXXXX / uid=XXXXX / owner_uid=XXXXX
+  out = out.replace(/\b(owner[_-]?uid|uid)\b\s*[:=]\s*([A-Za-z0-9_-]{10,})/gi, (_m, key, val) => {
+    return `${key}: ${maskToken(val)}`;
+  });
+
+  // JSON 형태 "uid": "XXXXX"
+  out = out.replace(/("uid"\s*:\s*")([A-Za-z0-9_-]{10,})(")/gi, (_m, p1, val, p3) => {
+    return `${p1}${maskToken(val)}${p3}`;
+  });
+
+  // Firebase UID처럼 보이는 28자 토큰(문장 중 노출 방지)
+  out = out.replace(/\b([A-Za-z0-9]{28})\b/g, (_m, val) => maskToken(val));
+
+  return out;
+}
+
 export function DateDivider({ date }: { date: string }) {
   return (
     <div className="flex items-center gap-3 my-6">
@@ -174,6 +199,7 @@ export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleP
   const isSystem = message.role === "system";
   const time = formatTime(message.timestamp);
   const IconComponent = profile.icon;
+  const maskedContent = maskUids(message.content || "");
 
   if (isSystem) {
     return (
@@ -184,7 +210,7 @@ export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleP
       >
         <div className="bg-gray-100 border border-gray-200 px-4 py-1 rounded-full text-xs text-text-muted flex items-center gap-2">
           <Terminal size={12} />
-          <span>{message.content}</span>
+          <span>{maskedContent}</span>
         </div>
       </motion.div>
     );
@@ -234,7 +260,7 @@ export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleP
           >
             <div className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 overflow-hidden">
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                {message.content}
+                {maskedContent}
               </ReactMarkdown>
             </div>
           </div>
