@@ -165,14 +165,18 @@ def _prev(state: DocState) -> str:
 
 
 def _search_design_refs(state: DocState) -> str:
-    """Phase 7용: 웹 검색으로 디자인 레퍼런스 수집"""
+    """Phase 7용: 웹 검색으로 디자인 레퍼런스 수집 (기술 환경에 기존 디자인 시스템이 명시된 경우 스킵)"""
+    tech = state.get("tech_stack", "")
+    # 기존 디자인 시스템이 있으면 웹 검색 불필요
+    if "기존" in tech and ("디자인" in tech or "컬러" in tech or "색상" in tech):
+        return "## 디자인 레퍼런스\n기존 디자인 시스템이 명시되어 있으므로 웹 검색을 생략합니다. 기술 환경의 제약을 따르세요."
+    
     import urllib.request, urllib.parse
 
+    # 기술 환경에서 키워드 추출하여 맥락에 맞는 검색
     queries = [
-        "2025 dark theme design system premium developer tool UI",
-        "terminal aesthetic web design glassmorphism dark mode",
-        "best dark UI design inspiration dribbble behance 2025",
-        "coding live stream web app UI design reference",
+        f"best UI design {tech[:50]} 2025",
+        "minimal clean web app UI design reference 2025",
     ]
 
     results = []
@@ -573,8 +577,14 @@ sequenceDiagram
 (매핑 테이블의 모든 ViewModel 메서드가 시퀀스에 등장해야 함)
 Mermaid 문법 정확. 한국어.""",
 
-    7: """너는 Frontend Architect이자 UI/UX Designer다. 디자인 시스템 전문가.
-최신 트렌드를 반영한 **프리미엄급** 디자인 시스템을 설계하라.
+    7: """너는 Frontend Architect이자 UI/UX Designer다.
+**기획 문서와 기술 환경에 맞는 실용적인** 디자인 시스템을 설계하라.
+
+⚠️ 중요 규칙:
+- 기술 환경에 "기존 디자인 시스템" 정보가 있으면 그것을 기반으로 작성하라 (새로 만들지 말 것)
+- 기술 환경에 "Tailwind 기본 색상 사용" 등 제약이 있으면 반드시 따를 것
+- 프로젝트 성격에 맞는 수준의 디자인을 하라 (어드민 = 기능 우선, 소비자 앱 = 감성 우선)
+- 불필요한 이펙트(글로우, 네온, 사이버펑크 등)를 억지로 넣지 말 것
 
 ## 기획 문서 요약
 {plan_short}
@@ -587,79 +597,50 @@ Mermaid 문법 정확. 한국어.""",
 {rev}
 {human}
 
-## 디자인 레퍼런스 (웹 리서치 결과)
 {design_refs}
 
 ## 출력: 디자인 시스템 설계서
 
 ### 1. 디자인 컨셉 & 무드
-- **비주얼 컨셉**: (예: "터미널 감성 + 글래스모피즘", "네온 사이버펑크" 등)
-- **레퍼런스 사이트**: 참고한 디자인 사이트 3~5개 (URL 포함)
-- **핵심 키워드**: 프리미엄, 개발자 감성, 미니멀 등
+- **비주얼 컨셉**: 프로젝트 성격에 맞는 컨셉 (1줄)
+- **핵심 키워드**: 3~5개
 
 ### 2. 컬러 시스템
-다크 테마 기반. **고급스러운** 컬러 팔레트:
+프로젝트에 적합한 컬러 팔레트:
 
-| 토큰 | 값 (HEX) | 용도 | 참고 |
-|---|---|---|---|
-| --color-bg-primary | #0a0e17 | 메인 배경 | GitHub Dark 보다 깊은 톤 |
-| --color-bg-secondary | #111827 | 카드/패널 배경 | |
-| --color-bg-elevated | #1a2332 | 떠있는 요소 | |
-| --color-accent-primary | #6366f1 | 주요 액션 | Indigo 계열 |
-| --color-accent-glow | #818cf8 | 호버/글로우 | |
-| --color-text-primary | #e2e8f0 | 본문 텍스트 | |
-| --color-text-secondary | #94a3b8 | 보조 텍스트 | |
-| --color-text-muted | #64748b | 비활성 | |
-| --color-success | #34d399 | 성공/온라인 | |
-| --color-error | #f87171 | 에러 | |
-| --color-border | #1e293b | 테두리 | |
+| 토큰 | 값 (HEX) | 용도 |
+|---|---|---|
+| (배경, 텍스트, 액센트, 상태 컬러 등 — 프로젝트에 필요한 만큼) |
 
-시맨틱 컬러 + 상태 컬러 포함. 최소 15개 이상.
+기존 디자인 시스템이 있으면 그 컬러를 그대로 사용할 것.
 
 ### 3. 타이포그래피
-| 용도 | 폰트 | 사이즈 | Weight | Line Height |
-|---|---|---|---|---|
-| 코드/로그 | JetBrains Mono, Fira Code | 14px | 400 | 1.6 |
-| 제목 | Inter, Pretendard | 24-32px | 700 | 1.2 |
-| 본문 | Inter, Pretendard | 16px | 400 | 1.5 |
-| 캡션 | Inter | 12px | 500 | 1.4 |
-
-한글 폰트(Pretendard) + 영문 폰트(Inter) 조합. 코드는 모노스페이스 필수.
+| 용도 | 폰트 | 사이즈 | Weight |
+|---|---|---|---|
+| (프로젝트에 필요한 타이포 스케일) |
 
 ### 4. 스페이싱 & 레이아웃
-- 8px 그리드 시스템
-- 스페이싱 스케일: 4, 8, 12, 16, 24, 32, 48, 64
-- 컨테이너 max-width
-- 반응형 breakpoints (sm, md, lg, xl)
+- 그리드 시스템, 스페이싱 스케일
+- 반응형 breakpoints
 
-### 5. 이펙트 & 모션
-- **그림자**: 레이어별 shadow 정의 (sm, md, lg, glow)
-- **글래스모피즘**: backdrop-blur + 반투명 배경 (사용 조건)
-- **글로우 이펙트**: accent 컬러 기반 box-shadow glow (버튼 호버 등)
-- **애니메이션**: 전환 duration, easing, 타이핑 효과 속도
-- **마이크로 인터랙션**: 버튼 클릭, 리액션 폭발, 스크롤 등
+### 5. 이펙트 & 모션 (필요한 경우만)
+- 프로젝트에 실제로 필요한 이펙트만 정의
+- 어드민/도구 프로젝트는 최소한의 트랜지션만으로 충분
 
 ### 6. 공통 컴포넌트 명세
-| 컴포넌트 | 역할 | Variants | Props |
-|---|---|---|---|
-| Button | 액션 | primary, ghost, icon | size, loading, glow |
-| Card | 컨테이너 | default, glass, elevated | padding, border |
-| Badge | 상태 표시 | online, offline, live | pulse, color |
-| MessageBubble | 채팅 메시지 | user, ai, system | typing, avatar |
-| ReactionButton | 리액션 | heart, lol | count, burst |
-| ... | ... | ... | ... |
+Phase 4에서 정의한 UI 요소에 매핑되는 컴포넌트:
 
-각 컴포넌트의 상태(default, hover, active, disabled, loading) 정의.
+| 컴포넌트 | 역할 | Variants | 상태 |
+|---|---|---|---|
+| (Phase 4 화면에 필요한 컴포넌트들) |
 
 ### 7. 아이콘 & 에셋
-- 아이콘 라이브러리 선택 (Lucide, Phosphor 등)
-- 커스텀 아이콘 필요 여부
-- 파비콘, OG 이미지 가이드
+- 아이콘 라이브러리 선택
+- 파비콘, OG 이미지 (필요 시)
 
 ### 8. 접근성 (a11y)
-- 컬러 대비 비율 (WCAG AA 이상)
-- 키보드 네비게이션 패턴
-- 스크린리더 지원
+- 컬러 대비 (WCAG AA)
+- 키보드 네비게이션
 - focus 스타일""",
 }
 
@@ -685,11 +666,11 @@ CRITIQUE_CRITERIA = {
         ("ViewModel 매핑 일치", "Phase 4 매핑 테이블의 모든 메서드가 시퀀스에 등장하는가?"),
         ("데이터 흐름 정확성", "View→ViewModel→UseCase→Repository→DB 흐름이 Clean Architecture를 따르는가?"),
         ("Mermaid 문법", "렌더링 가능?")],
-    7: [("컬러 시스템 완성도", "시맨틱 컬러 15개 이상? 다크테마 고급스러운가?"),
-        ("타이포그래피", "한글+영문+코드 폰트 조합이 적절한가?"),
-        ("컴포넌트 명세", "Phase 4 UI 요소와 매핑되는 컴포넌트가 모두 있는가?"),
-        ("이펙트 & 모션", "글로우/글래스모피즘/애니메이션 정의가 구체적인가?"),
-        ("프리미엄 퀄리티", "실제로 고급스러운 디자인인가? 촌스럽지 않은가?")],
+    7: [("컬러 시스템 적합성", "프로젝트 성격에 맞는 컬러가 정의되었는가? 기존 디자인 시스템 제약을 따르는가?"),
+        ("타이포그래피", "폰트 선택과 스케일이 프로젝트에 적합한가?"),
+        ("컴포넌트 명세", "Phase 4 UI 요소와 매핑되는 컴포넌트가 있는가?"),
+        ("실용성", "프로젝트에 불필요한 이펙트/트렌드를 억지로 넣지 않았는가?"),
+        ("일관성", "기술 환경에 명시된 제약(기존 디자인 시스템, 컬러 제한 등)을 준수하는가?")],
 }
 
 

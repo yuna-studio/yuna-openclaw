@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
-import { db } from "@/lib/firebase";
+import { db, rtdb } from "@/lib/firebase";
 import {
   collection,
   addDoc,
@@ -16,6 +16,7 @@ import {
   setDoc,
   increment,
 } from "firebase/firestore";
+import { ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from "firebase/database";
 
 interface FloatingHeart {
   id: number;
@@ -34,6 +35,7 @@ export function ReactionBar() {
   const sessionId = useRef<string>("");
   const lastTrigger = useRef<number>(0);
   const sessionCount = useRef<number>(0);
+  const [viewerCount, setViewerCount] = useState(0);
 
   const MAX_PER_SESSION = 50;
   const THROTTLE_MS = 500;
@@ -48,6 +50,34 @@ export function ReactionBar() {
       sessionStorage.setItem("reaction-session", id);
       sessionId.current = id;
     }
+  }, []);
+
+  // Presence: 실시간 접속자 수 (홈/라이브 공통)
+  useEffect(() => {
+    if (!rtdb) return;
+
+    const viewerId = Math.random().toString(36).slice(2, 10);
+    const viewerRef = ref(rtdb, `viewers/${viewerId}`);
+    const countRef = ref(rtdb, "viewers");
+
+    set(viewerRef, { joinedAt: rtdbTimestamp() });
+    onDisconnect(viewerRef).remove();
+
+    const unsub = onValue(countRef, (snap) => {
+      const val = snap.val();
+      setViewerCount(val ? Object.keys(val).length : 0);
+    });
+
+    const cleanup = () => {
+      set(viewerRef, null);
+    };
+    window.addEventListener("beforeunload", cleanup);
+
+    return () => {
+      cleanup();
+      unsub();
+      window.removeEventListener("beforeunload", cleanup);
+    };
   }, []);
 
   // 실시간 리액션 파티클 구독 (최근 1분)
@@ -167,6 +197,11 @@ export function ReactionBar() {
       {/* 좌측 하단 하트 버튼 */}
       <div className="fixed bottom-6 left-6 z-50 flex items-center gap-2">
         <div className="relative">
+          {viewerCount >= 3 && (
+            <div className="absolute -top-7 left-0 text-[10px] text-text-muted bg-white/90 border border-gray-100 rounded-full px-2 py-0.5 shadow-sm whitespace-nowrap">
+              {viewerCount >= 10 ? `시청자 ${viewerCount}명` : "몇 명이 보는 중"}
+            </div>
+          )}
           <button
             onClick={triggerReaction}
             className="flex items-center gap-1.5 px-3 py-2.5 rounded-full glass shadow-xl hover:shadow-2xl active:scale-90 transition-all group"

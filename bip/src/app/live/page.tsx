@@ -3,12 +3,10 @@
 import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
 import Link from "next/link";
-import { ChevronLeft, ArrowDown, Activity, Loader2, User } from "lucide-react";
+import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
-import { rtdb } from "@/lib/firebase";
-import { ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from "firebase/database";
 
 function getDateKey(timestamp: string): string {
   try {
@@ -33,35 +31,9 @@ export default function LivePage() {
   const { messages, loading, loadingMore, hasMore, newCount, loadMore, clearNewCount } = useLiveChat(30);
   const [initialScrollDone, setInitialScrollDone] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [viewerCount, setViewerCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
-
-  // Presence: RTDB 기반 접속자 관리 (onDisconnect로 자동 정리)
-  useEffect(() => {
-    if (!rtdb) return;
-    const viewerId = Math.random().toString(36).slice(2, 10);
-    const viewerRef = ref(rtdb, `viewers/${viewerId}`);
-    const countRef = ref(rtdb, "viewers");
-
-    set(viewerRef, { joinedAt: rtdbTimestamp() });
-    onDisconnect(viewerRef).remove();
-
-    const unsub = onValue(countRef, (snap) => {
-      const val = snap.val();
-      setViewerCount(val ? Object.keys(val).length : 0);
-    });
-
-    const cleanup = () => { set(viewerRef, null); };
-    window.addEventListener("beforeunload", cleanup);
-
-    return () => {
-      cleanup();
-      unsub();
-      window.removeEventListener("beforeunload", cleanup);
-    };
-  }, []);
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
@@ -82,7 +54,7 @@ export default function LivePage() {
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
     setShowScrollButton(!isAtBottom);
 
-    // 상단 200px 이내 → 과거 메시지 로드 (스크롤 보정 없음 — overflow-anchor가 처리)
+    // 상단 200px 이내 → 과거 메시지 로드
     if (el.scrollTop < 200 && hasMore && !loadingMore && !loadingMoreRef.current && initialScrollDone) {
       loadingMoreRef.current = true;
       loadMore().finally(() => {
@@ -126,20 +98,7 @@ export default function LivePage() {
           <span className="text-sm font-medium">{UI_TEXT.EXIT}</span>
         </Link>
         <span className="flex-1 text-center font-bold text-sm tracking-wide text-text-primary">{UI_TEXT.HEADER_TITLE}</span>
-        <div className="w-16 flex justify-end">
-          {viewerCount >= 10 && (
-            <span className="flex items-center gap-1 text-[11px] text-text-muted">
-              <User size={12} />
-              시청자 {viewerCount}명
-            </span>
-          )}
-          {viewerCount >= 3 && viewerCount < 10 && (
-            <span className="flex items-center gap-1 text-[11px] text-text-muted">
-              <User size={12} />
-              몇 명이 보는 중
-            </span>
-          )}
-        </div>
+        <div className="w-16" />
       </header>
 
       {/* LIVE 뱃지 */}
