@@ -37,6 +37,7 @@ export default function LivePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+  const prependAnchorRef = useRef<{ prevScrollHeight: number; prevScrollTop: number } | null>(null);
 
   // Presence: RTDB 기반 접속자 관리 (onDisconnect로 자동 정리)
   useEffect(() => {
@@ -82,8 +83,14 @@ export default function LivePage() {
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
     setShowScrollButton(!isAtBottom);
 
-    // 상단 200px 이내 → 과거 메시지 로드 (스크롤 보정 없음 — overflow-anchor가 처리)
+    // 상단 200px 이내 → 과거 메시지 로드
+    // prepend 직후 현재 읽던 위치가 밀리지 않도록 scroll anchor를 수동 보정한다.
     if (el.scrollTop < 200 && hasMore && !loadingMore && !loadingMoreRef.current && initialScrollDone) {
+      prependAnchorRef.current = {
+        prevScrollHeight: el.scrollHeight,
+        prevScrollTop: el.scrollTop,
+      };
+
       loadingMoreRef.current = true;
       loadMore().finally(() => {
         loadingMoreRef.current = false;
@@ -97,6 +104,19 @@ export default function LivePage() {
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+
+  // 과거 메시지 prepend 후 스크롤 앵커 보정
+  useEffect(() => {
+    const el = scrollRef.current;
+    const anchor = prependAnchorRef.current;
+    if (!el || !anchor) return;
+
+    requestAnimationFrame(() => {
+      const delta = el.scrollHeight - anchor.prevScrollHeight;
+      el.scrollTop = anchor.prevScrollTop + delta;
+      prependAnchorRef.current = null;
+    });
+  }, [messages.length]);
 
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
   useEffect(() => {
