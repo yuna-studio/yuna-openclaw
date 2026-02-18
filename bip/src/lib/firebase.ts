@@ -25,8 +25,8 @@ const app = hasCoreFirebaseConfig
     : getApp()
   : null;
 
-export const db = app ? getFirestore(app) : null;
-export const rtdb =
+export const db: any = app ? getFirestore(app) : null;
+export const rtdb: any =
   app && firebaseConfig.databaseURL
     ? (() => {
         try {
