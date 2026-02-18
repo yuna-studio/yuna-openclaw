@@ -12,7 +12,27 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Singleton Pattern for Server-Side Rendering compatibility
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app);
-export const rtdb = getDatabase(app);
+const hasCoreFirebaseConfig =
+  !!firebaseConfig.apiKey &&
+  !!firebaseConfig.authDomain &&
+  !!firebaseConfig.projectId &&
+  !!firebaseConfig.appId;
+
+// SSR/Build 시 환경변수가 비어 있으면 초기화하지 않고 null 반환
+const app = hasCoreFirebaseConfig
+  ? !getApps().length
+    ? initializeApp(firebaseConfig)
+    : getApp()
+  : null;
+
+export const db = app ? getFirestore(app) : null;
+export const rtdb =
+  app && firebaseConfig.databaseURL
+    ? (() => {
+        try {
+          return getDatabase(app);
+        } catch {
+          return null;
+        }
+      })()
+    : null;
