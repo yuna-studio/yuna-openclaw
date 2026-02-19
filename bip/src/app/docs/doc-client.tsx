@@ -25,6 +25,20 @@ function normalizeMermaid(code: string): string {
     .replace(/\r\n/g, "\n")
     .trim();
 
+  // 줄바꿈이 유실된 Mermaid(한 줄 압축) 복구
+  if (!src.includes("\n")) {
+    src = src
+      .replace(/\s+%%\s+/g, "\n%% ")
+      .replace(/\s+subgraph\s+/g, "\nsubgraph ")
+      .replace(/\s+end\s+/g, "\nend\n")
+      .replace(/\s+style\s+/g, "\nstyle ")
+      .replace(/\s+classDef\s+/g, "\nclassDef ")
+      .replace(/\s+class\s+/g, "\nclass ")
+      .replace(/\s+click\s+/g, "\nclick ")
+      .replace(/\s+(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/g, "\n$1")
+      .trim();
+  }
+
   const startRe = /(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/;
   const m = src.match(startRe);
   if (m && m.index && m.index > 0) src = src.slice(m.index).trim();
