@@ -58,7 +58,7 @@ function renderMarkdown(markdown: string) {
     })
     .replace(/<pre><code>(?:mermaid\n)?([\s\S]*?)<\/code><\/pre>/gi, (full, code) => {
       const decoded = decodeHtml(String(code || ""));
-      const looksLikeMermaid = /^(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/m.test(decoded.trim());
+      const looksLikeMermaid = /(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/m.test(decoded);
       if (!looksLikeMermaid) return full;
       const idx = mermaidBlocks.push(normalizeMermaid(decoded)) - 1;
       return `<div class="mermaid-slot" data-mermaid-index="${idx}"></div>`;
