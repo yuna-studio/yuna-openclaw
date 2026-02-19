@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { collection, getDocs, query, where, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { marked } from "marked";
 import mermaid from "mermaid";
 import { ChevronLeft } from "lucide-react";
 
@@ -15,39 +14,25 @@ function normalizeMermaid(code: string): string {
     .replace(/\u00A0/g, " ")
     .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .replace(/\r\n/g, "\n")
-    .replace(/^\s*```mermaid\s*/i, "")
-    .replace(/\s*```\s*$/i, "")
     .trim();
 
   const startRe = /(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/;
   const m = src.match(startRe);
-  if (m && m.index && m.index > 0) {
-    src = src.slice(m.index).trim();
-  }
-
+  if (m && m.index && m.index > 0) src = src.slice(m.index).trim();
   return src;
 }
 
-function MermaidBlock({ code }: { code: string }) {
-  const id = useId().replace(/:/g, "");
+function renderMarkdown(markdown: string) {
+  const mermaidBlocks: string[] = [];
+  const tokenized = String(markdown || "").replace(/```mermaid\s*([\s\S]*?)```/gi, (_, code) => {
+    const idx = mermaidBlocks.push(normalizeMermaid(code)) - 1;
+    return `@@MERMAID_${idx}@@`;
+  });
 
-  useEffect(() => {
-    mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
-    const render = async () => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      try {
-        const src = normalizeMermaid(code);
-        const out = await mermaid.render(`m-${id}`, src);
-        el.innerHTML = out.svg;
-      } catch {
-        el.textContent = "Mermaid 렌더 실패 (문법 확인 필요)";
-      }
-    };
-    render();
-  }, [code, id]);
+  const html = String(marked.parse(tokenized, { gfm: true, breaks: true }))
+    .replace(/@@MERMAID_(\d+)@@/g, (_, i) => `<div class="mermaid-slot" data-mermaid-index="${i}"></div>`);
 
-  return <div id={id} className="my-4 overflow-x-auto" />;
+  return { html, mermaidBlocks };
 }
 
 export default function DocClient() {
@@ -60,6 +45,7 @@ export default function DocClient() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!db || !projectId || !slug) {
@@ -92,7 +78,27 @@ export default function DocClient() {
     })();
   }, [projectId, slug]);
 
-  const showTopProgress = loading;
+  const rendered = useMemo(() => renderMarkdown(content), [content]);
+
+  useEffect(() => {
+    const root = contentRef.current;
+    if (!root) return;
+
+    mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+    const nodes = Array.from(root.querySelectorAll<HTMLElement>(".mermaid-slot"));
+
+    nodes.forEach(async (node) => {
+      const idx = Number(node.dataset.mermaidIndex || "-1");
+      const src = rendered.mermaidBlocks[idx] || "";
+      if (!src) return;
+      try {
+        const out = await mermaid.render(`m-${idx}-${Date.now()}`, src);
+        node.innerHTML = out.svg;
+      } catch {
+        node.textContent = "Mermaid 렌더 실패 (문법 확인 필요)";
+      }
+    });
+  }, [rendered]);
 
   return (
     <main className="min-h-screen bg-background text-text-primary">
@@ -105,7 +111,7 @@ export default function DocClient() {
         <div className="w-20" />
       </header>
 
-      {showTopProgress ? (
+      {loading ? (
         <div className="h-1 w-full bg-gray-200/70 overflow-hidden">
           <div className="h-full bg-primary animate-pulse" style={{ width: "45%" }} />
         </div>
@@ -120,28 +126,7 @@ export default function DocClient() {
             <h1 className="text-2xl font-bold mb-2">{title}</h1>
             {summary ? <p className="text-sm text-text-muted mb-6">{summary}</p> : null}
 
-            <div className="prose prose-sm max-w-none">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code(props) {
-                    const { children, className } = props;
-                    const lang = (className || "").replace("language-", "");
-                    const text = String(children ?? "");
-                    if (lang === "mermaid") {
-                      return <MermaidBlock code={text} />;
-                    }
-                    return (
-                      <pre className="bg-gray-50 p-3 rounded-lg overflow-x-auto">
-                        <code>{text}</code>
-                      </pre>
-                    );
-                  },
-                }}
-              >
-                {content}
-              </ReactMarkdown>
-            </div>
+            <div ref={contentRef} className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: rendered.html }} />
           </article>
         ) : null}
       </div>
