@@ -51,9 +51,11 @@ const TYPE_STYLE: Record<string, string> = {
 };
 
 function groupWorks(works: WorkItem[]) {
+  const dateKey = (w: WorkItem) => String(w.displayDate || w.period || "");
+
   const sorted = [...works].sort((a, b) => {
-    const g = String(a.groupKey || "mvp").localeCompare(String(b.groupKey || "mvp"));
-    if (g !== 0) return g;
+    const d = dateKey(b).localeCompare(dateKey(a));
+    if (d !== 0) return d;
     const p = String(b.period || "").localeCompare(String(a.period || ""));
     if (p !== 0) return p;
     return a.order - b.order;
@@ -65,7 +67,12 @@ function groupWorks(works: WorkItem[]) {
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(w);
   }
-  return Array.from(map.entries());
+
+  return Array.from(map.entries()).sort(([, aItems], [, bItems]) => {
+    const aTop = aItems[0];
+    const bTop = bItems[0];
+    return dateKey(bTop).localeCompare(dateKey(aTop));
+  });
 }
 
 export function ProjectBoard() {
