@@ -4,7 +4,7 @@ import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
 import Link from "next/link";
 import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
 
@@ -34,6 +34,8 @@ export default function LivePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+  const pendingRestoreRef = useRef(false);
+  const anchorRef = useRef<{ id: string; offsetTop: number } | null>(null);
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
@@ -63,6 +65,29 @@ export default function LivePage() {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
+  // loadMore 후 앵커 메시지 위치 복원
+  useLayoutEffect(() => {
+    if (!pendingRestoreRef.current) return;
+
+    const container = scrollRef.current;
+    const anchor = anchorRef.current;
+    if (!container || !anchor?.id) {
+      pendingRestoreRef.current = false;
+      anchorRef.current = null;
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const anchorEl = container.querySelector<HTMLElement>(`[data-msg-id="${anchor.id}"]`);
+    if (anchorEl) {
+      const nowTop = anchorEl.getBoundingClientRect().top - containerRect.top;
+      container.scrollTop += nowTop - anchor.offsetTop;
+    }
+
+    pendingRestoreRef.current = false;
+    anchorRef.current = null;
+  }, [messages.length]);
+
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
   useEffect(() => {
     const el = scrollRef.current;
@@ -83,7 +108,26 @@ export default function LivePage() {
   }, [clearNewCount]);
 
   const onLoadMore = useCallback(() => {
-    if (loadingMoreRef.current || loadingMore || !hasMore) return;
+    const container = scrollRef.current;
+    if (!container || loadingMoreRef.current || loadingMore || !hasMore) return;
+
+    // 현재 보이는 첫 메시지를 앵커로 잡고 위치를 기억
+    const containerRect = container.getBoundingClientRect();
+    const nodes = Array.from(container.querySelectorAll<HTMLElement>("[data-msg-id]"));
+    const firstVisible =
+      nodes.find((node) => node.getBoundingClientRect().top >= containerRect.top) || nodes[0];
+
+    if (firstVisible) {
+      anchorRef.current = {
+        id: firstVisible.dataset.msgId || "",
+        offsetTop: firstVisible.getBoundingClientRect().top - containerRect.top,
+      };
+      pendingRestoreRef.current = true;
+    } else {
+      anchorRef.current = null;
+      pendingRestoreRef.current = false;
+    }
+
     loadingMoreRef.current = true;
     loadMore().finally(() => {
       loadingMoreRef.current = false;
@@ -161,7 +205,7 @@ export default function LivePage() {
               const showDate = idx === 0 || (prevDate && currentDate !== prevDate);
 
               return (
-                <div key={msg.id}>
+                <div key={msg.id} data-msg-id={msg.id}>
                   {showDate && currentDate && (
                     <DateDivider date={formatDateLabel(currentDate)} />
                   )}
