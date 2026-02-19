@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, query, orderBy, onSnapshot, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ExternalLink } from "lucide-react";
@@ -14,6 +14,9 @@ interface WorkItem {
   docSlug?: string;
   type: string;
   order: number;
+  groupKey?: string;
+  period?: string;
+  displayDate?: string;
 }
 
 interface Product {
@@ -45,6 +48,24 @@ const TYPE_STYLE: Record<string, string> = {
   "배포": "bg-green-100 text-green-700",
 };
 
+function groupWorks(works: WorkItem[]) {
+  const sorted = [...works].sort((a, b) => {
+    const g = String(a.groupKey || "mvp").localeCompare(String(b.groupKey || "mvp"));
+    if (g !== 0) return g;
+    const p = String(b.period || "").localeCompare(String(a.period || ""));
+    if (p !== 0) return p;
+    return a.order - b.order;
+  });
+
+  const map = new Map<string, WorkItem[]>();
+  for (const w of sorted) {
+    const key = `${w.groupKey || "mvp"} / ${w.period || "no-period"}`;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(w);
+  }
+  return Array.from(map.entries());
+}
+
 export function ProjectBoard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,9 +83,24 @@ export function ProjectBoard() {
         const list = await Promise.all(
           projSnap.docs.map(async (d) => {
             const data = d.data();
-            const worksSnap = await getDocs(
-              query(collection(db, "projects", d.id, "works"), orderBy("order", "asc"))
-            );
+            const [worksSnap, docsSnap] = await Promise.all([
+              getDocs(query(collection(db, "projects", d.id, "works"), orderBy("order", "asc"))),
+              getDocs(collection(db, "projects", d.id, "docs")),
+            ]);
+
+            const docMeta = new Map<string, { groupKey?: string; period?: string; displayDate?: string }>();
+            docsSnap.docs.forEach((doc) => {
+              const dd = doc.data() as any;
+              const key = String(dd.slug || "");
+              if (key) {
+                docMeta.set(key, {
+                  groupKey: String(dd.groupKey || ""),
+                  period: String(dd.period || ""),
+                  displayDate: String(dd.displayDate || ""),
+                });
+              }
+            });
+
             return {
               id: d.id,
               title: data.title || "",
@@ -72,7 +108,17 @@ export function ProjectBoard() {
               status: data.status || "dev",
               link: data.link || "",
               order: data.order || 0,
-              works: worksSnap.docs.map((w) => ({ id: w.id, ...w.data() })) as WorkItem[],
+              works: worksSnap.docs.map((w) => {
+                const wd = w.data() as any;
+                const meta = wd.docSlug ? docMeta.get(String(wd.docSlug)) : undefined;
+                return {
+                  id: w.id,
+                  ...wd,
+                  groupKey: meta?.groupKey || "mvp",
+                  period: meta?.period || "",
+                  displayDate: meta?.displayDate || "",
+                } as WorkItem;
+              }),
             };
           })
         );
@@ -173,32 +219,43 @@ export function ProjectBoard() {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 space-y-1.5 border-t border-border/50 pt-3">
-                      {product.works.map((work) => {
-                        const internalHref = work.docSlug ? `/docs?projectId=${encodeURIComponent(product.id)}&slug=${encodeURIComponent(work.docSlug)}` : "";
-                        const href = internalHref || work.url || "";
-                        const external = !!work.url && !internalHref;
+                    <div className="px-4 pb-4 space-y-2 border-t border-border/50 pt-3">
+                      {groupWorks(product.works).map(([groupLabel, items]) => (
+                        <div key={groupLabel} className="rounded-lg border border-border/60 p-2">
+                          <p className="text-[10px] font-bold text-text-muted mb-1">{groupLabel}</p>
+                          <div className="space-y-1.5">
+                            {items.map((work) => {
+                              const internalHref = work.docSlug ? `/docs?projectId=${encodeURIComponent(product.id)}&slug=${encodeURIComponent(work.docSlug)}` : "";
+                              const href = internalHref || work.url || "";
+                              const external = !!work.url && !internalHref;
 
-                        return (
-                          <div key={work.id} className="flex items-center gap-2">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${TYPE_STYLE[work.type] || "bg-gray-100 text-text-muted"}`}>
-                              {work.type}
-                            </span>
-                            {href ? (
-                              <a
-                                href={href}
-                                target={external ? "_blank" : undefined}
-                                rel={external ? "noreferrer" : undefined}
-                                className="flex-1 text-xs text-text-primary hover:text-primary transition-colors rounded-md px-2 py-2 min-h-[36px] flex items-center"
-                              >
-                                {work.title}
-                              </a>
-                            ) : (
-                              <span className="flex-1 text-xs text-text-primary px-2 py-2 min-h-[36px] flex items-center">{work.title}</span>
-                            )}
+                              return (
+                                <div key={work.id} className="flex items-center gap-2">
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${TYPE_STYLE[work.type] || "bg-gray-100 text-text-muted"}`}>
+                                    {work.type}
+                                  </span>
+                                  {href ? (
+                                    <a
+                                      href={href}
+                                      target={external ? "_blank" : undefined}
+                                      rel={external ? "noreferrer" : undefined}
+                                      className="flex-1 text-xs text-text-primary hover:text-primary transition-colors rounded-md px-2 py-2 min-h-[36px] flex items-center justify-between gap-2"
+                                    >
+                                      <span>{work.title}</span>
+                                      {work.displayDate ? <span className="text-[10px] text-text-muted shrink-0">{work.displayDate}</span> : null}
+                                    </a>
+                                  ) : (
+                                    <span className="flex-1 text-xs text-text-primary px-2 py-2 min-h-[36px] flex items-center justify-between gap-2">
+                                      <span>{work.title}</span>
+                                      {work.displayDate ? <span className="text-[10px] text-text-muted shrink-0">{work.displayDate}</span> : null}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
