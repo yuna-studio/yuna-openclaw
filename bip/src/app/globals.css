@@ -105,6 +105,29 @@ body {
 .doc-content p, .doc-content li { font-size: 0.96rem; line-height: 1.75; }
 .doc-content strong { font-weight: 700; }
 
+/* Markdown task-list (checkbox) readability */
+.doc-content .contains-task-list {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+.doc-content .task-list-item {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.doc-content .task-list-item input[type="checkbox"],
+.doc-content li input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.28rem;
+  accent-color: #2563eb;
+  flex-shrink: 0;
+}
+.doc-content .task-list-item > p {
+  margin: 0;
+}
+
 .doc-content .table-wrap {
   display: block;
   width: 100%;
