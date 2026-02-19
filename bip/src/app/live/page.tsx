@@ -4,7 +4,7 @@ import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
 import Link from "next/link";
 import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
-import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
 
@@ -34,8 +34,6 @@ export default function LivePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
-  const preserveScrollRef = useRef<{ prevHeight: number; prevTop: number } | null>(null);
-  const pendingRestoreRef = useRef(false);
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
@@ -56,20 +54,7 @@ export default function LivePage() {
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
     setShowScrollButton(!isAtBottom);
 
-    // 상단 200px 이내 → 과거 메시지 로드
-    if (el.scrollTop < 200 && hasMore && !loadingMore && !loadingMoreRef.current && initialScrollDone) {
-      loadingMoreRef.current = true;
-      preserveScrollRef.current = {
-        prevHeight: el.scrollHeight,
-        prevTop: el.scrollTop,
-      };
-      pendingRestoreRef.current = true;
-
-      loadMore().finally(() => {
-        loadingMoreRef.current = false;
-      });
-    }
-  }, [hasMore, loadingMore, loadMore, initialScrollDone]);
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -77,22 +62,6 @@ export default function LivePage() {
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
-
-  // 과거 메시지 prepend 후 스크롤 위치 복원 (렌더 직후 보정)
-  useLayoutEffect(() => {
-    if (!pendingRestoreRef.current) return;
-
-    const container = scrollRef.current;
-    const snapshot = preserveScrollRef.current;
-
-    if (container && snapshot) {
-      const delta = container.scrollHeight - snapshot.prevHeight;
-      container.scrollTop = snapshot.prevTop + delta;
-    }
-
-    pendingRestoreRef.current = false;
-    preserveScrollRef.current = null;
-  }, [messages.length]);
 
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
   useEffect(() => {
@@ -112,6 +81,14 @@ export default function LivePage() {
     }
     clearNewCount();
   }, [clearNewCount]);
+
+  const onLoadMore = useCallback(() => {
+    if (loadingMoreRef.current || loadingMore || !hasMore) return;
+    loadingMoreRef.current = true;
+    loadMore().finally(() => {
+      loadingMoreRef.current = false;
+    });
+  }, [hasMore, loadingMore, loadMore]);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background relative selection:bg-primary/20">
@@ -140,10 +117,23 @@ export default function LivePage() {
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         <div className="w-full max-w-3xl mx-auto p-4 pt-12 pb-32">
-          {/* 과거 메시지 로딩 */}
+          {/* 과거 메시지 더 보기 */}
+          {hasMore && !loading && (
+            <div className="flex justify-center py-3">
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={loadingMore}
+                className="px-4 py-2 text-xs font-semibold rounded-full border border-gray-200 bg-white/90 hover:bg-white text-text-secondary disabled:opacity-60"
+              >
+                {loadingMore ? "불러오는 중..." : "이전 메시지 더 보기"}
+              </button>
+            </div>
+          )}
+
           {loadingMore && (
-            <div className="flex items-center justify-center py-4 gap-2">
-              <Loader2 className="text-primary animate-spin" size={18} />
+            <div className="flex items-center justify-center py-2 gap-2">
+              <Loader2 className="text-primary animate-spin" size={16} />
               <span className="text-text-muted text-xs font-mono">{UI_TEXT.LOADING_SIGNAL}</span>
             </div>
           )}
