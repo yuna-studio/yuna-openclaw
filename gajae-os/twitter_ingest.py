@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import os
 import re
 import subprocess
@@ -42,7 +43,7 @@ from datetime import datetime
 from typing import Any
 
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 
 SOURCE_TYPE = "twitter_article"
 DEFAULT_CATEGORY = "트위터 아티클"
@@ -128,6 +129,53 @@ def request_json(url: str, timeout: int = 15) -> dict[str, Any]:
         return json.loads(body)
 
 
+def extract_media_urls(data: dict[str, Any]) -> list[str]:
+    urls: list[str] = []
+
+    photos = data.get("photos") or []
+    if isinstance(photos, list):
+        for p in photos:
+            if isinstance(p, dict):
+                u = clean_text(p.get("url") or p.get("expanded_url"))
+                if u:
+                    urls.append(u)
+
+    media_details = data.get("mediaDetails") or data.get("media_details") or []
+    if isinstance(media_details, list):
+        for m in media_details:
+            if not isinstance(m, dict):
+                continue
+            for key in ("media_url_https", "media_url", "url"):
+                u = clean_text(m.get(key))
+                if u:
+                    urls.append(u)
+                    break
+
+    # dedupe preserve order
+    seen: set[str] = set()
+    out: list[str] = []
+    for u in urls:
+        if u in seen:
+            continue
+        seen.add(u)
+        out.append(u)
+    return out
+
+
+def request_bytes(url: str, timeout: int = 20) -> tuple[bytes, str]:
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/537.36",
+            "Accept": "image/*,*/*;q=0.8",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        body = resp.read()
+        content_type = clean_text(resp.headers.get("Content-Type") or "application/octet-stream")
+        return body, content_type
+
+
 # ─────────────────────────────────────────────────────────────
 # Fetch layer (no official API key required)
 # ─────────────────────────────────────────────────────────────
@@ -143,6 +191,8 @@ class TweetData:
     created_at: str
     text: str
     lang: str
+    profile_image_url: str = ""
+    media_urls: list[str] | None = None
 
 
 @dataclass
@@ -150,6 +200,12 @@ class LLMOptions:
     enabled: bool = False
     agent: str = "main"
     timeout: int = 90
+
+
+@dataclass
+class MediaOptions:
+    upload_media: bool = False
+    storage_bucket: str = ""
 
 
 def fetch_tweet(url: str, lang: str = "ko") -> TweetData:
@@ -166,6 +222,8 @@ def fetch_tweet(url: str, lang: str = "ko") -> TweetData:
     author_name = clean_text(user.get("name") or username)
     author_handle = clean_text(user.get("screen_name") or username)
     created_at = clean_text(data.get("created_at"))  # 예: Wed Jan 10 00:20:00 +0000 2024
+    profile_image_url = clean_text(user.get("profile_image_url_https") or user.get("profile_image_url"))
+    media_urls = extract_media_urls(data)
 
     if not text:
         raise RuntimeError(f"트윗 본문 추출 실패: {url}")
@@ -179,6 +237,8 @@ def fetch_tweet(url: str, lang: str = "ko") -> TweetData:
         created_at=created_at,
         text=text,
         lang=lang,
+        profile_image_url=profile_image_url,
+        media_urls=media_urls,
     )
 
 
@@ -374,11 +434,11 @@ def make_slug(tweet: TweetData, title: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────
-# Firestore
+# Firestore / Storage
 # ─────────────────────────────────────────────────────────────
 
 
-def init_firestore() -> firestore.Client:
+def init_firestore(default_bucket: str = "") -> firestore.Client:
     load_dotenv_if_exists(ROOT_ENV_PATH)
 
     project_id = os.environ.get("FIREBASE_PROJECT_ID")
@@ -396,12 +456,77 @@ def init_firestore() -> firestore.Client:
                     "token_uri": "https://oauth2.googleapis.com/token",
                 }
             )
-            firebase_admin.initialize_app(cred)
+            options = {"storageBucket": default_bucket} if default_bucket else None
+            firebase_admin.initialize_app(cred, options=options)
         else:
             # fallback: GOOGLE_APPLICATION_CREDENTIALS
-            firebase_admin.initialize_app()
+            options = {"storageBucket": default_bucket} if default_bucket else None
+            firebase_admin.initialize_app(options=options)
 
     return firestore.client()
+
+
+def resolve_storage_bucket(project_id: str, explicit_bucket: str = "") -> str:
+    candidates = [
+        clean_text(explicit_bucket),
+        clean_text(os.environ.get("FIREBASE_STORAGE_BUCKET")),
+        f"{project_id}.firebasestorage.app" if project_id else "",
+        f"{project_id}.appspot.com" if project_id else "",
+    ]
+
+    checked: list[str] = []
+    for name in candidates:
+        if not name or name in checked:
+            continue
+        checked.append(name)
+        try:
+            if storage.bucket(name).exists(timeout=8):
+                return name
+        except Exception:
+            continue
+
+    return ""
+
+
+def upload_media_to_storage(bucket_name: str, tweet: TweetData) -> tuple[str, str, list[dict[str, str]]]:
+    if not bucket_name:
+        return tweet.profile_image_url, (tweet.media_urls or [""])[0] if tweet.media_urls else "", []
+
+    bucket = storage.bucket(bucket_name)
+
+    def upload_one(url: str, label: str, index: int) -> str:
+        if not url:
+            return ""
+        raw, content_type = request_bytes(url)
+        guessed_ext = mimetypes.guess_extension(content_type.split(";")[0].strip()) or ""
+        parsed = urllib.parse.urlparse(url)
+        path_ext = os.path.splitext(parsed.path)[1]
+        ext = path_ext if path_ext else guessed_ext
+        if ext and not ext.startswith("."):
+            ext = f".{ext}"
+        if not ext:
+            ext = ".jpg"
+
+        blob_path = f"twitter/{tweet.tweet_id}/{label}-{index}{ext}"
+        blob = bucket.blob(blob_path)
+        blob.upload_from_string(raw, content_type=content_type)
+        quoted = urllib.parse.quote(blob_path, safe="")
+        return f"https://firebasestorage.googleapis.com/v0/b/{bucket_name}/o/{quoted}?alt=media"
+
+    banner = ""
+    cover = ""
+    media: list[dict[str, str]] = []
+
+    if tweet.profile_image_url:
+        banner = upload_one(tweet.profile_image_url, "banner", 0)
+
+    for idx, u in enumerate(tweet.media_urls or []):
+        uploaded = upload_one(u, "media", idx)
+        if not cover:
+            cover = uploaded
+        media.append({"type": "image", "url": uploaded})
+
+    return banner, cover, media
 
 
 
@@ -438,6 +563,7 @@ def upsert_blog_post(
     tags: list[str],
     order: int,
     llm: LLMOptions,
+    media: MediaOptions,
 ) -> tuple[str, str]:
     title = build_title(tweet)
     summary = build_summary(tweet)
@@ -447,6 +573,19 @@ def upsert_blog_post(
     status = "published" if publish else "draft"
 
     existing_id, existing = find_existing_by_source(db, project_id, tweet.url)
+
+    banner_image_url = tweet.profile_image_url
+    cover_image_url = (tweet.media_urls or [""])[0] if tweet.media_urls else ""
+    media_items = [{"type": "image", "url": u} for u in (tweet.media_urls or []) if u]
+
+    if media.upload_media and media.storage_bucket:
+        try:
+            up_banner, up_cover, up_media = upload_media_to_storage(media.storage_bucket, tweet)
+            banner_image_url = up_banner or banner_image_url
+            cover_image_url = up_cover or cover_image_url
+            media_items = up_media or media_items
+        except Exception as e:
+            print(f"[warn] media upload 실패, 원본 URL 사용: {e}")
 
     payload: dict[str, Any] = {
         "title": title,
@@ -458,6 +597,9 @@ def upsert_blog_post(
         "status": status,
         "sourceType": SOURCE_TYPE,
         "sourceUrl": tweet.url,
+        "bannerImageUrl": banner_image_url,
+        "coverImageUrl": cover_image_url,
+        "media": media_items,
         "displayDate": now_ymd(),
         "order": order,
         "updatedAt": datetime.now(),
@@ -521,6 +663,8 @@ def main() -> int:
     p.add_argument("--llm", action="store_true", help="OpenClaw 에이전트로 가독성 리라이트 수행")
     p.add_argument("--llm-agent", default="main", help="openclaw agent --agent 값 (default: main)")
     p.add_argument("--llm-timeout", type=int, default=90, help="openclaw 호출 타임아웃(초)")
+    p.add_argument("--upload-media", action="store_true", help="트윗 이미지(profile/첨부)를 Firebase Storage로 업로드")
+    p.add_argument("--storage-bucket", default="", help="업로드 대상 버킷 명시(예: <project>.firebasestorage.app)")
 
     args = p.parse_args()
 
@@ -545,7 +689,17 @@ def main() -> int:
     tags = [clean_text(t) for t in args.tags.split(",") if clean_text(t)]
     llm = LLMOptions(enabled=bool(args.llm), agent=clean_text(args.llm_agent) or "main", timeout=max(10, int(args.llm_timeout)))
 
-    db = None if args.dry_run else init_firestore()
+    load_dotenv_if_exists(ROOT_ENV_PATH)
+    project_id_from_env = clean_text(os.environ.get("FIREBASE_PROJECT_ID"))
+    storage_bucket = resolve_storage_bucket(project_id_from_env, clean_text(args.storage_bucket)) if args.upload_media else ""
+    media_opts = MediaOptions(upload_media=bool(args.upload_media), storage_bucket=storage_bucket)
+
+    if args.upload_media and not storage_bucket:
+        print("[warn] 유효한 Firebase Storage bucket을 찾지 못했습니다. 이미지는 원본 URL을 유지합니다.")
+    elif args.upload_media:
+        print(f"[info] media upload bucket: {storage_bucket}")
+
+    db = None if args.dry_run else init_firestore(default_bucket=storage_bucket)
 
     ok = 0
     fail = 0
@@ -567,6 +721,9 @@ def main() -> int:
                     "slug": make_slug(tweet, title),
                     "status": "published" if args.publish else "draft",
                     "contentMd": content_md,
+                    "bannerImageUrl": tweet.profile_image_url,
+                    "coverImageUrl": (tweet.media_urls or [""])[0] if tweet.media_urls else "",
+                    "mediaCount": len(tweet.media_urls or []),
                 }, ensure_ascii=False))
             else:
                 doc_id, action = upsert_blog_post(
@@ -578,6 +735,7 @@ def main() -> int:
                     tags=tags,
                     order=order,
                     llm=llm,
+                    media=media_opts,
                 )
                 print(f"[{action}] {doc_id} <- {url}")
 

@@ -66,10 +66,24 @@ python3 twitter_ingest.py \
 
 > `--llm` 실패 시 자동으로 규칙 기반 markdown으로 fallback됩니다.
 
+트윗 이미지(profile/첨부)를 Firebase Storage로 업로드:
+
+```bash
+python3 twitter_ingest.py \
+  --input-file ./temp/twitter_urls.txt \
+  --upload-media \
+  --storage-bucket gajae-company-bip.firebasestorage.app
+```
+
+- `--upload-media`를 주면 `bannerImageUrl/coverImageUrl/media`를 Storage URL로 저장 시도합니다.
+- 버킷 미존재/권한 오류 시 자동으로 원본(pbs.twimg.com 등) URL을 유지합니다.
+
 ## 환경변수 로딩 우선순위
 1. `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
 2. `GOOGLE_APPLICATION_CREDENTIALS` (service account json)
 3. `/Users/openclaw-kong/workspace/yuna-openclaw/.env` 자동 로드
+
+> 선택: `FIREBASE_STORAGE_BUCKET`을 지정하면 업로드 버킷 탐색 우선순위에 사용됩니다.
 
 ## 참고
 - 본문 수집은 비공식 `tweet-result` endpoint를 사용합니다.
