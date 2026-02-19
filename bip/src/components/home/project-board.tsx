@@ -107,6 +107,10 @@ export function ProjectBoard() {
               .sort()
               .reverse()[0] || "";
 
+            const defaultGroupKey = docsSnap.docs
+              .map((doc) => String((doc.data() as any).groupKey || ""))
+              .filter(Boolean)[0] || "";
+
             return {
               id: d.id,
               title: data.title || "",
@@ -120,8 +124,8 @@ export function ProjectBoard() {
                 return {
                   id: w.id,
                   ...wd,
-                  groupKey: meta?.groupKey || "mvp",
-                  period: meta?.period || defaultPeriod || "",
+                  groupKey: meta?.groupKey || String(wd.groupKey || "") || defaultGroupKey || "미분류",
+                  period: meta?.period || String(wd.period || "") || defaultPeriod || "",
                   displayDate: meta?.displayDate || "",
                 } as WorkItem;
               }),
