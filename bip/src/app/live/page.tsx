@@ -4,7 +4,7 @@ import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
 import Link from "next/link";
 import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
 
@@ -35,6 +35,7 @@ export default function LivePage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
   const preserveScrollRef = useRef<{ prevHeight: number; prevTop: number } | null>(null);
+  const pendingRestoreRef = useRef(false);
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
@@ -62,20 +63,10 @@ export default function LivePage() {
         prevHeight: el.scrollHeight,
         prevTop: el.scrollTop,
       };
+      pendingRestoreRef.current = true;
 
       loadMore().finally(() => {
-        requestAnimationFrame(() => {
-          const container = scrollRef.current;
-          const snapshot = preserveScrollRef.current;
-
-          if (container && snapshot) {
-            const delta = container.scrollHeight - snapshot.prevHeight;
-            container.scrollTop = snapshot.prevTop + delta;
-          }
-
-          preserveScrollRef.current = null;
-          loadingMoreRef.current = false;
-        });
+        loadingMoreRef.current = false;
       });
     }
   }, [hasMore, loadingMore, loadMore, initialScrollDone]);
@@ -86,6 +77,22 @@ export default function LivePage() {
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+
+  // 과거 메시지 prepend 후 스크롤 위치 복원 (렌더 직후 보정)
+  useLayoutEffect(() => {
+    if (!pendingRestoreRef.current) return;
+
+    const container = scrollRef.current;
+    const snapshot = preserveScrollRef.current;
+
+    if (container && snapshot) {
+      const delta = container.scrollHeight - snapshot.prevHeight;
+      container.scrollTop = snapshot.prevTop + delta;
+    }
+
+    pendingRestoreRef.current = false;
+    preserveScrollRef.current = null;
+  }, [messages.length]);
 
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
   useEffect(() => {
