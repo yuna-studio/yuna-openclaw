@@ -11,12 +11,21 @@ import mermaid from "mermaid";
 import { ChevronLeft } from "lucide-react";
 
 function normalizeMermaid(code: string): string {
-  return String(code || "")
+  let src = String(code || "")
     .replace(/\u00A0/g, " ")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .replace(/\r\n/g, "\n")
     .replace(/^\s*```mermaid\s*/i, "")
     .replace(/\s*```\s*$/i, "")
     .trim();
+
+  const startRe = /(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/;
+  const m = src.match(startRe);
+  if (m && m.index && m.index > 0) {
+    src = src.slice(m.index).trim();
+  }
+
+  return src;
 }
 
 function MermaidBlock({ code }: { code: string }) {
