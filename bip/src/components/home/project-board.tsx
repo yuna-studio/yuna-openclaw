@@ -10,6 +10,7 @@ import { track } from "@/lib/logging";
 interface WorkItem {
   id: string;
   title: string;
+  displayTitle?: string;
   url?: string;
   docId?: string;
   docSlug?: string;
@@ -89,12 +90,13 @@ export function ProjectBoard() {
               getDocs(query(collection(db, "projects", d.id, "docs"), where("status", "==", "published"))),
             ]);
 
-            const docMeta = new Map<string, { groupKey?: string; period?: string; displayDate?: string }>();
+            const docMeta = new Map<string, { title?: string; groupKey?: string; period?: string; displayDate?: string }>();
             docsSnap.docs.forEach((doc) => {
               const dd = doc.data() as any;
               const key = String(dd.slug || "");
               if (key) {
                 docMeta.set(key, {
+                  title: String(dd.title || ""),
                   groupKey: String(dd.groupKey || ""),
                   period: String(dd.period || ""),
                   displayDate: String(dd.displayDate || ""),
@@ -125,6 +127,7 @@ export function ProjectBoard() {
                 return {
                   id: w.id,
                   ...wd,
+                  displayTitle: meta?.title || String(wd.title || ""),
                   groupKey: meta?.groupKey || String(wd.groupKey || "") || defaultGroupKey || "미분류",
                   period: meta?.period || String(wd.period || "") || defaultPeriod || "",
                   displayDate: meta?.displayDate || "",
@@ -264,12 +267,12 @@ export function ProjectBoard() {
                                       }}
                                       className="flex-1 text-xs text-text-primary hover:text-primary transition-colors rounded-md px-2 py-2 min-h-[36px] flex items-center justify-between gap-2"
                                     >
-                                      <span>{work.title}</span>
+                                      <span>{work.displayTitle || work.title}</span>
                                       {work.displayDate ? <span className="text-[10px] text-text-muted shrink-0">{work.displayDate}</span> : null}
                                     </a>
                                   ) : (
                                     <span className="flex-1 text-xs text-text-primary px-2 py-2 min-h-[36px] flex items-center justify-between gap-2">
-                                      <span>{work.title}</span>
+                                      <span>{work.displayTitle || work.title}</span>
                                       {work.displayDate ? <span className="text-[10px] text-text-muted shrink-0">{work.displayDate}</span> : null}
                                     </span>
                                   )}
