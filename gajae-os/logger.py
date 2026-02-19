@@ -313,7 +313,8 @@ _SENSITIVE_EXTENSIONS = {
 _KEY_VALUE_RE = re.compile(
     r"(?i)(password|passwd|secret|token|api_key|apikey|api[-_]?secret"
     r"|auth|credential|private_key|access_key|client_secret"
-    r"|db_password|database_url|redis_url|mongo_uri|connection_string)"
+    r"|db_password|database_url|redis_url|mongo_uri|connection_string"
+    r"|[A-Z0-9_]*_KEY)"
     r"\s*[=:]\s*"
     r"['\"]?([^\s'\"]{4,})['\"]?"
 )
@@ -333,6 +334,9 @@ def redact_sensitive(text: str) -> str:
 
     # 2) key=value 시크릿
     text = _KEY_VALUE_RE.sub(lambda m: f"{m.group(1)}=[REDACTED]", text)
+
+    # 2b) _KEY가 들어간 환경변수명 자체도 축약 (예: NEXT_PUBLIC_X_KEY)
+    text = re.sub(r"\b[A-Z0-9_]*_KEY\b", "[ENV_KEY]", text)
 
     # 3) 이메일
     text = _EMAIL_RE.sub("[EMAIL]", text)
@@ -463,6 +467,9 @@ def clean_message(entry: dict) -> dict | None:
     if role == "assistant":
         text = strip_think_blocks(text)
         text = strip_final_tags(text)
+
+    # Remove reply tags injected for messaging surfaces
+    text = re.sub(r"\[\[\s*reply_to_current\s*\]\]", "", text, flags=re.IGNORECASE).strip()
 
     # Skip empty after cleaning
     if not text.strip():
