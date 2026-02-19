@@ -58,6 +58,19 @@ function compatibilityMermaid(src: string): string {
     .replace(/[\uFE0F\u20E3]/g, "");
 }
 
+function safeMermaid(src: string): string {
+  return compatibilityMermaid(src)
+    .split("\n")
+    .filter((line) => {
+      const t = line.trim();
+      if (!t) return true;
+      if (t.startsWith("%%")) return false;
+      if (t.startsWith("style ")) return false;
+      return true;
+    })
+    .join("\n");
+}
+
 function decodeHtml(s: string): string {
   return s
     .replace(/&lt;/g, "<")
@@ -154,7 +167,13 @@ export default function DocClient() {
           const out = await mermaid.render(`m-${idx}-${Date.now()}-compat`, fallback);
           node.innerHTML = out.svg;
         } catch {
-          node.innerHTML = `<pre><code>${escapeHtml(src)}</code></pre>`;
+          try {
+            const safe = safeMermaid(src);
+            const out = await mermaid.render(`m-${idx}-${Date.now()}-safe`, safe);
+            node.innerHTML = out.svg;
+          } catch {
+            node.innerHTML = `<pre><code>${escapeHtml(src)}</code></pre>`;
+          }
         }
       }
     });
