@@ -34,6 +34,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -143,6 +144,12 @@ class TweetData:
     text: str
     lang: str
 
+
+@dataclass
+class LLMOptions:
+    enabled: bool = False
+    agent: str = "main"
+    timeout: int = 90
 
 
 def fetch_tweet(url: str, lang: str = "ko") -> TweetData:
@@ -254,6 +261,112 @@ def build_markdown(tweet: TweetData, title: str) -> str:
 
 
 
+def extract_first_json_object(text: str) -> dict[str, Any] | None:
+    start = text.find("{")
+    if start < 0:
+        return None
+
+    depth = 0
+    in_str = False
+    escaped = False
+    for idx in range(start, len(text)):
+        ch = text[idx]
+        if in_str:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_str = False
+            continue
+
+        if ch == '"':
+            in_str = True
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                candidate = text[start : idx + 1]
+                try:
+                    return json.loads(candidate)
+                except Exception:
+                    return None
+    return None
+
+
+def rewrite_with_openclaw(
+    tweet: TweetData,
+    title: str,
+    summary: str,
+    content_md: str,
+    llm: LLMOptions,
+) -> tuple[str, str, str]:
+    if not llm.enabled:
+        return title, summary, content_md
+
+    prompt = f"""너는 트위터 게시물을 읽기 쉬운 블로그 마크다운으로 정리하는 편집자야.
+사실 왜곡/추측 없이 원문 의미를 보존해.
+
+아래 정보를 바탕으로 JSON만 출력해.
+키는 반드시 title, summary, contentMd 3개.
+코드펜스(```) 금지.
+
+[source]
+url: {tweet.url}
+author: {tweet.author_name} (@{tweet.author_handle})
+
+[raw_text]
+{tweet.text}
+
+[baseline_title]
+{title}
+
+[baseline_summary]
+{summary}
+
+[baseline_markdown]
+{content_md}
+"""
+
+    cmd = [
+        "openclaw",
+        "agent",
+        "--agent",
+        llm.agent,
+        "--message",
+        prompt,
+    ]
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=llm.timeout,
+            check=False,
+        )
+    except Exception as e:
+        print(f"[warn] openclaw 호출 실패, fallback 사용: {e}")
+        return title, summary, content_md
+
+    if proc.returncode != 0:
+        err = (proc.stderr or proc.stdout or "").strip()
+        print(f"[warn] openclaw 응답 실패(code={proc.returncode}), fallback 사용: {err[:240]}")
+        return title, summary, content_md
+
+    payload = extract_first_json_object(proc.stdout or "")
+    if not payload:
+        print("[warn] openclaw JSON 파싱 실패, fallback 사용")
+        return title, summary, content_md
+
+    llm_title = clean_text(payload.get("title")) or title
+    llm_summary = clean_text(payload.get("summary")) or summary
+    llm_content = clean_text(payload.get("contentMd")) or content_md
+    return llm_title, llm_summary, llm_content
+
+
 def make_slug(tweet: TweetData, title: str) -> str:
     ymd = datetime.now().strftime("%Y%m%d")
     base = slugify(title)[:48] or f"tweet-{tweet.tweet_id[-8:]}"
@@ -324,10 +437,12 @@ def upsert_blog_post(
     category: str,
     tags: list[str],
     order: int,
+    llm: LLMOptions,
 ) -> tuple[str, str]:
     title = build_title(tweet)
     summary = build_summary(tweet)
     content_md = build_markdown(tweet, title)
+    title, summary, content_md = rewrite_with_openclaw(tweet, title, summary, content_md, llm)
     slug = make_slug(tweet, title)
     status = "published" if publish else "draft"
 
@@ -403,6 +518,9 @@ def main() -> int:
     p.add_argument("--tags", default=",".join(DEFAULT_TAGS), help="comma-separated tags")
     p.add_argument("--publish", action="store_true", help="save as published (default: draft)")
     p.add_argument("--dry-run", action="store_true", help="fetch/transform only, no firestore write")
+    p.add_argument("--llm", action="store_true", help="OpenClaw 에이전트로 가독성 리라이트 수행")
+    p.add_argument("--llm-agent", default="main", help="openclaw agent --agent 값 (default: main)")
+    p.add_argument("--llm-timeout", type=int, default=90, help="openclaw 호출 타임아웃(초)")
 
     args = p.parse_args()
 
@@ -425,6 +543,7 @@ def main() -> int:
         return 2
 
     tags = [clean_text(t) for t in args.tags.split(",") if clean_text(t)]
+    llm = LLMOptions(enabled=bool(args.llm), agent=clean_text(args.llm_agent) or "main", timeout=max(10, int(args.llm_timeout)))
 
     db = None if args.dry_run else init_firestore()
 
@@ -439,12 +558,15 @@ def main() -> int:
             if args.dry_run:
                 title = build_title(tweet)
                 summary = build_summary(tweet)
+                content_md = build_markdown(tweet, title)
+                title, summary, content_md = rewrite_with_openclaw(tweet, title, summary, content_md, llm)
                 print(json.dumps({
                     "url": url,
                     "title": title,
                     "summary": summary,
                     "slug": make_slug(tweet, title),
                     "status": "published" if args.publish else "draft",
+                    "contentMd": content_md,
                 }, ensure_ascii=False))
             else:
                 doc_id, action = upsert_blog_post(
@@ -455,6 +577,7 @@ def main() -> int:
                     category=args.category,
                     tags=tags,
                     order=order,
+                    llm=llm,
                 )
                 print(f"[{action}] {doc_id} <- {url}")
 

@@ -54,6 +54,18 @@ python3 twitter_ingest.py \
   --dry-run
 ```
 
+OpenClaw(LLM)로 본문 가독성 리라이트:
+
+```bash
+python3 twitter_ingest.py \
+  --input-file ./temp/twitter_urls.txt \
+  --llm \
+  --llm-agent main \
+  --llm-timeout 90
+```
+
+> `--llm` 실패 시 자동으로 규칙 기반 markdown으로 fallback됩니다.
+
 ## 환경변수 로딩 우선순위
 1. `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
 2. `GOOGLE_APPLICATION_CREDENTIALS` (service account json)
