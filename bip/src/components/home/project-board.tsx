@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ExternalLink } from "lucide-react";
@@ -85,7 +85,7 @@ export function ProjectBoard() {
             const data = d.data();
             const [worksSnap, docsSnap] = await Promise.all([
               getDocs(query(collection(db, "projects", d.id, "works"), orderBy("order", "asc"))),
-              getDocs(collection(db, "projects", d.id, "docs")),
+              getDocs(query(collection(db, "projects", d.id, "docs"), where("status", "==", "published"))),
             ]);
 
             const docMeta = new Map<string, { groupKey?: string; period?: string; displayDate?: string }>();
