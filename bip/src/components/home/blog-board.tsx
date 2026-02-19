@@ -16,15 +16,13 @@ type BlogPost = {
   order?: number;
 };
 
-const PROJECT_ID = "vibe-coding-showcase";
-
 export function BlogBoard() {
   const [items, setItems] = useState<BlogPost[]>([]);
 
   useEffect(() => {
     if (!db) return;
     (async () => {
-      const snap = await getDocs(query(collection(db, "projects", PROJECT_ID, "blog_posts"), where("status", "==", "published")));
+      const snap = await getDocs(query(collection(db, "blog_posts"), where("status", "==", "published")));
       const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as BlogPost[];
       list.sort((a, b) => Number(b.order || 0) - Number(a.order || 0));
       setItems(list.slice(0, 3));
@@ -44,8 +42,8 @@ export function BlogBoard() {
         {items.map((p) => (
           <Link
             key={p.id}
-            href={`/blog?projectId=${encodeURIComponent(PROJECT_ID)}&slug=${encodeURIComponent(p.slug)}`}
-            onClick={() => track("click_home_blog", { projectId: PROJECT_ID, slug: p.slug })}
+            href={`/blog?slug=${encodeURIComponent(p.slug)}`}
+            onClick={() => track("click_home_blog", { projectId: "global", slug: p.slug })}
             className="block bg-white border border-border rounded-xl p-4 hover:border-primary/40 transition-colors"
           >
             <div className="flex items-center justify-between gap-2 mb-1">
@@ -59,8 +57,8 @@ export function BlogBoard() {
 
       <div className="text-center mt-4">
         <Link
-          href={`/blog?projectId=${encodeURIComponent(PROJECT_ID)}`}
-          onClick={() => track("click_home_blog", { projectId: PROJECT_ID, source: "home_more" })}
+          href="/blog"
+          onClick={() => track("click_home_blog", { projectId: "global", source: "home_more" })}
           className="text-sm font-semibold text-primary"
         >
           블로그 전체 보기 →

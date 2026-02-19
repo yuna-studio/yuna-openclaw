@@ -47,5 +47,10 @@ service cloud.firestore {
       allow read: if resource.data.status == 'published';
       allow write: if false;
     }
+    // 글로벌 블로그 (프로젝트 비매핑)
+    match /blog_posts/{postId} {
+      allow read: if resource.data.status == 'published';
+      allow write: if false;
+    }
   }
 }

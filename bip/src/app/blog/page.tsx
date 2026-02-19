@@ -20,14 +20,14 @@ type BlogPost = {
 };
 
 export default function BlogPage() {
-  const [projectId, setProjectId] = useState("vibe-coding-showcase");
+  const [projectId, setProjectId] = useState("");
   const [slug, setSlug] = useState("");
   const [category, setCategory] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const p = new URLSearchParams(window.location.search);
-    setProjectId(String(p.get("projectId") || "vibe-coding-showcase"));
+    setProjectId(String(p.get("projectId") || ""));
     setSlug(String(p.get("slug") || ""));
     setCategory(String(p.get("category") || ""));
   }, []);
@@ -46,7 +46,7 @@ export default function BlogPage() {
   }, [projectId, slug]);
 
   useEffect(() => {
-    if (!db || !projectId) {
+    if (!db) {
       setLoading(false);
       setError("잘못된 접근입니다.");
       return;
@@ -54,9 +54,10 @@ export default function BlogPage() {
 
     (async () => {
       try {
-        const snap = await getDocs(
-          query(collection(db, "projects", projectId, "blog_posts"), where("status", "==", "published"))
-        );
+        const colRef = projectId
+          ? collection(db, "projects", projectId, "blog_posts")
+          : collection(db, "blog_posts");
+        const snap = await getDocs(query(colRef, where("status", "==", "published")));
         const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as BlogPost[];
         rows.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
         setPosts(rows);
@@ -96,12 +97,12 @@ export default function BlogPage() {
             <aside className="bg-white border border-border rounded-xl p-3 h-fit">
               <p className="text-xs text-text-muted mb-2">카테고리</p>
               <div className="flex flex-wrap gap-2 mb-3">
-                <Link className="text-xs px-2 py-1 rounded bg-gray-100" href={`/blog?projectId=${encodeURIComponent(projectId)}`}>전체</Link>
+                <Link className="text-xs px-2 py-1 rounded bg-gray-100" href={projectId ? `/blog?projectId=${encodeURIComponent(projectId)}` : "/blog"}>전체</Link>
                 {Array.from(new Set(posts.map((p) => p.category).filter(Boolean))).map((c) => (
                   <Link
                     key={c}
                     className="text-xs px-2 py-1 rounded bg-gray-100"
-                    href={`/blog?projectId=${encodeURIComponent(projectId)}&category=${encodeURIComponent(String(c))}`}
+                    href={projectId ? `/blog?projectId=${encodeURIComponent(projectId)}&category=${encodeURIComponent(String(c))}` : `/blog?category=${encodeURIComponent(String(c))}`}
                   >
                     {c}
                   </Link>
@@ -112,7 +113,9 @@ export default function BlogPage() {
                 {filtered.map((p) => (
                   <Link
                     key={p.id}
-                    href={`/blog?projectId=${encodeURIComponent(projectId)}${category ? `&category=${encodeURIComponent(category)}` : ""}&slug=${encodeURIComponent(p.slug)}`}
+                    href={projectId
+                      ? `/blog?projectId=${encodeURIComponent(projectId)}${category ? `&category=${encodeURIComponent(category)}` : ""}&slug=${encodeURIComponent(p.slug)}`
+                      : `/blog?${category ? `category=${encodeURIComponent(category)}&` : ""}slug=${encodeURIComponent(p.slug)}`}
                     onClick={() => track("click_blog_item", { projectId, slug: p.slug })}
                     className={`block rounded-lg border p-2 ${selected?.id === p.id ? "border-primary bg-primary/5" : "border-gray-200"}`}
                   >
@@ -148,7 +151,9 @@ export default function BlogPage() {
                           "@type": "Organization",
                           name: "낭만코딩 · 가재 컴퍼니",
                         },
-                        mainEntityOfPage: `https://nangman.live/blog?projectId=${encodeURIComponent(projectId)}&slug=${encodeURIComponent(selected.slug)}`,
+                        mainEntityOfPage: projectId
+                          ? `https://nangman.live/blog?projectId=${encodeURIComponent(projectId)}&slug=${encodeURIComponent(selected.slug)}`
+                          : `https://nangman.live/blog?slug=${encodeURIComponent(selected.slug)}`,
                       }),
                     }}
                   />

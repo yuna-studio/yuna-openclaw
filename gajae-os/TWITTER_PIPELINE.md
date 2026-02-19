@@ -3,7 +3,8 @@
 `twitter_ingest.py`는 트위터/X URL을 받아 BIP 블로그 초안을 자동 생성합니다.
 
 ## 저장 위치
-- Firestore: `projects/{projectId}/blog_posts/{postId}`
+- Firestore (권장): `blog_posts/{postId}` (글로벌)
+- 호환 모드: `projects/{projectId}/blog_posts/{postId}` (`--project-id` 전달 시)
 - 기본 상태: `draft`
 - source 추적: `sourceType=twitter_article`, `sourceUrl=<tweet_url>`
 - 같은 sourceUrl은 upsert(중복 생성 방지)

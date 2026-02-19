@@ -264,13 +264,17 @@ def init_firestore() -> firestore.Client:
 
 
 
+def blog_posts_ref(db: firestore.Client, project_id: str = ""):
+    if project_id:
+        return db.collection("projects").document(project_id).collection("blog_posts")
+    return db.collection("blog_posts")
+
+
 def find_existing_by_source(
     db: firestore.Client, project_id: str, source_url: str
 ) -> tuple[str | None, dict[str, Any] | None]:
     ref = (
-        db.collection("projects")
-        .document(project_id)
-        .collection("blog_posts")
+        blog_posts_ref(db, project_id)
         .where("sourceType", "==", SOURCE_TYPE)
         .where("sourceUrl", "==", source_url)
         .limit(1)
@@ -319,7 +323,7 @@ def upsert_blog_post(
     if publish:
         payload["publishedAt"] = datetime.now()
 
-    posts_ref = db.collection("projects").document(project_id).collection("blog_posts")
+    posts_ref = blog_posts_ref(db, project_id)
 
     if existing_id:
         posts_ref.document(existing_id).set(payload, merge=True)
@@ -363,7 +367,7 @@ def compute_order(tweet: TweetData, fallback_idx: int) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Twitter/X ingest pipeline for BIP blog")
-    p.add_argument("--project-id", required=True, help="BIP project id (e.g. vibe-coding-showcase)")
+    p.add_argument("--project-id", default="", help="BIP project id (optional). 비우면 global blog_posts 사용")
     p.add_argument("--tweet-url", action="append", default=[], help="tweet/status URL (repeatable)")
     p.add_argument("--input-file", help="line-separated URL file")
     p.add_argument("--lang", default="ko", help="tweet fetch language (default: ko)")
