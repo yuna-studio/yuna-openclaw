@@ -124,40 +124,43 @@ export function ProjectBoard() {
               className="bg-white border border-border rounded-xl overflow-hidden"
             >
               {/* 카드 헤더 */}
-              <div className="flex items-center justify-between p-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_COLOR[product.status]}`}>
-                      {STATUS_LABEL[product.status]}
-                    </span>
-                    <h3 className="font-bold text-sm text-text-primary">{product.title}</h3>
+              <div className="flex items-stretch gap-2 p-3">
+                <button
+                  type="button"
+                  onClick={() => product.works.length > 0 && setOpenId(isOpen ? null : product.id)}
+                  className="flex-1 text-left rounded-lg p-2 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLOR[product.status]}`}>
+                        {STATUS_LABEL[product.status]}
+                      </span>
+                      <h3 className="font-bold text-sm text-text-primary truncate">{product.title}</h3>
+                    </div>
+                    {product.works.length > 0 ? (
+                      <span className="flex items-center gap-1 text-[11px] text-text-muted shrink-0">
+                        <span>{product.works.length}건</span>
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                        />
+                      </span>
+                    ) : null}
                   </div>
                   <p className="text-xs text-text-muted">{product.desc}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 ml-2">
-                  {product.link && (
-                    <a
-                      href={product.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-text-muted/40 hover:text-primary transition-colors"
-                    >
-                      <ExternalLink size={14} />
-                    </a>
-                  )}
-                  {product.works.length > 0 && (
-                    <button
-                      onClick={() => setOpenId(isOpen ? null : product.id)}
-                      className="flex items-center gap-1 text-[10px] text-text-muted hover:text-primary transition-colors"
-                    >
-                      <span>{product.works.length}건</span>
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  )}
-                </div>
+                </button>
+
+                {product.link && (
+                  <a
+                    href={product.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 self-center p-3 rounded-lg text-text-muted/50 hover:text-primary hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                    aria-label="프로젝트 링크 열기"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                )}
               </div>
 
               {/* 문서 목록 */}
@@ -178,7 +181,7 @@ export function ProjectBoard() {
 
                         return (
                           <div key={work.id} className="flex items-center gap-2">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${TYPE_STYLE[work.type] || "bg-gray-100 text-text-muted"}`}>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${TYPE_STYLE[work.type] || "bg-gray-100 text-text-muted"}`}>
                               {work.type}
                             </span>
                             {href ? (
@@ -186,12 +189,12 @@ export function ProjectBoard() {
                                 href={href}
                                 target={external ? "_blank" : undefined}
                                 rel={external ? "noreferrer" : undefined}
-                                className="text-xs text-text-primary hover:text-primary hover:underline transition-colors"
+                                className="flex-1 text-xs text-text-primary hover:text-primary transition-colors rounded-md px-2 py-2 min-h-[36px] flex items-center"
                               >
                                 {work.title}
                               </a>
                             ) : (
-                              <span className="text-xs text-text-primary">{work.title}</span>
+                              <span className="flex-1 text-xs text-text-primary px-2 py-2 min-h-[36px] flex items-center">{work.title}</span>
                             )}
                           </div>
                         );
