@@ -7,6 +7,7 @@ import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
 import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
+import { track } from "@/lib/logging";
 
 function getDateKey(timestamp: string): string {
   try {
@@ -128,11 +129,17 @@ export default function LivePage() {
       pendingRestoreRef.current = false;
     }
 
+    track("click_live_load_more", { currentCount: messages.length });
+
     loadingMoreRef.current = true;
     loadMore().finally(() => {
       loadingMoreRef.current = false;
     });
-  }, [hasMore, loadingMore, loadMore]);
+  }, [hasMore, loadingMore, loadMore, messages.length]);
+
+  useEffect(() => {
+    track("view_live");
+  }, []);
 
   const showTopProgress = loading || loadingMore;
 

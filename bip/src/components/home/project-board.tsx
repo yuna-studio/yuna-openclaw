@@ -255,7 +255,13 @@ export function ProjectBoard() {
                                       href={href}
                                       target={external ? "_blank" : undefined}
                                       rel={external ? "noreferrer" : undefined}
-                                      onClick={() => track("click_home_work_item", { projectId: product.id, workId: work.id, href, external })}
+                                      onClick={() => {
+                                        if (internalHref) {
+                                          track("click_home_docs", { projectId: product.id, workId: work.id, slug: work.docSlug || "" });
+                                        } else {
+                                          track("click_home_work_item", { projectId: product.id, workId: work.id, href, external });
+                                        }
+                                      }}
                                       className="flex-1 text-xs text-text-primary hover:text-primary transition-colors rounded-md px-2 py-2 min-h-[36px] flex items-center justify-between gap-2"
                                     >
                                       <span>{work.title}</span>
