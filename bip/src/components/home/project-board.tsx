@@ -181,7 +181,7 @@ export function ProjectBoard() {
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLOR[product.status]}`}>
                         {STATUS_LABEL[product.status]}
                       </span>
-                      <h3 className="font-bold text-sm text-text-primary truncate">{product.title}</h3>
+                      <h3 className="font-bold text-sm text-text-primary truncate">{product.works?.[0]?.title || product.title}</h3>
                     </div>
                     {product.works.length > 0 ? (
                       <span className="flex items-center gap-1 text-[11px] text-text-muted shrink-0">
