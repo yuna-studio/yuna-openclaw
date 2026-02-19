@@ -59,7 +59,7 @@ function groupWorks(works: WorkItem[]) {
 
   const map = new Map<string, WorkItem[]>();
   for (const w of sorted) {
-    const key = `${w.groupKey || "mvp"} / ${w.period || "no-period"}`;
+    const key = `${w.groupKey || "mvp"} / ${w.period || "미분류"}`;
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(w);
   }
@@ -101,6 +101,12 @@ export function ProjectBoard() {
               }
             });
 
+            const defaultPeriod = docsSnap.docs
+              .map((doc) => String((doc.data() as any).period || ""))
+              .filter(Boolean)
+              .sort()
+              .reverse()[0] || "";
+
             return {
               id: d.id,
               title: data.title || "",
@@ -115,7 +121,7 @@ export function ProjectBoard() {
                   id: w.id,
                   ...wd,
                   groupKey: meta?.groupKey || "mvp",
-                  period: meta?.period || "",
+                  period: meta?.period || defaultPeriod || "",
                   displayDate: meta?.displayDate || "",
                 } as WorkItem;
               }),
@@ -181,7 +187,7 @@ export function ProjectBoard() {
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLOR[product.status]}`}>
                         {STATUS_LABEL[product.status]}
                       </span>
-                      <h3 className="font-bold text-sm text-text-primary truncate">{product.works?.[0]?.title || product.title}</h3>
+                      <h3 className="font-bold text-sm text-text-primary truncate">{product.title}</h3>
                     </div>
                     {product.works.length > 0 ? (
                       <span className="flex items-center gap-1 text-[11px] text-text-muted shrink-0">
