@@ -10,6 +10,15 @@ import remarkGfm from "remark-gfm";
 import mermaid from "mermaid";
 import { ChevronLeft } from "lucide-react";
 
+function normalizeMermaid(code: string): string {
+  return String(code || "")
+    .replace(/\u00A0/g, " ")
+    .replace(/\r\n/g, "\n")
+    .replace(/^\s*```mermaid\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
+}
+
 function MermaidBlock({ code }: { code: string }) {
   const id = useId().replace(/:/g, "");
 
@@ -19,10 +28,11 @@ function MermaidBlock({ code }: { code: string }) {
       const el = document.getElementById(id);
       if (!el) return;
       try {
-        const out = await mermaid.render(`m-${id}`, code);
+        const src = normalizeMermaid(code);
+        const out = await mermaid.render(`m-${id}`, src);
         el.innerHTML = out.svg;
       } catch {
-        el.textContent = "Mermaid 렌더 실패";
+        el.textContent = "Mermaid 렌더 실패 (문법 확인 필요)";
       }
     };
     render();
