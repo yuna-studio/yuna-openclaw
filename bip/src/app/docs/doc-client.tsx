@@ -19,6 +19,13 @@ function normalizeMermaid(code: string): string {
   const startRe = /(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/;
   const m = src.match(startRe);
   if (m && m.index && m.index > 0) src = src.slice(m.index).trim();
+
+  // Notion 변환 중 잘리는 style fill:# 패턴 자동 보정
+  src = src
+    .replace(/fill:#(?=\s|$)/g, "fill:#f3f4f6")
+    .replace(/stroke:#(?=\s|$)/g, "stroke:#334155")
+    .replace(/color:#(?=\s|$)/g, "color:#334155");
+
   return src;
 }
 

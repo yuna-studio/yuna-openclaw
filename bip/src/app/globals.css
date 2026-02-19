@@ -96,9 +96,11 @@ body {
 
 /* Docs viewer readability */
 .doc-content .table-wrap {
+  display: block;
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
 }
