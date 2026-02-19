@@ -80,7 +80,11 @@ export default function BlogPage() {
   return (
     <main className="min-h-screen bg-background text-text-primary">
       <header className="h-14 sticky top-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/80 border-b border-gray-200">
-        <Link href="/" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-24">
+        <Link
+          href="/"
+          onClick={() => track("click_blog_to_home", { projectId, source: "blog_header" })}
+          className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-24"
+        >
           <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">홈</span>
         </Link>
@@ -95,6 +99,15 @@ export default function BlogPage() {
         {!loading && !error ? (
           <div className="grid md:grid-cols-[280px_1fr] gap-4">
             <aside className="bg-white border border-border rounded-xl p-3 h-fit">
+              <div className="mb-3 rounded-lg bg-gray-50 border border-border p-2.5">
+                <p className="text-[11px] text-text-muted mb-2">다음으로 이동</p>
+                <div className="flex flex-wrap gap-2">
+                  <Link href="/" onClick={() => track("click_blog_to_home", { projectId, source: "blog_sidebar" })} className="text-xs px-2 py-1 rounded bg-white border border-border">홈</Link>
+                  <Link href="/live" onClick={() => track("click_blog_to_live", { projectId, source: "blog_sidebar" })} className="text-xs px-2 py-1 rounded bg-white border border-border">라이브</Link>
+                  <Link href="/docs" onClick={() => track("click_blog_to_docs", { projectId, source: "blog_sidebar" })} className="text-xs px-2 py-1 rounded bg-white border border-border">개발문서</Link>
+                </div>
+              </div>
+
               <p className="text-xs text-text-muted mb-2">카테고리</p>
               <div className="flex flex-wrap gap-2 mb-3">
                 <Link className="text-xs px-2 py-1 rounded bg-gray-100" href={projectId ? `/blog?projectId=${encodeURIComponent(projectId)}` : "/blog"}>전체</Link>
@@ -158,7 +171,7 @@ export default function BlogPage() {
                     }}
                   />
                   <div className="mt-8 pt-4 border-t border-dashed border-border">
-                    <Link href="/" onClick={() => track("click_blog_to_home", { projectId, slug: selected.slug })} className="text-sm font-semibold text-primary">홈으로 이동 →</Link>
+                    <Link href="/" onClick={() => track("click_blog_to_home", { projectId, slug: selected.slug, source: "blog_detail_footer" })} className="text-sm font-semibold text-primary">홈으로 이동 →</Link>
                   </div>
                 </>
               ) : (

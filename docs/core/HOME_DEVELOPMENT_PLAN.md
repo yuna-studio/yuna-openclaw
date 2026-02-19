@@ -43,17 +43,21 @@
 ### Blog 섹션
 - [x] 섹션명 확정
   - `낭만코딩 로그`
+- [x] 홈 노출 전략 확정
+  - 리스트 노출 없이 **CTA-only** 섹션으로 운영
 - [x] 서브카피 확정
-  - `만들고, 실패하고, 개선한 기록을 남겨요`
-- [x] CTA 문구 변경
-  - `로그 전체 보기 →`
-- [ ] 최신순/중요도 정렬 정책 재검토 (`order` vs `displayDate`)
+  - `매일의 개발 기록에서, 다음 기능의 단서를 찾습니다.`
+- [x] CTA 문구 확정
+  - `개발 로그 보러가기 →`
+- [x] 퍼널 관점 명시
+  - 블로그는 SEO 유입 랜딩, 홈/라이브/문서로 재이동 유도
 
 ## 4) UX 체크리스트 (홈)
 
-- [ ] 홈에서 블로그 카드 클릭률 이벤트명 표준화
-  - 현재: `click_home_blog`
-  - 검토: 리스트/더보기 분리 이벤트 유지 여부
+- [x] 홈 블로그 CTA 이벤트 분리
+  - 신규: `click_home_blog_cta`
+- [x] 블로그 → 홈/라이브/문서 이동 이벤트 분리
+  - `click_blog_to_home`, `click_blog_to_live`, `click_blog_to_docs`
 - [ ] 프로젝트 카드 확장 상태 유지(새로고침/복귀 시) 정책 결정
 - [ ] 섹션 간 간격/타이포 스케일 모바일 최종 다듬기
 - [ ] 접근성 점검
@@ -65,7 +69,7 @@
 - [ ] 변경 시 아래 항목 동시 확인
   - BIP 홈 반영
   - HQ 블로그/문서 관리 노출 영향
-  - 퍼널 이벤트 영향 (`view_home`, `click_home_blog`, `expand_home_project`)
+  - 퍼널 이벤트 영향 (`view_home`, `click_home_blog_cta`, `click_blog_to_home`, `click_blog_to_live`, `click_blog_to_docs`, `expand_home_project`)
 - [ ] 배포 후 스모크 테스트 템플릿 만들기
   - Hero
   - 프로젝트 열기/이동
@@ -74,8 +78,8 @@
 ## 6) 다음 액션 (우선순위)
 
 1. [ ] 모바일 실기기 카피 가독성 최종 점검
-2. [ ] 블로그 정렬 정책(`order`/`displayDate`) 확정
-3. [ ] 홈 이벤트명 표준화(리스트/더보기 분리 여부 확정)
+2. [ ] 블로그 페이지 상단/사이드바 CTA 클릭률 점검
+3. [ ] 홈→블로그 CTA 클릭률 기준치 정의
 4. [ ] How We Work / Footer 카피 톤 동일화
 
 ---
@@ -85,3 +89,7 @@
 - 2026-02-19: 홈 카피 1차 워싱 반영
   - Hero / Project / Blog 섹션 문구 업데이트
   - 파일: `bip/src/app/page.tsx`, `bip/src/components/home/project-board.tsx`, `bip/src/components/home/blog-board.tsx`
+- 2026-02-19: 블로그 홈 섹션 CTA-only 전환 + 블로그 내 재이동 링크 강화
+  - 홈 BlogBoard에서 카드 리스트 제거, CTA 단일화
+  - 블로그 페이지에 홈/라이브/문서 이동 CTA 추가 및 이벤트 분리
+  - 파일: `bip/src/components/home/blog-board.tsx`, `bip/src/app/blog/page.tsx`
