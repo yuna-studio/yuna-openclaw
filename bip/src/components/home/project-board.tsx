@@ -10,6 +10,8 @@ interface WorkItem {
   id: string;
   title: string;
   url?: string;
+  docId?: string;
+  docSlug?: string;
   type: string;
   order: number;
 }
@@ -169,25 +171,31 @@ export function ProjectBoard() {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-1.5 border-t border-border/50 pt-3">
-                      {product.works.map((work) => (
-                        <div key={work.id} className="flex items-center gap-2">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${TYPE_STYLE[work.type] || "bg-gray-100 text-text-muted"}`}>
-                            {work.type}
-                          </span>
-                          {work.url ? (
-                            <a
-                              href={work.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-text-primary hover:text-primary hover:underline transition-colors"
-                            >
-                              {work.title}
-                            </a>
-                          ) : (
-                            <span className="text-xs text-text-primary">{work.title}</span>
-                          )}
-                        </div>
-                      ))}
+                      {product.works.map((work) => {
+                        const internalHref = work.docSlug ? `/docs?projectId=${encodeURIComponent(product.id)}&slug=${encodeURIComponent(work.docSlug)}` : "";
+                        const href = internalHref || work.url || "";
+                        const external = !!work.url && !internalHref;
+
+                        return (
+                          <div key={work.id} className="flex items-center gap-2">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${TYPE_STYLE[work.type] || "bg-gray-100 text-text-muted"}`}>
+                              {work.type}
+                            </span>
+                            {href ? (
+                              <a
+                                href={href}
+                                target={external ? "_blank" : undefined}
+                                rel={external ? "noreferrer" : undefined}
+                                className="text-xs text-text-primary hover:text-primary hover:underline transition-colors"
+                              >
+                                {work.title}
+                              </a>
+                            ) : (
+                              <span className="text-xs text-text-primary">{work.title}</span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 )}
