@@ -22,15 +22,33 @@ function normalizeMermaid(code: string): string {
   return src;
 }
 
+function decodeHtml(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
 function renderMarkdown(markdown: string) {
   const mermaidBlocks: string[] = [];
-  const tokenized = String(markdown || "").replace(/```mermaid\s*([\s\S]*?)```/gi, (_, code) => {
-    const idx = mermaidBlocks.push(normalizeMermaid(code)) - 1;
-    return `@@MERMAID_${idx}@@`;
-  });
+  let html = String(marked.parse(String(markdown || ""), { gfm: true, breaks: true }));
 
-  const html = String(marked.parse(tokenized, { gfm: true, breaks: true }))
-    .replace(/@@MERMAID_(\d+)@@/g, (_, i) => `<div class="mermaid-slot" data-mermaid-index="${i}"></div>`);
+  html = html
+    .replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi, (_, code) => {
+      const idx = mermaidBlocks.push(normalizeMermaid(decodeHtml(code))) - 1;
+      return `<div class="mermaid-slot" data-mermaid-index="${idx}"></div>`;
+    })
+    .replace(/<pre><code>(?:mermaid\n)?([\s\S]*?)<\/code><\/pre>/gi, (full, code) => {
+      const decoded = decodeHtml(String(code || ""));
+      const looksLikeMermaid = /^(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|journey|gantt|pie|mindmap|timeline|gitGraph|quadrantChart|requirementDiagram|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b/m.test(decoded.trim());
+      if (!looksLikeMermaid) return full;
+      const idx = mermaidBlocks.push(normalizeMermaid(decoded)) - 1;
+      return `<div class="mermaid-slot" data-mermaid-index="${idx}"></div>`;
+    })
+    .replace(/<table>/g, '<div class="table-wrap"><table>')
+    .replace(/<\/table>/g, "</table></div>");
 
   return { html, mermaidBlocks };
 }

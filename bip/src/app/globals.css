@@ -44,8 +44,7 @@ body {
 }
 
 /* Prose overflow control */
-.prose pre,
-.prose table {
+.prose pre {
     overflow-x: auto;
     max-width: 100%;
     white-space: pre;
@@ -96,15 +95,18 @@ body {
 }
 
 /* Docs viewer readability */
-.doc-content table {
-  display: block;
+.doc-content .table-wrap {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
-  border-collapse: separate;
-  border-spacing: 0;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
+}
+.doc-content table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 12px;
 }
 .doc-content th,
