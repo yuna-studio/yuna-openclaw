@@ -34,6 +34,7 @@ export default function LivePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+  const preserveScrollRef = useRef<{ prevHeight: number; prevTop: number } | null>(null);
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
@@ -57,8 +58,24 @@ export default function LivePage() {
     // 상단 200px 이내 → 과거 메시지 로드
     if (el.scrollTop < 200 && hasMore && !loadingMore && !loadingMoreRef.current && initialScrollDone) {
       loadingMoreRef.current = true;
+      preserveScrollRef.current = {
+        prevHeight: el.scrollHeight,
+        prevTop: el.scrollTop,
+      };
+
       loadMore().finally(() => {
-        loadingMoreRef.current = false;
+        requestAnimationFrame(() => {
+          const container = scrollRef.current;
+          const snapshot = preserveScrollRef.current;
+
+          if (container && snapshot) {
+            const delta = container.scrollHeight - snapshot.prevHeight;
+            container.scrollTop = snapshot.prevTop + delta;
+          }
+
+          preserveScrollRef.current = null;
+          loadingMoreRef.current = false;
+        });
       });
     }
   }, [hasMore, loadingMore, loadMore, initialScrollDone]);
