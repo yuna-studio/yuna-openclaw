@@ -134,10 +134,12 @@ export default function LivePage() {
     });
   }, [hasMore, loadingMore, loadMore]);
 
+  const showTopProgress = loading || loadingMore;
+
   return (
     <div className="flex flex-col h-[100dvh] bg-background relative selection:bg-primary/20">
-      {/* Header */}
-      <header className="h-14 shrink-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/70 border-b border-gray-200">
+      {/* App Bar */}
+      <header className="h-14 shrink-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/80 border-b border-gray-200 sticky top-0">
         <Link href="/" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-16">
           <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">{UI_TEXT.EXIT}</span>
@@ -145,6 +147,26 @@ export default function LivePage() {
         <span className="flex-1 text-center font-bold text-sm tracking-wide text-text-primary">{UI_TEXT.HEADER_TITLE}</span>
         <div className="w-16" />
       </header>
+
+      {/* Loading Progress */}
+      <AnimatePresence>
+        {showTopProgress && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-1 w-full bg-gray-200/70 overflow-hidden"
+          >
+            <motion.div
+              className="h-full bg-primary"
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{ repeat: Infinity, duration: 1.1, ease: "linear" }}
+              style={{ width: "40%" }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* LIVE 뱃지 */}
       <div className="absolute top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
