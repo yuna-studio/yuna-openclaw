@@ -95,6 +95,48 @@ body {
     margin-bottom: 0.5em;
 }
 
+/* Docs viewer readability */
+.doc-content table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.doc-content th,
+.doc-content td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+}
+.doc-content th { background: #f8fafc; font-weight: 700; }
+.doc-content tr:last-child td { border-bottom: 0; }
+
+.doc-content pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+.doc-content pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+.doc-content :not(pre) > code {
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.85em;
+}
+
 /* 두근두근 하트비트 */
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }

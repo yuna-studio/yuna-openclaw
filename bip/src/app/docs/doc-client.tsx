@@ -84,7 +84,7 @@ export default function DocClient() {
     const root = contentRef.current;
     if (!root) return;
 
-    mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+    mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "default" });
     const nodes = Array.from(root.querySelectorAll<HTMLElement>(".mermaid-slot"));
 
     nodes.forEach(async (node) => {
@@ -126,7 +126,7 @@ export default function DocClient() {
             <h1 className="text-2xl font-bold mb-2">{title}</h1>
             {summary ? <p className="text-sm text-text-muted mb-6">{summary}</p> : null}
 
-            <div ref={contentRef} className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+            <div ref={contentRef} className="doc-content prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: rendered.html }} />
           </article>
         ) : null}
       </div>
