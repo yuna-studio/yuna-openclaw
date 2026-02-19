@@ -42,5 +42,10 @@ service cloud.firestore {
       allow read: if resource.data.status == 'published';
       allow write: if false;
     }
+    // 프로젝트별 블로그 (공개된 게시글만 읽기 허용)
+    match /projects/{projectId}/blog_posts/{postId} {
+      allow read: if resource.data.status == 'published';
+      allow write: if false;
+    }
   }
 }

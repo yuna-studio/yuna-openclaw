@@ -6,6 +6,7 @@ import { OrgChart } from "@/components/home/org-chart";
 import { ProjectBoard } from "@/components/home/project-board";
 import { LiveMetrics } from "@/components/home/live-metrics";
 import { HowWeWork } from "@/components/home/how-we-work";
+import { BlogBoard } from "@/components/home/blog-board";
 import { track } from "@/lib/logging";
 
 export default function HomePage() {
@@ -57,6 +58,9 @@ export default function HomePage() {
 
       {/* 6. 뭘 만들었는지 — 포트폴리오 */}
       <ProjectBoard />
+
+      {/* 7. 블로그 */}
+      <BlogBoard />
 
       {/* Footer */}
       <footer className="w-full max-w-2xl mx-auto px-4 py-12 border-t border-dashed border-border text-center space-y-3">
