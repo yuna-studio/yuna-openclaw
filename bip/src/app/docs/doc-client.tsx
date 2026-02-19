@@ -38,6 +38,12 @@ function normalizeMermaid(code: string): string {
   return src;
 }
 
+function compatibilityMermaid(src: string): string {
+  return src
+    .replace(/\p{Extended_Pictographic}/gu, "")
+    .replace(/[\uFE0F\u20E3]/g, "");
+}
+
 function decodeHtml(s: string): string {
   return s
     .replace(/&lt;/g, "<")
@@ -129,7 +135,13 @@ export default function DocClient() {
         const out = await mermaid.render(`m-${idx}-${Date.now()}`, src);
         node.innerHTML = out.svg;
       } catch {
-        node.innerHTML = `<pre><code>${escapeHtml(src)}</code></pre>`;
+        try {
+          const fallback = compatibilityMermaid(src);
+          const out = await mermaid.render(`m-${idx}-${Date.now()}-compat`, fallback);
+          node.innerHTML = out.svg;
+        } catch {
+          node.innerHTML = `<pre><code>${escapeHtml(src)}</code></pre>`;
+        }
       }
     });
   }, [rendered]);
