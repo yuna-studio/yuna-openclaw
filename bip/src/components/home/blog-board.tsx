@@ -34,8 +34,8 @@ export function BlogBoard() {
   return (
     <div className="w-full max-w-2xl mx-auto px-4 py-16 border-t border-dashed border-border">
       <div className="text-center mb-8">
-        <p className="text-lg font-bold text-text-primary">최근 블로그</p>
-        <p className="text-sm text-text-muted">기획/개발/운영 노트를 정리해요</p>
+        <p className="text-lg font-bold text-text-primary">낭만코딩 로그</p>
+        <p className="text-sm text-text-muted">만들고, 실패하고, 개선한 기록을 남겨요</p>
       </div>
 
       <div className="space-y-3">
@@ -61,7 +61,7 @@ export function BlogBoard() {
           onClick={() => track("click_home_blog", { projectId: "global", source: "home_more" })}
           className="text-sm font-semibold text-primary"
         >
-          블로그 전체 보기 →
+          로그 전체 보기 →
         </Link>
       </div>
     </div>

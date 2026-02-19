@@ -165,7 +165,7 @@ export function ProjectBoard() {
           viewport={{ once: true }}
           className="text-lg font-bold text-text-primary leading-snug"
         >
-          가재들이 직접 만든 것들.
+          우리가 실제로 만든 결과물.
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -174,7 +174,7 @@ export function ProjectBoard() {
           transition={{ delay: 0.1 }}
           className="text-lg font-bold text-text-muted/60 leading-snug"
         >
-          기획서부터 배포까지 전부.
+          기획부터 배포까지, 전 과정을 공개합니다.
         </motion.p>
       </div>
 
