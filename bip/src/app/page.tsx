@@ -1,12 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
 import { RPGDialogue } from "@/components/home/rpg-dialogue";
 import { OrgChart } from "@/components/home/org-chart";
 import { ProjectBoard } from "@/components/home/project-board";
 import { LiveMetrics } from "@/components/home/live-metrics";
 import { HowWeWork } from "@/components/home/how-we-work";
+import { track } from "@/lib/logging";
 
 export default function HomePage() {
+  useEffect(() => {
+    track("view_home");
+  }, []);
+
   return (
     <main className="min-h-screen bg-background pb-20">
       {/* 1. Hero */}
