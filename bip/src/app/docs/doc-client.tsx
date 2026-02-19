@@ -9,6 +9,15 @@ import { marked } from "marked";
 import mermaid from "mermaid";
 import { ChevronLeft } from "lucide-react";
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function normalizeMermaid(code: string): string {
   let src = String(code || "")
     .replace(/\u00A0/g, " ")
@@ -120,7 +129,7 @@ export default function DocClient() {
         const out = await mermaid.render(`m-${idx}-${Date.now()}`, src);
         node.innerHTML = out.svg;
       } catch {
-        node.textContent = "Mermaid 렌더 실패 (문법 확인 필요)";
+        node.innerHTML = `<pre><code>${escapeHtml(src)}</code></pre>`;
       }
     });
   }, [rendered]);
