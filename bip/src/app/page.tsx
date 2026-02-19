@@ -24,7 +24,7 @@ export default function HomePage() {
           className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-primary transition-colors mb-5 tracking-wider"
         >
           <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          낭만코딩
+          낭만코딩 · 가재 컴퍼니
         </a>
         <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-5 tracking-tight">
           <span className="text-text-primary">바이브 코딩,</span><br/>
