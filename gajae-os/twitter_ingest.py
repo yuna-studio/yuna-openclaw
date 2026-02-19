@@ -196,10 +196,44 @@ def build_summary(tweet: TweetData) -> str:
     return s
 
 
+def normalize_tweet_text(text: str) -> str:
+    normalized = text.replace("\r\n", "\n")
+    lines: list[str] = []
+    for raw in normalized.split("\n"):
+        line = re.sub(r"\s+", " ", raw).strip()
+        # 본문 가독성을 해치는 단독 t.co 링크 라인은 제거
+        if re.fullmatch(r"https?://t\.co/\w+", line):
+            continue
+        if line:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def split_sentences(text: str) -> list[str]:
+    one_line = re.sub(r"\s+", " ", text).strip()
+    if not one_line:
+        return []
+    parts = [p.strip() for p in re.split(r"(?<=[.!?…])\s+", one_line) if p.strip()]
+    return parts if parts else [one_line]
+
+
+def paragraphize(sentences: list[str], chunk_size: int = 2) -> list[str]:
+    if not sentences:
+        return []
+    chunks: list[str] = []
+    for i in range(0, len(sentences), chunk_size):
+        chunks.append(" ".join(sentences[i : i + chunk_size]))
+    return chunks
+
 
 def build_markdown(tweet: TweetData, title: str) -> str:
-    quoted = "\n".join([f"> {line}" for line in tweet.text.splitlines()])
     source_url = tweet.url
+    normalized = normalize_tweet_text(tweet.text)
+    sentences = split_sentences(normalized)
+    key_points = "\n".join([f"- {s}" for s in sentences[:3]]) or "- (요약 필요)"
+
+    paragraphs = paragraphize(sentences, chunk_size=2)
+    quoted = "\n\n".join([f"> {p}" for p in paragraphs])
 
     return f"""# {title}
 
@@ -208,20 +242,14 @@ def build_markdown(tweet: TweetData, title: str) -> str:
 - 원문 링크: {source_url}
 - 수집일: {now_ymd()}
 
-## 핵심 요약
-- (작성 예정) 이 트윗/스레드의 핵심 메시지 1~3줄 요약
+## 핵심 포인트
+{key_points}
 
-## 원문 인용
+## 원문 (가독성 정리본)
 {quoted}
 
-## 인사이트 (SEO/GEO 오가닉 관점)
-- (작성 예정) 검색/발견성에 유의미한 포인트
-- (작성 예정) 제품/콘텐츠 적용 가능 포인트
-
-## 실행 액션
-- [ ] 블로그 상세 본문 확장
-- [ ] 홈/블로그 CTA 연결 점검
-- [ ] 관련 문서/프로젝트 링크 보강
+## 메모
+- 필요하면 위 포인트를 기준으로 블로그 본문을 확장해 주세요.
 """
 
 
