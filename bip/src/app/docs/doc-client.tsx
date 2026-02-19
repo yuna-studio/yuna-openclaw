@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import mermaid from "mermaid";
+import { ChevronLeft } from "lucide-react";
 
 function MermaidBlock({ code }: { code: string }) {
   const id = useId().replace(/:/g, "");
@@ -72,11 +73,26 @@ export default function DocClient() {
     })();
   }, [projectId, slug]);
 
+  const showTopProgress = loading;
+
   return (
     <main className="min-h-screen bg-background text-text-primary">
-      <div className="w-full max-w-3xl mx-auto px-4 py-10">
-        <Link href="/" className="text-xs text-text-muted hover:text-primary">← 홈으로</Link>
+      <header className="h-14 sticky top-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/80 border-b border-gray-200">
+        <Link href="/" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-20">
+          <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">홈</span>
+        </Link>
+        <span className="flex-1 text-center font-bold text-sm tracking-wide text-text-primary">개발문서</span>
+        <div className="w-20" />
+      </header>
 
+      {showTopProgress ? (
+        <div className="h-1 w-full bg-gray-200/70 overflow-hidden">
+          <div className="h-full bg-primary animate-pulse" style={{ width: "45%" }} />
+        </div>
+      ) : null}
+
+      <div className="w-full max-w-3xl mx-auto px-4 py-8">
         {loading ? <div className="mt-6">로딩 중...</div> : null}
         {error ? <div className="mt-6 text-red-600">{error}</div> : null}
 
