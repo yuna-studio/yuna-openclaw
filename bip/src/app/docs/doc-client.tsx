@@ -111,6 +111,7 @@ export default function DocClient() {
   const [error, setError] = useState("");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  const [createdDate, setCreatedDate] = useState("");
   const [content, setContent] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +137,8 @@ export default function DocClient() {
         const d = snap.docs[0].data() as any;
         setTitle(d.title || "문서");
         setSummary(d.summary || "");
+        const maybeDate = d.displayDate || (d.createdAt?.toDate ? d.createdAt.toDate().toISOString().slice(0, 10) : "");
+        setCreatedDate(maybeDate || "");
         setContent(d.contentMd || "");
       } catch (e: any) {
         setError(e?.message || "문서 로드 실패");
@@ -203,7 +206,8 @@ export default function DocClient() {
         {!loading && !error ? (
           <article className="mt-6 bg-white border border-border rounded-xl p-6">
             <h1 className="text-2xl font-bold mb-2">{title}</h1>
-            {summary ? <p className="text-sm text-text-muted mb-6">{summary}</p> : null}
+            {summary ? <p className="text-sm text-text-muted mb-2">{summary}</p> : null}
+            {createdDate ? <p className="text-xs text-text-muted mb-6">작성일: {createdDate}</p> : null}
 
             <div ref={contentRef} className="doc-content prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: rendered.html }} />
           </article>
