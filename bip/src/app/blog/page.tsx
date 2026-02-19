@@ -41,6 +41,11 @@ export default function BlogPage() {
   }, [projectId, category, slug]);
 
   useEffect(() => {
+    if (!slug) return;
+    track("view_blog_detail", { projectId, slug });
+  }, [projectId, slug]);
+
+  useEffect(() => {
     if (!db || !projectId) {
       setLoading(false);
       setError("잘못된 접근입니다.");
@@ -125,6 +130,28 @@ export default function BlogPage() {
                   <p className="text-xs text-text-muted mb-4">{selected.displayDate || ""} · {selected.category || ""}</p>
                   {selected.summary ? <p className="text-sm text-text-muted mb-4">{selected.summary}</p> : null}
                   <div className="doc-content prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: String(marked.parse(selected.contentMd || "")) }} />
+                  <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                      __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "BlogPosting",
+                        headline: selected.title,
+                        description: selected.summary || "",
+                        datePublished: selected.displayDate || undefined,
+                        dateModified: selected.displayDate || undefined,
+                        author: {
+                          "@type": "Organization",
+                          name: "낭만코딩 · 가재 컴퍼니",
+                        },
+                        publisher: {
+                          "@type": "Organization",
+                          name: "낭만코딩 · 가재 컴퍼니",
+                        },
+                        mainEntityOfPage: `https://nangman.live/blog?projectId=${encodeURIComponent(projectId)}&slug=${encodeURIComponent(selected.slug)}`,
+                      }),
+                    }}
+                  />
                   <div className="mt-8 pt-4 border-t border-dashed border-border">
                     <Link href="/" onClick={() => track("click_blog_to_home", { projectId, slug: selected.slug })} className="text-sm font-semibold text-primary">홈으로 이동 →</Link>
                   </div>
