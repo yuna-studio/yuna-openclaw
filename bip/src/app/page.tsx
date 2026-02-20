@@ -7,6 +7,7 @@ import { ProjectBoard } from "@/components/home/project-board";
 import { LiveMetrics } from "@/components/home/live-metrics";
 import { HowWeWork } from "@/components/home/how-we-work";
 import { BlogBoard } from "@/components/home/blog-board";
+import { FAQBoard } from "@/components/home/faq-board";
 import { track } from "@/lib/logging";
 
 export default function HomePage() {
@@ -63,31 +64,7 @@ export default function HomePage() {
       <BlogBoard />
 
       {/* 8. GEO/SEO 요약 + FAQ */}
-      <section className="w-full max-w-2xl mx-auto px-4 py-10">
-        <div className="bg-white border border-border rounded-xl p-5 space-y-4">
-          <h2 className="text-lg font-bold">낭만코딩은 어떤 사이트인가요?</h2>
-          <p className="text-sm text-text-secondary leading-relaxed">
-            낭만코딩은 바이브코딩 기반의 Build in Public 아카이브입니다. 
-            기획부터 개발, 배포, 운영, 개선까지의 의사결정 로그를 문서/라이브/블로그로 공개합니다.
-          </p>
-
-          <div className="space-y-3">
-            <h3 className="text-base font-semibold">자주 묻는 질문 (FAQ)</h3>
-            <div>
-              <p className="text-sm font-semibold">Q1. 바이브코딩 실전 사례를 어디서 볼 수 있나요?</p>
-              <p className="text-sm text-text-secondary">A. 홈의 프로젝트 보드, /docs 개발문서, /live 실시간 로그에서 확인할 수 있습니다.</p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Q2. SEO/GEO 오가닉 유입 관련 기록도 있나요?</p>
-              <p className="text-sm text-text-secondary">A. 블로그와 개발문서에서 오가닉 성장 실험, 구조화 데이터, 내부링크 전략을 순차적으로 공개합니다.</p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Q3. 어떤 개발 과정을 공개하나요?</p>
-              <p className="text-sm text-text-secondary">A. 문제정의, 기능설계, 구현, 실패 원인, 지표 개선까지 전 과정을 기록합니다.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FAQBoard />
 
       {/* Footer */}
       <footer className="w-full max-w-2xl mx-auto px-4 py-12 border-t border-dashed border-border text-center space-y-3">
