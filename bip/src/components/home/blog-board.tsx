@@ -7,27 +7,18 @@ export function BlogBoard() {
   return (
     <section className="w-full max-w-2xl mx-auto px-4 py-16 border-t border-dashed border-border">
       <div className="text-center">
-        <p className="text-lg font-bold text-text-primary">낭만코딩 로그</p>
-        <p className="text-sm text-text-muted mt-1">
-          매일의 개발 기록에서,
-          <span className="text-text-primary font-semibold"> 다음 기능의 단서</span>를 찾습니다.
+        <p className="text-lg font-bold text-text-primary">빌드 노트</p>
+        <p className="text-sm text-text-secondary mt-2">
+          기능 구현 과정과 개인적인 개발 철학을 함께 남깁니다.
         </p>
 
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
+        <div className="mt-6">
           <Link
             href="/blog"
             onClick={() => track("click_home_blog_cta", { source: "home_section" })}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+            className="inline-flex items-center justify-center rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-text-primary hover:bg-gray-50 transition-colors"
           >
-            최신 글 보러가기 →
-          </Link>
-
-          <Link
-            href="/blog"
-            onClick={() => track("click_home_blog_more", { source: "home_section" })}
-            className="inline-flex items-center justify-center min-w-[132px] rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
-          >
-            블로그 전체 보기
+            블로그 보러가기
           </Link>
         </div>
       </div>
