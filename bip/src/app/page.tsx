@@ -29,11 +29,11 @@ export default function HomePage() {
         </a>
         <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-5 tracking-tight">
           <span className="text-text-primary">바이브 코딩,</span><br/>
-          <span className="text-primary">만드는 전 과정을 기록합니다.</span>
+          <span className="text-primary">전 과정 실시간 공개.</span>
         </h1>
         <p className="text-sm text-text-secondary max-w-xs mx-auto leading-relaxed">
-          아이디어부터 배포 후 개선까지,<br/>
-          <span className="text-text-primary font-semibold">의사결정과 시행착오를 투명하게 남깁니다.</span>
+          기획부터 삽질까지, <span className="text-text-primary font-semibold">아무것도 숨기지 않아요.</span><br/>
+          AI와 나누는 모든 대화가 여기에 있습니다.
         </p>
         <div className="flex flex-wrap justify-center gap-2 mt-6">
           {["#BuildInPublic", "#OpenClaw", "#VibeCoding"].map((tag) => (
