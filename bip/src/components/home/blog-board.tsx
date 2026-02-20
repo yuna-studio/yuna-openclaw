@@ -14,16 +14,16 @@ export function BlogBoard() {
           viewport={{ once: true }}
           className="text-lg font-bold text-text-primary leading-snug"
         >
-          우리가 기록하는 과정.
+          최근 블로그
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-lg font-bold text-text-muted/60 leading-snug"
+          className="text-sm text-text-muted mt-1"
         >
-          기능을 만드는 과정과 그때의 생각, 선택의 이유를 함께 남깁니다.
+          기획/개발/운영 노트를 정리해요
         </motion.p>
 
         <div className="mt-6">
@@ -32,7 +32,7 @@ export function BlogBoard() {
             onClick={() => track("click_home_blog_cta", { source: "home_section" })}
             className="inline-flex items-center justify-center rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-text-primary hover:bg-gray-50 transition-colors"
           >
-            블로그 보러가기
+            블로그 전체 보기
           </Link>
         </div>
       </div>
