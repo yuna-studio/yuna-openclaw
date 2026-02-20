@@ -7,7 +7,6 @@ import { ProjectBoard } from "@/components/home/project-board";
 import { LiveMetrics } from "@/components/home/live-metrics";
 import { HowWeWork } from "@/components/home/how-we-work";
 import { BlogBoard } from "@/components/home/blog-board";
-import { FAQBoard } from "@/components/home/faq-board";
 import { track } from "@/lib/logging";
 
 export default function HomePage() {
@@ -62,9 +61,6 @@ export default function HomePage() {
 
       {/* 7. 블로그 */}
       <BlogBoard />
-
-      {/* 8. GEO/SEO 요약 + FAQ */}
-      <FAQBoard />
 
       {/* Footer */}
       <footer className="w-full max-w-2xl mx-auto px-4 py-12 border-t border-dashed border-border text-center space-y-3">
