@@ -14,7 +14,7 @@ export function BlogBoard() {
           viewport={{ once: true }}
           className="text-lg font-bold text-text-primary leading-snug"
         >
-          빌드 노트
+          우리가 기록하는 과정.
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -23,7 +23,7 @@ export function BlogBoard() {
           transition={{ delay: 0.1 }}
           className="text-lg font-bold text-text-muted/60 leading-snug"
         >
-          기능 구현 과정과 개인적인 개발 철학을 함께 남깁니다.
+          기능을 만드는 과정과 그때의 생각, 선택의 이유를 함께 남깁니다.
         </motion.p>
 
         <div className="mt-6">
