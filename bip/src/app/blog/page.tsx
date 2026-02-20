@@ -154,6 +154,10 @@ export default function BlogPage() {
   }, [mergedPosts, category]);
 
   const selected = useMemo(() => filtered.find((p) => p.slug === slug) || filtered[0], [filtered, slug]);
+  const twitterArticles = useMemo(
+    () => mergedPosts.filter((p) => String(p.category || "") === "트위터 아티클"),
+    [mergedPosts]
+  );
 
   return (
     <main className="min-h-screen bg-background text-text-primary">
@@ -175,7 +179,37 @@ export default function BlogPage() {
         {error ? <div className="text-red-400">{error}</div> : null}
 
         {!loading && !error ? (
-          <div className="grid lg:grid-cols-[360px_1fr] gap-4">
+          <>
+            {twitterArticles.length > 0 ? (
+              <section className="mb-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-text-secondary">트위터 아티클</h2>
+                  <span className="text-xs text-text-muted">좌우로 넘겨보기</span>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
+                  {twitterArticles.map((p) => {
+                    const href = projectId
+                      ? `/blog?projectId=${encodeURIComponent(projectId)}&slug=${encodeURIComponent(p.slug)}`
+                      : `/blog?slug=${encodeURIComponent(p.slug)}`;
+                    return (
+                      <Link
+                        key={`tw-${p.id}`}
+                        href={href}
+                        className="snap-start min-w-[280px] max-w-[320px] rounded-xl border border-border bg-white p-2.5"
+                      >
+                        <div className="rounded-lg overflow-hidden border border-border mb-2">
+                          <img src="/og-image.jpg" alt={p.title} className="w-full h-28 object-cover" />
+                        </div>
+                        <p className="text-sm font-bold leading-snug line-clamp-2">{p.title}</p>
+                        <p className="text-xs text-text-secondary mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
+
+            <div className="grid lg:grid-cols-[360px_1fr] gap-4">
             <aside className="space-y-3">
               <div className="bg-white border border-border rounded-2xl p-3">
                 <p className="text-[11px] text-text-muted mb-2">카테고리</p>
@@ -212,8 +246,8 @@ export default function BlogPage() {
                         <img src="/og-image.jpg" alt={p.title} className="w-full h-36 object-cover" />
                       </div>
                       <p className="text-sm font-bold leading-snug line-clamp-2">{p.title}</p>
-                      <p className="text-xs text-text-muted mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
-                      <div className="mt-2 flex items-center justify-between text-[11px] text-text-muted">
+                      <p className="text-xs text-text-secondary mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
+                      <div className="mt-2 flex items-center justify-between text-[11px] text-text-secondary">
                         <span>{p.displayDate || ""}</span>
                         <span>{p.category || "블로그"}</span>
                       </div>
@@ -235,13 +269,14 @@ export default function BlogPage() {
                     </a>
                   ) : null}
 
-                  <div className="doc-content prose prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: String(marked.parse(selected.contentMd || "")) }} />
+                  <div className="doc-content prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: String(marked.parse(selected.contentMd || "")) }} />
                 </>
               ) : (
                 <div className="text-sm text-text-muted">게시글이 없습니다.</div>
               )}
             </article>
           </div>
+          </>
         ) : null}
       </div>
     </main>
