@@ -156,12 +156,12 @@ export default function BlogPage() {
   const selected = useMemo(() => filtered.find((p) => p.slug === slug) || filtered[0], [filtered, slug]);
 
   return (
-    <main className="min-h-screen bg-[#0b0d12] text-gray-100">
-      <header className="h-14 sticky top-0 z-40 flex items-center px-4 bg-black/70 backdrop-blur border-b border-white/10">
+    <main className="min-h-screen bg-background text-text-primary">
+      <header className="h-14 sticky top-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/80 border-b border-gray-200">
         <Link
           href="/"
           onClick={() => track("click_blog_to_home", { projectId, source: "blog_header" })}
-          className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors flex items-center gap-1 group w-24"
+          className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-24"
         >
           <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">홈</span>
@@ -171,20 +171,20 @@ export default function BlogPage() {
       </header>
 
       <div className="w-full max-w-6xl mx-auto px-4 py-6">
-        {loading ? <div className="text-gray-400">로딩 중...</div> : null}
+        {loading ? <div className="text-text-muted">로딩 중...</div> : null}
         {error ? <div className="text-red-400">{error}</div> : null}
 
         {!loading && !error ? (
           <div className="grid lg:grid-cols-[360px_1fr] gap-4">
             <aside className="space-y-3">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
-                <p className="text-[11px] text-gray-400 mb-2">카테고리</p>
+              <div className="bg-white border border-border rounded-2xl p-3">
+                <p className="text-[11px] text-text-muted mb-2">카테고리</p>
                 <div className="flex flex-wrap gap-2">
-                  <Link className="text-xs px-2 py-1 rounded bg-white/10" href={projectId ? `/blog?projectId=${encodeURIComponent(projectId)}` : "/blog"}>전체</Link>
+                  <Link className="text-xs px-2 py-1 rounded bg-gray-100" href={projectId ? `/blog?projectId=${encodeURIComponent(projectId)}` : "/blog"}>전체</Link>
                   {Array.from(new Set(mergedPosts.map((p) => p.category).filter(Boolean))).map((c) => (
                     <Link
                       key={c}
-                      className="text-xs px-2 py-1 rounded bg-white/10"
+                      className="text-xs px-2 py-1 rounded bg-gray-100"
                       href={projectId ? `/blog?projectId=${encodeURIComponent(projectId)}&category=${encodeURIComponent(String(c))}` : `/blog?category=${encodeURIComponent(String(c))}`}
                     >
                       {c}
@@ -205,15 +205,15 @@ export default function BlogPage() {
                       href={href}
                       onClick={() => track("click_blog_item", { projectId, slug: p.slug })}
                       className={`block rounded-2xl border p-3 transition-colors ${
-                        active ? "border-blue-400/60 bg-blue-500/10" : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+                        active ? "border-primary bg-primary/5" : "border-border bg-white hover:bg-gray-50"
                       }`}
                     >
-                      <div className="rounded-xl overflow-hidden border border-white/10 mb-3">
+                      <div className="rounded-xl overflow-hidden border border-border mb-3">
                         <img src="/og-image.jpg" alt={p.title} className="w-full h-36 object-cover" />
                       </div>
                       <p className="text-sm font-bold leading-snug line-clamp-2">{p.title}</p>
-                      <p className="text-xs text-gray-400 mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
-                      <div className="mt-2 flex items-center justify-between text-[11px] text-gray-400">
+                      <p className="text-xs text-text-muted mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
+                      <div className="mt-2 flex items-center justify-between text-[11px] text-text-muted">
                         <span>{p.displayDate || ""}</span>
                         <span>{p.category || "블로그"}</span>
                       </div>
@@ -223,14 +223,14 @@ export default function BlogPage() {
               </div>
             </aside>
 
-            <article className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 lg:p-7">
+            <article className="bg-white border border-border rounded-2xl p-5 lg:p-7">
               {selected ? (
                 <>
                   <h1 className="text-2xl font-bold mb-1 leading-tight">{selected.title}</h1>
-                  <p className="text-xs text-gray-400 mb-4">{selected.displayDate || ""} · {selected.category || ""}</p>
-                  {selected.summary ? <p className="text-sm text-gray-300 mb-4">{selected.summary}</p> : null}
+                  <p className="text-xs text-text-muted mb-4">{selected.displayDate || ""} · {selected.category || ""}</p>
+                  {selected.summary ? <p className="text-sm text-text-secondary mb-4">{selected.summary}</p> : null}
                   {selected.sourceUrl ? (
-                    <a href={selected.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex mb-5 text-xs px-2 py-1 rounded-full bg-white/10 border border-white/15 text-gray-200">
+                    <a href={selected.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex mb-5 text-xs px-2 py-1 rounded-full bg-gray-100 border border-border text-text-secondary">
                       원문(X) 보기
                     </a>
                   ) : null}
@@ -238,7 +238,7 @@ export default function BlogPage() {
                   <div className="doc-content prose prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: String(marked.parse(selected.contentMd || "")) }} />
                 </>
               ) : (
-                <div className="text-sm text-gray-400">게시글이 없습니다.</div>
+                <div className="text-sm text-text-muted">게시글이 없습니다.</div>
               )}
             </article>
           </div>
