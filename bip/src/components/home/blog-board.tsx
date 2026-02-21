@@ -14,7 +14,7 @@ export function BlogBoard() {
           viewport={{ once: true }}
           className="text-lg font-bold text-text-primary leading-snug"
         >
-          최근 블로그
+          코드 너머의 철학
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -23,7 +23,7 @@ export function BlogBoard() {
           transition={{ delay: 0.1 }}
           className="text-sm text-text-muted mt-1"
         >
-          기획/개발/운영 노트를 정리해요
+          만드는 과정 속 깊은 고민과 생각
         </motion.p>
 
         <div className="mt-6">
