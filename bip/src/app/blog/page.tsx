@@ -26,18 +26,7 @@ type BlogPost = {
   tags?: string[];
 };
 
-const X_ARTICLE_SEED: BlogPost = {
-  id: "x-2016144348535234775",
-  slug: "specialist-to-generalist-solo-founder",
-  title: "억대 연봉이라는 '황금 수갑'을 풀고, 나는 야생으로 왔다.",
-  summary: "스페셜리스트에서 제너럴리스트, 그리고 1인 창업가로의 진화",
-  category: "트위터 아티클",
-  bannerTag: "X 아티클",
-  displayDate: "2026-01-27",
-  order: -999,
-  sourceType: "twitter_article",
-  sourceUrl: "https://x.com/romantic_coding/status/2016144348535234775",
-};
+// removed hardcoded seed post
 
 export default function BlogPage() {
   const [projectId, setProjectId] = useState("");
@@ -82,20 +71,15 @@ export default function BlogPage() {
     })();
   }, [projectId]);
 
-  const mergedPosts = useMemo(() => {
-    const hasSeed = posts.some((p) => p.slug === X_ARTICLE_SEED.slug);
-    return hasSeed ? posts : [X_ARTICLE_SEED, ...posts];
-  }, [posts]);
-
   const filtered = useMemo(() => {
-    let out = mergedPosts;
+    let out = posts;
     if (category) out = out.filter((p) => String(p.category || "") === category);
     return out;
-  }, [mergedPosts, category]);
+  }, [posts, category]);
 
   const categories = useMemo(
-    () => Array.from(new Set(mergedPosts.map((p) => p.category).filter(Boolean))),
-    [mergedPosts]
+    () => Array.from(new Set(posts.map((p) => p.category).filter(Boolean))),
+    [posts]
   );
 
   return (
