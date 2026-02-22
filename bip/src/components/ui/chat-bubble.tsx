@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { User, Bot, Terminal, Search, Scale } from "lucide-react";
+import { User, Bot, Terminal } from "lucide-react";
 import Image from "next/image";
 import { UI_TEXT } from "@/lib/constants";
 
@@ -37,38 +37,28 @@ const AGENT_PROFILES: Record<string, AgentProfile> = {
     avatar: "/profile-nangman.jpg",
   },
   main: {
-    name: "비서가재 🦞",
+    name: "비서가재 AI",
     emoji: "🦞",
+    icon: Bot,
+    iconColor: "text-orange-500",
+    bgColor: "bg-orange-50",
+    bubbleBg: "bg-orange-50/40",
+    bubbleBorder: "border-orange-100",
+    avatar: "/profile-secretary.jpg",
+  },
+  home: {
+    name: "홈 AI",
+    emoji: "🏠",
     icon: Bot,
     iconColor: "text-emerald-600",
     bgColor: "bg-emerald-50",
-    bubbleBg: "bg-white",
-    bubbleBorder: "border-gray-100",
-    avatar: "/profile-secretary.jpg",
+    bubbleBg: "bg-emerald-50/40",
+    bubbleBorder: "border-emerald-100",
+    avatar: "/profile-home.jpeg",
   },
-  scout: {
-    name: "탐정가재 🔍",
-    emoji: "🔍",
-    icon: Search,
-    iconColor: "text-amber-600",
-    bgColor: "bg-amber-50",
-    bubbleBg: "bg-amber-50/50",
-    bubbleBorder: "border-amber-200/50",
-    avatar: "/profile-scout.jpg",
-  },
-  judge: {
-    name: "판사가재 ⚖️",
-    emoji: "⚖️",
-    icon: Scale,
-    iconColor: "text-blue-600",
-    bgColor: "bg-blue-50",
-    bubbleBg: "bg-blue-50/50",
-    bubbleBorder: "border-blue-200/50",
-    avatar: "/profile-judge.jpg",
-  },
-  // scout/judge의 user = 비서가재가 명령
+  // 서브에이전트 user = 비서가재가 명령
   commander: {
-    name: "비서가재 🦞",
+    name: "비서가재 AI",
     emoji: "🦞",
     icon: Bot,
     iconColor: "text-emerald-600",
@@ -82,8 +72,8 @@ const AGENT_PROFILES: Record<string, AgentProfile> = {
 function getProfile(message: ChatLog): { profile: AgentProfile; isLeft: boolean } {
   const agent = message.agent || "main";
   
-  // main의 user = 대표님 (낭만코딩)
-  if (message.role === "user" && (agent === "main" || !message.agent)) {
+  // main의 user = 대표님 (낭만코딩) — claude: 접두사 세션도 포함
+  if (message.role === "user" && (agent === "main" || !message.agent || agent.startsWith("claude:"))) {
     return { profile: AGENT_PROFILES.human, isLeft: true };
   }
   
@@ -95,6 +85,11 @@ function getProfile(message: ChatLog): { profile: AgentProfile; isLeft: boolean 
   // scout/judge의 user = 비서가재가 명령 (우측)
   if (message.role === "user" && (agent === "scout" || agent === "judge")) {
     return { profile: AGENT_PROFILES.commander, isLeft: false };
+  }
+
+  // claude code 로컬 세션 메시지
+  if (message.role === "home") {
+    return { profile: AGENT_PROFILES.home, isLeft: false };
   }
 
   // scout/judge의 assistant = 해당 에이전트 (우측)
