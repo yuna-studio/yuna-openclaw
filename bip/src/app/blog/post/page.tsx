@@ -176,12 +176,6 @@ export default function BlogPostPage() {
               {selected.displayDate || ""} {selected.category ? `· ${selected.category}` : ""}
             </p>
             {selected.summary ? <p className="text-sm text-text-secondary mb-4">{selected.summary}</p> : null}
-            {selected.sourceUrl ? (
-              <a href={selected.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex mb-5 text-xs px-2 py-1 rounded-full bg-gray-100 border border-border text-text-secondary">
-                원문(X) 보기
-              </a>
-            ) : null}
-
             <div
               className="doc-content prose prose-sm max-w-none"
               dangerouslySetInnerHTML={{ __html: String(marked.parse(selected.contentMd || "")) }}

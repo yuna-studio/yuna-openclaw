@@ -99,9 +99,9 @@ body {
   font-size: 15px;
   line-height: 1.7;
 }
-.doc-content h1 { font-size: 1.6rem; line-height: 1.3; }
-.doc-content h2 { font-size: 1.3rem; line-height: 1.35; margin-top: 1.1em; }
-.doc-content h3 { font-size: 1.15rem; line-height: 1.4; }
+.doc-content h1 { font-size: 1.6rem; line-height: 1.3; margin-top: 1.2em; margin-bottom: 0.55em; }
+.doc-content h2 { font-size: 1.3rem; line-height: 1.35; margin-top: 1.5em; margin-bottom: 0.6em; }
+.doc-content h3 { font-size: 1.15rem; line-height: 1.4; margin-top: 1.3em; margin-bottom: 0.5em; }
 .doc-content p, .doc-content li { font-size: 0.96rem; line-height: 1.75; }
 .doc-content strong { font-weight: 700; }
 
