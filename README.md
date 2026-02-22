@@ -31,7 +31,8 @@ yuna-openclaw/
 ├── scripts/           # 유틸리티 스크립트
 │   └── seed_projects.py
 ├── docs/
-│   └── core/AGENT_SPEC.md  # Planner 에이전트 스펙
+│   ├── core/AGENT_SPEC.md          # Planner 에이전트 스펙
+│   └── core/HOME_DEVELOPMENT_PLAN.md # 홈 카피/UX 개발 체크리스트
 └── bip/               # 프론트엔드 (Next.js, .gitignore)
 ```
 
