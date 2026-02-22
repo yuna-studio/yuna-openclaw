@@ -21,7 +21,7 @@ export function BlogBoard() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-sm text-text-muted mt-1"
+          className="text-lg font-bold text-text-muted/60 leading-snug mt-1"
         >
           만드는 과정 속 깊은 고민과 생각
         </motion.p>
