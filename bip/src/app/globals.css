@@ -103,6 +103,8 @@ body {
 .doc-content h2 { font-size: 1.3rem; line-height: 1.35; margin-top: 1.5em; margin-bottom: 0.6em; }
 .doc-content h3 { font-size: 1.15rem; line-height: 1.4; margin-top: 1.3em; margin-bottom: 0.5em; }
 .doc-content p, .doc-content li { font-size: 0.96rem; line-height: 1.75; }
+.doc-content p { margin-top: 0.45em; margin-bottom: 0.95em; }
+.doc-content p + p { margin-top: 0.65em; }
 .doc-content strong { font-weight: 700; }
 
 /* Markdown task-list (checkbox) readability */
