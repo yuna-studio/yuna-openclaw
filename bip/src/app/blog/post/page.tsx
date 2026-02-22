@@ -19,7 +19,20 @@ type BlogPost = {
   order?: number;
   sourceUrl?: string;
   sourceType?: string;
+  bannerTag?: string;
+  badgeTag?: string;
+  cardTag?: string;
+  coverImage?: string;
+  thumbnailUrl?: string;
+  tags?: string[];
 };
+
+function stripSourceMetaBlock(md: string): string {
+  const src = String(md || "");
+  return src
+    .replace(/\n?##\s*원문\s*메타[\s\S]*$/m, "")
+    .trim();
+}
 
 const X_ARTICLE_SEED: BlogPost = {
   id: "x-2016144348535234775",
@@ -144,6 +157,9 @@ export default function BlogPostPage() {
   }, [posts]);
 
   const selected = useMemo(() => mergedPosts.find((p) => p.slug === slug) || mergedPosts[0], [mergedPosts, slug]);
+  const selectedTags = Array.isArray(selected?.tags) ? selected.tags : [];
+  const selectedTagFromTags = selectedTags.find((t) => t.startsWith("배너:") || t.startsWith("badge:"))?.split(":").slice(1).join(":").trim();
+  const selectedCoverFromTags = selectedTags.find((t) => t.startsWith("커버:") || t.startsWith("cover:"))?.split(":").slice(1).join(":").trim();
 
   const listHref = projectId
     ? `/blog?projectId=${encodeURIComponent(projectId)}${category ? `&category=${encodeURIComponent(category)}` : ""}`
@@ -167,8 +183,15 @@ export default function BlogPostPage() {
 
         {!loading && !error && selected ? (
           <article className="bg-white border border-border rounded-2xl p-5 lg:p-7">
-            <div className="rounded-xl overflow-hidden border border-border mb-5">
-              <img src="/og-image.jpg" alt={`${selected.title} 배너`} className="w-full h-48 md:h-64 object-cover" />
+            <div className="relative rounded-xl overflow-hidden border border-border mb-5">
+              <img
+                src={selected.coverImage || selected.thumbnailUrl || selectedCoverFromTags || "/og-image.jpg"}
+                alt={`${selected.title} 배너`}
+                className="w-full h-48 md:h-64 object-cover"
+              />
+              <span className="absolute left-2 bottom-2 inline-flex items-center rounded-md bg-black/65 text-white text-[11px] font-semibold px-2 py-1">
+                {selected.bannerTag || selected.badgeTag || selected.cardTag || selectedTagFromTags || selected.category || "아티클"}
+              </span>
             </div>
 
             <h1 className="text-2xl font-bold mb-1 leading-tight">{selected.title}</h1>
@@ -178,7 +201,7 @@ export default function BlogPostPage() {
             {selected.summary ? <p className="text-sm text-text-secondary mb-4">{selected.summary}</p> : null}
             <div
               className="doc-content prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: String(marked.parse(selected.contentMd || "")) }}
+              dangerouslySetInnerHTML={{ __html: String(marked.parse(stripSourceMetaBlock(selected.contentMd || ""), { breaks: true })) }}
             />
           </article>
         ) : null}

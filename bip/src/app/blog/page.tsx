@@ -23,6 +23,7 @@ type BlogPost = {
   cardTag?: string;
   coverImage?: string;
   thumbnailUrl?: string;
+  tags?: string[];
 };
 
 const X_ARTICLE_SEED: BlogPost = {
@@ -139,8 +140,12 @@ export default function BlogPage() {
                 ? `/blog/post?projectId=${encodeURIComponent(projectId)}&slug=${encodeURIComponent(p.slug)}${category ? `&category=${encodeURIComponent(category)}` : ""}`
                 : `/blog/post?slug=${encodeURIComponent(p.slug)}${category ? `&category=${encodeURIComponent(category)}` : ""}`;
 
-              const bannerTag = p.bannerTag || p.badgeTag || p.cardTag || p.category || "아티클";
-              const coverSrc = p.coverImage || p.thumbnailUrl || "/og-image.jpg";
+              const tags = Array.isArray(p.tags) ? p.tags : [];
+              const tagFromTags = tags.find((t) => t.startsWith("배너:") || t.startsWith("badge:"))?.split(":").slice(1).join(":").trim();
+              const coverFromTags = tags.find((t) => t.startsWith("커버:") || t.startsWith("cover:"))?.split(":").slice(1).join(":").trim();
+
+              const bannerTag = p.bannerTag || p.badgeTag || p.cardTag || tagFromTags || p.category || "아티클";
+              const coverSrc = p.coverImage || p.thumbnailUrl || coverFromTags || "/og-image.jpg";
 
               return (
                 <Link
