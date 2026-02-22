@@ -10,6 +10,7 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const hasCoreFirebaseConfig =
@@ -19,7 +20,7 @@ const hasCoreFirebaseConfig =
   !!firebaseConfig.appId;
 
 // SSR/Build 시 환경변수가 비어 있으면 초기화하지 않고 null 반환
-const app = hasCoreFirebaseConfig
+export const app = hasCoreFirebaseConfig
   ? !getApps().length
     ? initializeApp(firebaseConfig)
     : getApp()

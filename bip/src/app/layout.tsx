@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ReactionBar } from "@/components/ui/reaction-bar";
+import { FirebaseAnalyticsTracker } from "@/components/analytics/firebase-analytics-tracker";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://nangman.live"),
@@ -69,6 +70,7 @@ export default function RootLayout({
         className={`antialiased bg-background text-text-primary selection:bg-primary/20 font-sans`}
       >
         {children}
+        <FirebaseAnalyticsTracker />
         <ReactionBar />
       </body>
     </html>
