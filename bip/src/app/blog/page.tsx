@@ -18,6 +18,11 @@ type BlogPost = {
   order?: number;
   sourceUrl?: string;
   sourceType?: string;
+  bannerTag?: string;
+  badgeTag?: string;
+  cardTag?: string;
+  coverImage?: string;
+  thumbnailUrl?: string;
 };
 
 const X_ARTICLE_SEED: BlogPost = {
@@ -26,6 +31,7 @@ const X_ARTICLE_SEED: BlogPost = {
   title: "억대 연봉이라는 '황금 수갑'을 풀고, 나는 야생으로 왔다.",
   summary: "스페셜리스트에서 제너럴리스트, 그리고 1인 창업가로의 진화",
   category: "트위터 아티클",
+  bannerTag: "X 아티클",
   displayDate: "2026-01-27",
   order: -999,
   sourceType: "twitter_article",
@@ -133,6 +139,9 @@ export default function BlogPage() {
                 ? `/blog/post?projectId=${encodeURIComponent(projectId)}&slug=${encodeURIComponent(p.slug)}${category ? `&category=${encodeURIComponent(category)}` : ""}`
                 : `/blog/post?slug=${encodeURIComponent(p.slug)}${category ? `&category=${encodeURIComponent(category)}` : ""}`;
 
+              const bannerTag = p.bannerTag || p.badgeTag || p.cardTag || p.category || "아티클";
+              const coverSrc = p.coverImage || p.thumbnailUrl || "/og-image.jpg";
+
               return (
                 <Link
                   key={p.id}
@@ -140,6 +149,13 @@ export default function BlogPage() {
                   onClick={() => track("click_blog_item", { projectId, slug: p.slug })}
                   className="block rounded-2xl border p-3 transition-colors border-border bg-white hover:bg-gray-50"
                 >
+                  <div className="relative rounded-xl overflow-hidden border border-border mb-3">
+                    <img src={coverSrc} alt={p.title} className="w-full h-40 object-cover" />
+                    <span className="absolute left-2 bottom-2 inline-flex items-center rounded-md bg-black/65 text-white text-[11px] font-semibold px-2 py-1">
+                      {bannerTag}
+                    </span>
+                  </div>
+
                   <p className="text-sm font-bold leading-snug line-clamp-2">{p.title}</p>
                   <p className="text-xs text-text-secondary mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
                   <div className="mt-2 flex items-center justify-between text-[11px] text-text-secondary">
