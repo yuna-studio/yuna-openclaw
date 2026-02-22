@@ -96,7 +96,7 @@ export function ProjectBoard() {
           viewport={{ once: true }}
           className="text-lg font-bold text-text-primary leading-snug"
         >
-          가재들이 직접 만든 것들.
+          우리가 직접 만든 것들.
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 10 }}

@@ -77,15 +77,15 @@ export function RPGDialogue() {
   // 에이전트별 프로필
   const agent = lastMessage?.agent || "main";
   const isUser = lastMessage?.role === "user" && (agent === "main" || !lastMessage?.agent);
-  
+  const isHome = lastMessage?.role === "home" || (agent && agent.startsWith("claude:"));
+
   const PROFILES: Record<string, { image: string; name: string }> = {
-    human: { image: "/profile-nangman.jpg", name: "낭만코딩 (CEO)" },
-    main: { image: "/profile-secretary.jpg", name: "비서가재 🦞" },
-    scout: { image: "/profile-scout.jpg", name: "탐정가재 🔍" },
-    judge: { image: "/profile-judge.jpg", name: "판사가재 ⚖️" },
+    human: { image: "/profile-nangman.jpg", name: "낭만코딩" },
+    main: { image: "/profile-secretary.jpg", name: "비서가재 AI" },
+    home: { image: "/profile-home.jpeg", name: "홈 AI" },
   };
 
-  const profileKey = isUser ? "human" : (agent === "scout" ? "scout" : agent === "judge" ? "judge" : "main");
+  const profileKey = isUser ? "human" : isHome ? "home" : "main";
   const profile = PROFILES[profileKey] || PROFILES.main;
   const modelName = isUser ? "인간의 두뇌" : (lastMessage?.model || "AI");
 
