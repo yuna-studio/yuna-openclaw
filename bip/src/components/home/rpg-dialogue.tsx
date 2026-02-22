@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { useState, useEffect, useRef } from "react";
+import { track } from "@/lib/logging";
 
 // 타이핑 효과 훅
 function useTypewriter(text: string, speed = 20) {
@@ -190,6 +191,7 @@ export function RPGDialogue() {
       <div className="flex justify-center mt-3">
         <Link 
           href="/live"
+          onClick={() => track("click_home_live", { source: "rpg_dialogue_cta" })}
           className="group relative flex items-center gap-1 text-xs font-bold text-white bg-primary/80 hover:bg-primary px-4 py-1.5 rounded-full overflow-hidden transition-colors shadow-sm"
         >
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer" />

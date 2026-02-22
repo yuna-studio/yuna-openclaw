@@ -4,9 +4,10 @@ import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
 import Link from "next/link";
 import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
+import { track } from "@/lib/logging";
 
 function getDateKey(timestamp: string): string {
   try {
@@ -34,6 +35,8 @@ export default function LivePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+  const pendingRestoreRef = useRef(false);
+  const anchorRef = useRef<{ id: string; offsetTop: number } | null>(null);
 
   // 초기 로딩 완료 시 맨 아래로
   useEffect(() => {
@@ -54,14 +57,7 @@ export default function LivePage() {
     const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
     setShowScrollButton(!isAtBottom);
 
-    // 상단 200px 이내 → 과거 메시지 로드
-    if (el.scrollTop < 200 && hasMore && !loadingMore && !loadingMoreRef.current && initialScrollDone) {
-      loadingMoreRef.current = true;
-      loadMore().finally(() => {
-        loadingMoreRef.current = false;
-      });
-    }
-  }, [hasMore, loadingMore, loadMore, initialScrollDone]);
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -69,6 +65,29 @@ export default function LivePage() {
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
+
+  // loadMore 후 앵커 메시지 위치 복원
+  useLayoutEffect(() => {
+    if (!pendingRestoreRef.current) return;
+
+    const container = scrollRef.current;
+    const anchor = anchorRef.current;
+    if (!container || !anchor?.id) {
+      pendingRestoreRef.current = false;
+      anchorRef.current = null;
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const anchorEl = container.querySelector<HTMLElement>(`[data-msg-id="${anchor.id}"]`);
+    if (anchorEl) {
+      const nowTop = anchorEl.getBoundingClientRect().top - containerRect.top;
+      container.scrollTop += nowTop - anchor.offsetTop;
+    }
+
+    pendingRestoreRef.current = false;
+    anchorRef.current = null;
+  }, [messages.length]);
 
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
   useEffect(() => {
@@ -89,10 +108,45 @@ export default function LivePage() {
     clearNewCount();
   }, [clearNewCount]);
 
+  const onLoadMore = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container || loadingMoreRef.current || loadingMore || !hasMore) return;
+
+    // 현재 보이는 첫 메시지를 앵커로 잡고 위치를 기억
+    const containerRect = container.getBoundingClientRect();
+    const nodes = Array.from(container.querySelectorAll<HTMLElement>("[data-msg-id]"));
+    const firstVisible =
+      nodes.find((node) => node.getBoundingClientRect().top >= containerRect.top) || nodes[0];
+
+    if (firstVisible) {
+      anchorRef.current = {
+        id: firstVisible.dataset.msgId || "",
+        offsetTop: firstVisible.getBoundingClientRect().top - containerRect.top,
+      };
+      pendingRestoreRef.current = true;
+    } else {
+      anchorRef.current = null;
+      pendingRestoreRef.current = false;
+    }
+
+    track("click_live_load_more", { currentCount: messages.length });
+
+    loadingMoreRef.current = true;
+    loadMore().finally(() => {
+      loadingMoreRef.current = false;
+    });
+  }, [hasMore, loadingMore, loadMore, messages.length]);
+
+  useEffect(() => {
+    track("view_live");
+  }, []);
+
+  const showTopProgress = loading || loadingMore;
+
   return (
     <div className="flex flex-col h-[100dvh] bg-background relative selection:bg-primary/20">
-      {/* Header */}
-      <header className="h-14 shrink-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/70 border-b border-gray-200">
+      {/* App Bar */}
+      <header className="h-14 shrink-0 z-40 flex items-center px-4 backdrop-blur-md bg-white/80 border-b border-gray-200 sticky top-0">
         <Link href="/" className="p-2 -ml-2 text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 group w-16">
           <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm font-medium">{UI_TEXT.EXIT}</span>
@@ -100,6 +154,26 @@ export default function LivePage() {
         <span className="flex-1 text-center font-bold text-sm tracking-wide text-text-primary">{UI_TEXT.HEADER_TITLE}</span>
         <div className="w-16" />
       </header>
+
+      {/* Loading Progress */}
+      <AnimatePresence>
+        {showTopProgress && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-1 w-full bg-gray-200/70 overflow-hidden"
+          >
+            <motion.div
+              className="h-full bg-primary"
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{ repeat: Infinity, duration: 1.1, ease: "linear" }}
+              style={{ width: "40%" }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* LIVE 뱃지 */}
       <div className="absolute top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
@@ -116,10 +190,23 @@ export default function LivePage() {
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         <div className="w-full max-w-3xl mx-auto p-4 pt-12 pb-32">
-          {/* 과거 메시지 로딩 */}
+          {/* 과거 메시지 더 보기 */}
+          {hasMore && !loading && (
+            <div className="flex justify-center py-3">
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={loadingMore}
+                className="px-4 py-2 text-xs font-semibold rounded-full border border-gray-200 bg-white/90 hover:bg-white text-text-secondary disabled:opacity-60"
+              >
+                {loadingMore ? "불러오는 중..." : "이전 메시지 더 보기"}
+              </button>
+            </div>
+          )}
+
           {loadingMore && (
-            <div className="flex items-center justify-center py-4 gap-2">
-              <Loader2 className="text-primary animate-spin" size={18} />
+            <div className="flex items-center justify-center py-2 gap-2">
+              <Loader2 className="text-primary animate-spin" size={16} />
               <span className="text-text-muted text-xs font-mono">{UI_TEXT.LOADING_SIGNAL}</span>
             </div>
           )}
@@ -147,7 +234,7 @@ export default function LivePage() {
               const showDate = idx === 0 || (prevDate && currentDate !== prevDate);
 
               return (
-                <div key={msg.id}>
+                <div key={msg.id} data-msg-id={msg.id}>
                   {showDate && currentDate && (
                     <DateDivider date={formatDateLabel(currentDate)} />
                   )}

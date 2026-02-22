@@ -37,5 +37,20 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false; // 서버(admin SDK)만 쓰기
     }
+    // 프로젝트별 개발문서 (공개된 문서만 읽기 허용)
+    match /projects/{projectId}/docs/{docId} {
+      allow read: if resource.data.status == 'published';
+      allow write: if false;
+    }
+    // 프로젝트별 블로그 (공개된 게시글만 읽기 허용)
+    match /projects/{projectId}/blog_posts/{postId} {
+      allow read: if resource.data.status == 'published';
+      allow write: if false;
+    }
+    // 글로벌 블로그 (프로젝트 비매핑)
+    match /blog_posts/{postId} {
+      allow read: if resource.data.status == 'published';
+      allow write: if false;
+    }
   }
 }

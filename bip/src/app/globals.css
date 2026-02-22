@@ -44,8 +44,7 @@ body {
 }
 
 /* Prose overflow control */
-.prose pre,
-.prose table {
+.prose pre {
     overflow-x: auto;
     max-width: 100%;
     white-space: pre;
@@ -93,6 +92,86 @@ body {
 .prose hr {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+}
+
+/* Docs viewer readability */
+.doc-content {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.doc-content h1 { font-size: 1.6rem; line-height: 1.3; margin-top: 1.2em; margin-bottom: 0.55em; }
+.doc-content h2 { font-size: 1.3rem; line-height: 1.35; margin-top: 1.5em; margin-bottom: 0.6em; }
+.doc-content h3 { font-size: 1.15rem; line-height: 1.4; margin-top: 1.3em; margin-bottom: 0.5em; }
+.doc-content p, .doc-content li { font-size: 0.96rem; line-height: 1.75; }
+.doc-content strong { font-weight: 700; }
+
+/* Markdown task-list (checkbox) readability */
+.doc-content .contains-task-list {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+.doc-content .task-list-item {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.doc-content .task-list-item input[type="checkbox"],
+.doc-content li input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.28rem;
+  accent-color: #2563eb;
+  flex-shrink: 0;
+}
+.doc-content .task-list-item > p {
+  margin: 0;
+}
+
+.doc-content .table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+.doc-content table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+.doc-content th,
+.doc-content td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
+}
+.doc-content th { background: #f8fafc; font-weight: 700; }
+.doc-content tr:last-child td { border-bottom: 0; }
+
+.doc-content pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+.doc-content pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+}
+.doc-content :not(pre) > code {
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.85em;
 }
 
 /* 두근두근 하트비트 */
