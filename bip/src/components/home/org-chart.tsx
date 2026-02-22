@@ -11,22 +11,16 @@ const TEAM = [
     color: "border-primary",
   },
   {
-    name: "비서가재 🦞",
-    role: "총괄",
+    name: "비서가재 AI",
+    role: "OpenClaw · M2 맥미니",
     image: "/profile-secretary.jpg",
-    color: "border-secondary",
+    color: "border-orange-400",
   },
   {
-    name: "탐정가재 🔍",
-    role: "실무",
-    image: "/profile-scout.jpg",
-    color: "border-accent-highlight",
-  },
-  {
-    name: "판사가재 ⚖️",
-    role: "검수",
-    image: "/profile-judge.jpg",
-    color: "border-text-primary",
+    name: "홈 AI",
+    role: "맥북 프로",
+    image: "/profile-home.jpeg",
+    color: "border-emerald-400",
   },
 ];
 
@@ -41,7 +35,7 @@ export function OrgChart() {
           viewport={{ once: true }}
           className="text-lg font-bold text-text-primary leading-snug"
         >
-          1명의 사람과 3마리의 가재.
+          1명의 사람과 2개의 AI.
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -55,7 +49,7 @@ export function OrgChart() {
       </div>
 
       {/* 팀원 카드 */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-6 max-w-xs mx-auto">
         {TEAM.map((member, i) => (
           <motion.div
             key={member.name}
