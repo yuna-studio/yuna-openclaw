@@ -1,0 +1,42 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-bip:
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: bip
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Firebase Hosting
+        run: npx firebase-tools deploy --only hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  test-gajae-os:
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: gajae-os
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        run: pip3 install -r requirements-test.txt
+
+      - name: Run tests
+        run: python3 -m pytest tests/ -v

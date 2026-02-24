@@ -1,0 +1,3 @@
+pytest>=7.0
+firebase-admin>=6.0
+langgraph>=0.0.1

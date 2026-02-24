@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "bip-dev",
-      "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["/Users/kong/workspace/yuna-openclaw/bip/dev.sh"],
+      "runtimeExecutable": "/opt/homebrew/bin/npm",
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     }
   ]
