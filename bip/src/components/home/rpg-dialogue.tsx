@@ -59,8 +59,8 @@ export function RPGDialogue() {
   const { messages, loading } = useLiveChat(3);
   const lastMessage = messages[messages.length - 1];
   
-  const rawContent = loading 
-    ? "통신 연결 중입니다... 잠시만 기다려주세요." 
+  const rawContent = loading
+    ? "주파수 맞추는 중..."
     : (lastMessage?.content || "현재 대화 내용이 없습니다.");
 
   const truncated = rawContent.length > 200 ? rawContent.slice(0, 200) + "..." : rawContent;
@@ -84,11 +84,12 @@ export function RPGDialogue() {
     human: { image: "/profile-nangman.jpg", name: "낭만코딩" },
     main: { image: "/profile-secretary.jpg", name: "비서가재 AI" },
     home: { image: "/profile-home.jpeg", name: "홈 AI" },
+    loading: { image: "/home_loading_chat.jpeg", name: "???" },
   };
 
-  const profileKey = isUser ? "human" : isHome ? "home" : "main";
+  const profileKey = loading ? "loading" : isUser ? "human" : isHome ? "home" : "main";
   const profile = PROFILES[profileKey] || PROFILES.main;
-  const modelName = isUser ? "인간의 두뇌" : (lastMessage?.model || "AI");
+  const modelName = loading ? "???Hz" : isUser ? "인간의 두뇌" : (lastMessage?.model || "AI");
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 pb-8 z-10 relative">
@@ -169,11 +170,13 @@ export function RPGDialogue() {
           {/* 메시지 유형 뱃지 */}
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-              lastMessage?.role === "user"
-                ? "bg-primary/15 text-primary" 
-                : "bg-blue-500/15 text-blue-600"
+              loading
+                ? "bg-gray-500/15 text-gray-500"
+                : lastMessage?.role === "user"
+                  ? "bg-primary/15 text-primary"
+                  : "bg-blue-500/15 text-blue-600"
             }`}>
-              {lastMessage?.role === "user" ? "💬 명령" : "💡 답변"}
+              {loading ? "📡 수신 중" : lastMessage?.role === "user" ? "💬 명령" : "💡 답변"}
             </span>
           </div>
           <div className="relative h-[64px] overflow-hidden">
