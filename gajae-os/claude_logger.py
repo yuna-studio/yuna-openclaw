@@ -146,6 +146,22 @@ def strip_system_reminders(text: str) -> str:
     return _SYSTEM_REMINDER_BLOCK_RE.sub("\n", text).strip()
 
 
+# Git context blocks injected by hooks (status, diff, log)
+_GIT_CONTEXT_RE = re.compile(
+    r"\n*\*?\s*Current git (?:status|diff|log)\b[\s\S]*$"
+)
+_GIT_RECENT_COMMITS_RE = re.compile(
+    r"\n*\*?\s*Recent commits:[\s\S]*$"
+)
+
+
+def strip_git_context(text: str) -> str:
+    """Remove git status/diff/log context blocks injected by hooks."""
+    text = _GIT_CONTEXT_RE.sub("", text)
+    text = _GIT_RECENT_COMMITS_RE.sub("", text)
+    return text.strip()
+
+
 def is_system_injected(text: str) -> bool:
     return bool(_SYSTEM_USER_RE.search(text))
 
@@ -290,6 +306,9 @@ def clean_message(entry: dict) -> dict | None:
 
     # <system-reminder> 블록 제거 (Claude Code가 주입하는 툴 결과 등)
     text = strip_system_reminders(text)
+
+    # git status/diff/log 컨텍스트 블록 제거 (훅이 주입하는 git 정보)
+    text = strip_git_context(text)
 
     # 시스템 주입 메시지 스킵
     if role == "user" and is_system_injected(text):
