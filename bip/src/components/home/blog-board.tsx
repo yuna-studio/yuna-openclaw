@@ -78,47 +78,37 @@ export function BlogBoard() {
   };
 
   return (
-    <section className="w-full max-w-2xl mx-auto px-4 py-16 border-t border-dashed border-border">
-      {/* 헤더 */}
-      <div className="flex items-end justify-between mb-6">
-        <div>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-lg font-bold text-text-primary leading-snug"
-          >
-            코드 너머의 철학
-          </motion.p>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-sm text-text-muted/60 leading-snug mt-1"
-          >
-            만드는 과정 속 깊은 고민과 생각
-          </motion.p>
-        </div>
-        <Link
-          href="/blog"
-          onClick={() => track("click_home_blog_cta", { source: "home_section" })}
-          className="flex items-center gap-0.5 text-xs font-semibold text-text-secondary hover:text-primary transition-colors shrink-0"
+    <section className="w-full max-w-2xl mx-auto py-16 border-t border-dashed border-border">
+      {/* 헤더 — 센터 정렬, 다른 섹션과 동일 스타일 */}
+      <div className="text-center mb-10 px-4">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-lg font-bold text-text-primary leading-snug"
         >
-          더보러가기
-          <ChevronRight size={14} />
-        </Link>
+          코드 너머의 철학
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="text-lg font-bold text-text-muted/60 leading-snug"
+        >
+          만드는 과정 속 깊은 고민과 생각
+        </motion.p>
       </div>
 
-      {/* 캐러셀 */}
+      {/* 캐러셀 — 좌우 패딩을 스크롤 내부 여백으로 처리 */}
       {loading ? (
-        <div className="flex gap-3 overflow-hidden">
+        <div className="flex gap-3 overflow-hidden px-4">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="shrink-0 w-[220px] h-[200px] rounded-2xl bg-gray-100 animate-pulse" />
           ))}
         </div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 px-4">
           <p className="text-sm text-text-muted">아직 작성된 글이 없어요.</p>
           <Link
             href="/blog"
@@ -133,7 +123,7 @@ export function BlogBoard() {
           {canScrollLeft && (
             <button
               onClick={() => scroll("left")}
-              className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-text-secondary hover:text-text-primary hover:shadow-md transition-all opacity-0 group-hover:opacity-100"
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-text-secondary hover:text-text-primary hover:shadow-md transition-all opacity-0 group-hover:opacity-100"
               aria-label="이전"
             >
               <ChevronLeft size={16} />
@@ -144,7 +134,7 @@ export function BlogBoard() {
           {canScrollRight && (
             <button
               onClick={() => scroll("right")}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-text-secondary hover:text-text-primary hover:shadow-md transition-all opacity-0 group-hover:opacity-100"
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-border shadow-sm flex items-center justify-center text-text-secondary hover:text-text-primary hover:shadow-md transition-all opacity-0 group-hover:opacity-100"
               aria-label="다음"
             >
               <ChevronRight size={16} />
@@ -156,6 +146,9 @@ export function BlogBoard() {
             className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 -mb-2"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
+            {/* 좌측 여백 스페이서 */}
+            <div className="shrink-0 w-4 -mr-3 md:w-[calc((100%-672px)/2+16px)] md:-mr-3" aria-hidden />
+
             {posts.map((p, i) => {
               const tags = Array.isArray(p.tags) ? p.tags : [];
               const tagFromTags = tags.find((t) => t.startsWith("배너:") || t.startsWith("badge:"))?.split(":").slice(1).join(":").trim();
@@ -202,9 +195,24 @@ export function BlogBoard() {
                 </motion.div>
               );
             })}
+
+            {/* 우측 여백 스페이서 */}
+            <div className="shrink-0 w-4 -ml-3 md:w-[calc((100%-672px)/2+16px)] md:-ml-3" aria-hidden />
           </div>
         </div>
       )}
+
+      {/* 더보러가기 CTA */}
+      <div className="text-center mt-8 px-4">
+        <Link
+          href="/blog"
+          onClick={() => track("click_home_blog_cta", { source: "home_section" })}
+          className="inline-flex items-center gap-0.5 text-sm font-semibold text-text-secondary hover:text-primary transition-colors"
+        >
+          더보러가기
+          <ChevronRight size={16} />
+        </Link>
+      </div>
     </section>
   );
 }
