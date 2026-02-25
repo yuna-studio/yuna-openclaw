@@ -336,7 +336,8 @@ def redact_sensitive(text: str) -> str:
     text = _KEY_VALUE_RE.sub(lambda m: f"{m.group(1)}=[REDACTED]", text)
 
     # 2b) _KEY가 들어간 환경변수명 자체도 축약 (예: NEXT_PUBLIC_X_KEY)
-    text = re.sub(r"\b[A-Z0-9_]*_KEY\b", "[ENV_KEY]", text)
+    # 이미 치환된 [API_KEY] 등 마커 안의 텍스트는 건드리지 않도록 lookaround 사용
+    text = re.sub(r"(?<!\[)\b[A-Z0-9_]*_KEY\b(?!\])", "[ENV_KEY]", text)
 
     # 3) 이메일
     text = _EMAIL_RE.sub("[EMAIL]", text)
@@ -457,7 +458,12 @@ def clean_message(entry: dict) -> dict | None:
         if user_input:
             text = user_input
         else:
-            return None
+            # Fallback: strip_inbound_meta로 메타데이터 제거 후 남은 텍스트 확인
+            stripped = strip_inbound_meta(text)
+            if stripped and stripped != text:
+                text = stripped
+            else:
+                return None
 
     # Clean metadata from user messages
     if role == "user":
