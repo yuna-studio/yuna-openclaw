@@ -25,6 +25,7 @@ export function LiveMetrics() {
   }, []);
 
   const fetchCount = useCallback(async () => {
+    if (!db) return;
     try {
       const { getCountFromServer } = await import("firebase/firestore");
       const coll = collection(db, "chat_logs");
