@@ -77,8 +77,8 @@ export function RPGDialogue() {
 
   // 에이전트별 프로필
   const agent = lastMessage?.agent || "main";
-  const isUser = lastMessage?.role === "user" && (agent === "main" || !lastMessage?.agent);
-  const isHome = lastMessage?.role === "home" || (agent && agent.startsWith("claude:"));
+  const isUser = lastMessage?.role === "user";
+  const isHome = !isUser && (lastMessage?.role === "home" || (agent && agent.startsWith("claude:")));
 
   const PROFILES: Record<string, { image: string; name: string }> = {
     human: { image: "/profile-nangman.jpg", name: "낭만코딩" },

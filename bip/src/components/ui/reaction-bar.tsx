@@ -82,6 +82,8 @@ export function ReactionBar() {
 
   // 실시간 리액션 파티클 구독 (최근 1분)
   useEffect(() => {
+    if (!db) return;
+
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
     const q = query(
       collection(db, "reactions"),
@@ -146,6 +148,7 @@ export function ReactionBar() {
     sessionCount.current += 1;
 
     spawnHearts();
+    if (!db) return;
     try {
       await addDoc(collection(db, "reactions"), {
         type: "heart",
