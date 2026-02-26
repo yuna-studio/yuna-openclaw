@@ -114,11 +114,9 @@ export function RPGDialogue() {
         </div>
         {currentWork?.isActive && (
           <p className="text-[11px] text-text-muted pl-1">
-            지금은{" "}
-            <span className="font-medium text-text-secondary">{currentWork.projectTitle}</span>
-            의{" "}
+            지금{" "}
             <span className="font-medium text-text-secondary">{currentWork.taskTitle}</span>
-            을 진행하고 있어요
+            {" "}진행 중
             <span className={`inline-block text-[9px] font-bold px-1 py-px rounded ml-1 align-middle ${TASK_TYPE_STYLE[currentWork.taskType] || "bg-gray-100 text-text-muted"}`}>
               {currentWork.taskType}
             </span>
