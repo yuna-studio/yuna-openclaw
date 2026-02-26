@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { useState, useEffect, useRef } from "react";
 import { track } from "@/lib/logging";
+import { UI_TEXT } from "@/lib/constants";
 
 // 타이핑 효과 훅
 function useTypewriter(text: string, speed = 20) {
@@ -60,7 +61,7 @@ export function RPGDialogue() {
   const lastMessage = messages[messages.length - 1];
   
   const rawContent = loading
-    ? "주파수 맞추는 중..."
+    ? UI_TEXT.SYNCING
     : (lastMessage?.content || "현재 대화 내용이 없습니다.");
 
   const truncated = rawContent.length > 200 ? rawContent.slice(0, 200) + "..." : rawContent;

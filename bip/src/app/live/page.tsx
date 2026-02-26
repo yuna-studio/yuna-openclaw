@@ -3,7 +3,8 @@
 import { useLiveChat } from "@/hooks/use-live-chat";
 import { ChatBubble, DateDivider } from "@/components/ui/chat-bubble";
 import Link from "next/link";
-import { ChevronLeft, ArrowDown, Activity, Loader2 } from "lucide-react";
+import { ChevronLeft, ArrowDown, Loader2 } from "lucide-react";
+import { TuningLoader } from "@/components/ui/tuning-loader";
 import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
@@ -213,12 +214,7 @@ export default function LivePage() {
             </div>
           )}
 
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-40 gap-4">
-              <Activity className="text-primary animate-spin" size={32} />
-              <span className="text-text-muted font-mono text-sm animate-pulse">{UI_TEXT.SYNCING}</span>
-            </div>
-          )}
+          {loading && <TuningLoader />}
 
           <div id="chat-messages">
             {messages.map((msg, idx) => {

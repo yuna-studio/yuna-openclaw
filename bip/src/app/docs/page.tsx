@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import DocClient from "./doc-client";
+import { TuningLoader } from "@/components/ui/tuning-loader";
 
 export const metadata: Metadata = {
   title: "개발문서 | 낭만코딩 · 가재 컴퍼니",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function DocsPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen"><div className="max-w-3xl mx-auto px-4 py-10">로딩 중...</div></main>}>
+    <Suspense fallback={<main className="min-h-screen"><TuningLoader className="py-20" /></main>}>
       <DocClient />
     </Suspense>
   );

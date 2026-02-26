@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { marked } from "marked";
 import { ChevronLeft } from "lucide-react";
 import { track } from "@/lib/logging";
+import { TuningLoader } from "@/components/ui/tuning-loader";
 
 type BlogPost = {
   id: string;
@@ -105,7 +106,7 @@ export default function BlogPostPage() {
       </header>
 
       <div className="w-full max-w-3xl mx-auto px-4 py-6">
-        {loading ? <div className="text-text-muted">로딩 중...</div> : null}
+        {loading ? <TuningLoader className="py-20" /> : null}
         {error ? <div className="text-red-400">{error}</div> : null}
 
         {!loading && !error && selected ? (
