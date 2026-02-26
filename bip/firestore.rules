@@ -52,5 +52,10 @@ service cloud.firestore {
       allow read: if resource.data.status == 'published';
       allow write: if false;
     }
+    // 설정 (현재 작업 상태 등)
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if false; // 서버(admin SDK)만 쓰기
+    }
   }
 }
