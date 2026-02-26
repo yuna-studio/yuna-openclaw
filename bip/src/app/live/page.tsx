@@ -39,11 +39,13 @@ export default function LivePage() {
   const loadingMoreRef = useRef(false);
   const pendingRestoreRef = useRef(false);
   const anchorRef = useRef<{ id: string; offsetTop: number } | null>(null);
+  const loadedIdsRef = useRef<Set<string>>(new Set());
 
-  // 초기 로딩 완료 시 맨 아래로
+  // 초기 로딩 완료 시 맨 아래로 + 기존 메시지 ID 기록
   useEffect(() => {
     const el = scrollRef.current;
     if (!loading && messages.length > 0 && !initialScrollDone && el) {
+      messages.forEach((m) => loadedIdsRef.current.add(m.id));
       requestAnimationFrame(() => {
         el.scrollTop = el.scrollHeight;
         setInitialScrollDone(true);
@@ -68,7 +70,7 @@ export default function LivePage() {
     return () => el.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  // loadMore 후 앵커 메시지 위치 복원
+  // loadMore 후 앵커 메시지 위치 복원 (1차: 즉시)
   useLayoutEffect(() => {
     if (!pendingRestoreRef.current) return;
 
@@ -88,7 +90,26 @@ export default function LivePage() {
     }
 
     pendingRestoreRef.current = false;
-    anchorRef.current = null;
+  }, [messages.length]);
+
+  // loadMore 후 앵커 메시지 위치 보정 (2차: collapse 반영 후)
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor?.id) return;
+
+    const raf = requestAnimationFrame(() => {
+      const container = scrollRef.current;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+      const anchorEl = container.querySelector<HTMLElement>(`[data-msg-id="${anchor.id}"]`);
+      if (anchorEl) {
+        const nowTop = anchorEl.getBoundingClientRect().top - containerRect.top;
+        const drift = nowTop - anchor.offsetTop;
+        if (Math.abs(drift) > 2) container.scrollTop += drift;
+      }
+      anchorRef.current = null;
+    });
+    return () => cancelAnimationFrame(raf);
   }, [messages.length]);
 
   // 새 메시지 도착 → 맨 아래면 자동 스크롤
@@ -234,6 +255,7 @@ export default function LivePage() {
                     message={msg}
                     isLatest={idx === messages.length - 1}
                     showHeader={showHeader || !!showDate}
+                    disableAnimation={!loadedIdsRef.current.has(msg.id) && pendingRestoreRef.current}
                   />
                 </div>
               );

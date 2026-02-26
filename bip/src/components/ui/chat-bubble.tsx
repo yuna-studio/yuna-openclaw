@@ -8,12 +8,13 @@ import { motion } from "framer-motion";
 import { User, Bot, Terminal, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { UI_TEXT } from "@/lib/constants";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 
 interface ChatBubbleProps {
   message: ChatLog;
   isLatest?: boolean;
   showHeader?: boolean;
+  disableAnimation?: boolean;
 }
 
 // 에이전트별 프로필 설정
@@ -194,22 +195,24 @@ const markdownComponents = {
   },
 };
 
-export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleProps) {
+export function ChatBubble({ message, isLatest, showHeader = true, disableAnimation }: ChatBubbleProps) {
   const { profile, isLeft } = getProfile(message);
   const isSystem = message.role === "system";
   const time = formatTime(message.timestamp);
   const IconComponent = profile.icon;
   const maskedContent = maskUids(message.content || "");
 
+  const isLikelyLong = maskedContent.length > 300 || (maskedContent.match(/\n/g)?.length ?? 0) > 8;
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(isLikelyLong);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    setIsOverflowing(el.scrollHeight > COLLAPSE_MAX_HEIGHT);
-  }, [maskedContent]);
+    const actual = el.scrollHeight > COLLAPSE_MAX_HEIGHT;
+    if (actual !== isOverflowing) setIsOverflowing(actual);
+  }, [maskedContent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isSystem) {
     return (
@@ -228,9 +231,9 @@ export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleP
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={disableAnimation ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={disableAnimation ? { duration: 0 } : { duration: 0.3 }}
       className={cn(
         "flex w-full",
         showHeader ? "mt-6" : "mt-2",
