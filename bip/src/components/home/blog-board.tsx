@@ -146,8 +146,8 @@ export function BlogBoard() {
             className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 -mb-2"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {/* 좌측 여백 스페이서 */}
-            <div className="shrink-0 w-4 -mr-3 md:w-[calc((100%-672px)/2+16px)] md:-mr-3" aria-hidden />
+            {/* 좌측 여백 스페이서 (gap-3=12px가 자동 추가되므로 w-1=4px + 12px = 16px) */}
+            <div className="shrink-0 w-1 md:w-[calc((100%-672px)/2+4px)]" aria-hidden />
 
             {posts.map((p, i) => {
               const tags = Array.isArray(p.tags) ? p.tags : [];
@@ -196,8 +196,8 @@ export function BlogBoard() {
               );
             })}
 
-            {/* 우측 여백 스페이서 */}
-            <div className="shrink-0 w-4 -ml-3 md:w-[calc((100%-672px)/2+16px)] md:-ml-3" aria-hidden />
+            {/* 우측 여백 스페이서 (gap-3=12px가 자동 추가되므로 w-1=4px + 12px = 16px) */}
+            <div className="shrink-0 w-1 md:w-[calc((100%-672px)/2+4px)]" aria-hidden />
           </div>
         </div>
       )}
