@@ -83,7 +83,6 @@ export function CurrentWorkBannerPill() {
         className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-border pointer-events-auto max-w-[90vw]"
       >
         <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
-        <span className="text-[10px] font-bold text-primary shrink-0">작업 중</span>
         <span
           className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
             TYPE_STYLE[data.taskType] || "bg-gray-100 text-text-muted"

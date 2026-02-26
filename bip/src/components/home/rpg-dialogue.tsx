@@ -103,25 +103,22 @@ export function RPGDialogue() {
   return (
     <div className="w-full max-w-2xl mx-auto px-4 pb-8 z-10 relative">
       {/* 섹션 헤더 */}
-      <div className="flex flex-col gap-1.5 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-green-500/10 px-2.5 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-bold text-green-700">실시간 대화</span>
-          </div>
-          <span className="text-[10px] text-text-muted">지금 이 순간의 개발 로그</span>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <div className="flex items-center gap-1.5 bg-green-500/10 px-2.5 py-1 rounded-full">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs font-bold text-green-700">실시간 대화</span>
         </div>
-        {currentWork?.isActive && (
-          <p className="text-[11px] text-text-muted pl-1 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
-            <span className="text-[10px] font-bold text-primary shrink-0">작업 중</span>
+        {currentWork?.isActive ? (
+          <div className="flex items-center gap-1.5 text-[11px] text-text-muted">
             <span className={`text-[9px] font-bold px-1.5 py-px rounded ${TASK_TYPE_STYLE[currentWork.taskType] || "bg-gray-100 text-text-muted"}`}>
               {currentWork.taskType}
             </span>
             <span className="font-medium text-text-secondary">{currentWork.projectTitle}</span>
             <span className="text-text-muted/30">›</span>
             <span>{currentWork.taskTitle}</span>
-          </p>
+          </div>
+        ) : (
+          <span className="text-[10px] text-text-muted">지금 이 순간의 개발 로그</span>
         )}
       </div>
 
