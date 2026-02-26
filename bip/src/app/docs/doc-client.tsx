@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { marked } from "marked";
 import mermaid from "mermaid";
 import { ChevronLeft } from "lucide-react";
+import { TuningLoader } from "@/components/ui/tuning-loader";
 
 function escapeHtml(s: string): string {
   return s
@@ -193,14 +194,8 @@ export default function DocClient() {
         <div className="w-20" />
       </header>
 
-      {loading ? (
-        <div className="h-1 w-full bg-gray-200/70 overflow-hidden">
-          <div className="h-full bg-primary animate-pulse" style={{ width: "45%" }} />
-        </div>
-      ) : null}
-
       <div className="w-full max-w-3xl mx-auto px-4 py-8">
-        {loading ? <div className="mt-6">로딩 중...</div> : null}
+        {loading ? <TuningLoader className="py-20" /> : null}
         {error ? <div className="mt-6 text-red-600">{error}</div> : null}
 
         {!loading && !error ? (

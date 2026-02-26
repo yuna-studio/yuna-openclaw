@@ -6,6 +6,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { ChevronLeft } from "lucide-react";
 import { track } from "@/lib/logging";
+import { TuningLoader } from "@/components/ui/tuning-loader";
 
 type BlogPost = {
   id: string;
@@ -114,7 +115,7 @@ export default function BlogPage() {
           </div>
         </div>
 
-        {loading ? <div className="text-text-muted">로딩 중...</div> : null}
+        {loading ? <TuningLoader className="py-20" /> : null}
         {error ? <div className="text-red-400">{error}</div> : null}
 
         {!loading && !error ? (
