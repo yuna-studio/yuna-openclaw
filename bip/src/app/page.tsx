@@ -7,7 +7,6 @@ import { ProjectBoard } from "@/components/home/project-board";
 import { LiveMetrics } from "@/components/home/live-metrics";
 import { HowWeWork } from "@/components/home/how-we-work";
 import { BlogBoard } from "@/components/home/blog-board";
-import { CurrentWorkBanner } from "@/components/home/current-work-banner";
 import { track } from "@/lib/logging";
 
 export default function HomePage() {
@@ -36,10 +35,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 1.5. 현재 작업 상태 */}
-      <CurrentWorkBanner />
-
-      {/* 2. 지금 뭐하고 있는지 — 실시간 대화 */}
+      {/* 2. 지금 뭐하고 있는지 — 실시간 대화 (현재 작업 상태 포함) */}
       <RPGDialogue />
 
       {/* 3. 얼마나 했는지 — 숫자 */}
