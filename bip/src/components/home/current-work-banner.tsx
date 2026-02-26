@@ -82,7 +82,9 @@ export function CurrentWorkBannerPill() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-border pointer-events-auto max-w-[90vw]"
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+        <span className="text-[10px] font-bold text-green-700 shrink-0">실시간</span>
+        <div className="w-px h-3 bg-border shrink-0" />
         <span
           className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
             TYPE_STYLE[data.taskType] || "bg-gray-100 text-text-muted"
