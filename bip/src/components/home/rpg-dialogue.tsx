@@ -1,6 +1,7 @@
 "use client";
 
 import { useLiveChat } from "@/hooks/use-live-chat";
+import { useCurrentWork } from "@/hooks/use-current-work";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -9,6 +10,13 @@ import ReactMarkdown from "react-markdown";
 import { useState, useEffect, useRef } from "react";
 import { track } from "@/lib/logging";
 import { UI_TEXT } from "@/lib/constants";
+
+const TASK_TYPE_STYLE: Record<string, string> = {
+  "기획": "bg-blue-100 text-blue-700",
+  "설계": "bg-purple-100 text-purple-700",
+  "개발": "bg-amber-100 text-amber-700",
+  "배포": "bg-green-100 text-green-700",
+};
 
 // 타이핑 효과 훅
 function useTypewriter(text: string, speed = 20) {
@@ -58,6 +66,7 @@ function timeAgo(timestamp: string): string {
 
 export function RPGDialogue() {
   const { messages, loading } = useLiveChat(3);
+  const { data: currentWork } = useCurrentWork();
   const lastMessage = messages[messages.length - 1];
   
   const rawContent = loading
@@ -95,12 +104,24 @@ export function RPGDialogue() {
   return (
     <div className="w-full max-w-2xl mx-auto px-4 pb-8 z-10 relative">
       {/* 섹션 헤더 */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex items-center gap-1.5 bg-green-500/10 px-2.5 py-1 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-bold text-green-700">실시간 대화</span>
+      <div className="flex flex-col gap-1.5 mb-3">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-green-500/10 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs font-bold text-green-700">실시간 대화</span>
+          </div>
+          <span className="text-[10px] text-text-muted">지금 이 순간의 개발 로그</span>
         </div>
-        <span className="text-[10px] text-text-muted">지금 이 순간의 개발 로그</span>
+        {currentWork?.isActive && (
+          <div className="flex items-center gap-1.5 pl-1 text-[10px] text-text-muted">
+            <span className="w-1 h-1 rounded-full bg-primary" />
+            <span className="font-medium text-text-secondary">{currentWork.taskTitle}</span>
+            <span className={`text-[9px] font-bold px-1 py-px rounded ${TASK_TYPE_STYLE[currentWork.taskType] || "bg-gray-100 text-text-muted"}`}>
+              {currentWork.taskType}
+            </span>
+            <span className="text-text-muted/50 font-mono">{currentWork.projectTitle}</span>
+          </div>
+        )}
       </div>
 
       {/* 채팅 카드 */}
