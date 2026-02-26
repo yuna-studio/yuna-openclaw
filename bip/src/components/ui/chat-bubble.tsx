@@ -1,11 +1,14 @@
+"use client";
+
 import { ChatLog } from "@/types";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { User, Bot, Terminal } from "lucide-react";
+import { User, Bot, Terminal, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { UI_TEXT } from "@/lib/constants";
+import { useState, useRef, useEffect } from "react";
 
 interface ChatBubbleProps {
   message: ChatLog;
@@ -148,6 +151,8 @@ export function DateDivider({ date }: { date: string }) {
   );
 }
 
+const COLLAPSE_MAX_HEIGHT = 200;
+
 const markdownComponents = {
   pre({ children }: any) {
     return (
@@ -195,6 +200,16 @@ export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleP
   const time = formatTime(message.timestamp);
   const IconComponent = profile.icon;
   const maskedContent = maskUids(message.content || "");
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    setIsOverflowing(el.scrollHeight > COLLAPSE_MAX_HEIGHT);
+  }, [maskedContent]);
 
   if (isSystem) {
     return (
@@ -253,11 +268,39 @@ export function ChatBubble({ message, isLatest, showHeader = true }: ChatBubbleP
             )}
             style={{ overflowWrap: "break-word", wordBreak: "break-word" }}
           >
-            <div className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 overflow-hidden">
+            <div
+              ref={contentRef}
+              className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 overflow-hidden"
+              style={
+                isOverflowing && !isExpanded
+                  ? {
+                      maxHeight: COLLAPSE_MAX_HEIGHT,
+                      maskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
+                      WebkitMaskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
+                    }
+                  : undefined
+              }
+            >
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                 {maskedContent}
               </ReactMarkdown>
             </div>
+
+            {isOverflowing && (
+              <button
+                type="button"
+                onClick={() => setIsExpanded((prev) => !prev)}
+                className="flex items-center justify-center w-full pt-1.5 text-text-muted hover:text-text-secondary transition-colors"
+              >
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "transition-transform duration-300",
+                    isExpanded && "rotate-180"
+                  )}
+                />
+              </button>
+            )}
           </div>
 
           {time && (
