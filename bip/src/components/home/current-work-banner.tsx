@@ -27,7 +27,7 @@ function timeAgo(timestamp: string): string {
   }
 }
 
-/** 홈 페이지용 — 섹션 카드 */
+/** 홈 페이지용 — 채팅 섹션과 자연스럽게 이어지는 컴팩트 status strip */
 export function CurrentWorkBanner() {
   const { data, loading } = useCurrentWork();
 
@@ -39,79 +39,31 @@ export function CurrentWorkBanner() {
     return () => clearInterval(timer);
   }, [data?.updatedAt]);
 
-  if (loading) {
-    return (
-      <div className="w-full max-w-2xl mx-auto px-4 pb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="h-6 w-24 bg-gray-200 rounded-full animate-pulse" />
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-          </div>
-          <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse" />
-          <div className="flex items-center justify-between">
-            <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
-            <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data || !data.isActive) return null;
+  if (loading || !data || !data.isActive) return null;
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 pb-8">
-      {/* 섹션 헤더 */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-xs font-bold text-primary">지금 작업 중</span>
-        </div>
-        <span className="text-[10px] text-text-muted">현재 진행 중인 태스크</span>
-      </div>
-
-      {/* 카드 */}
+    <div className="w-full max-w-2xl mx-auto px-4 pb-2">
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-white/70 backdrop-blur-sm border border-border/50"
       >
-        {/* 상단: 활성 표시 + 프로젝트명 */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-[10px] font-bold text-primary tracking-wider uppercase">
-              작업 중
-            </span>
-          </div>
-          <span className="text-xs font-mono font-bold text-text-muted">
-            {data.projectTitle}
-          </span>
-        </div>
-
-        {/* 메인: 태스크 제목 */}
-        <p className="text-sm font-bold text-text-primary leading-snug mb-3">
+        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+        <span className="text-[10px] font-bold text-primary shrink-0">작업 중</span>
+        <div className="w-px h-3 bg-border shrink-0" />
+        <span
+          className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+            TYPE_STYLE[data.taskType] || "bg-gray-100 text-text-muted"
+          }`}
+        >
+          {data.taskType}
+        </span>
+        <span className="text-[11px] font-medium text-text-primary truncate">
           {data.taskTitle}
-        </p>
-
-        {/* 하단: 타입 배지 + 업데이트 시간 */}
-        <div className="flex items-center justify-between">
-          <span
-            className={`text-[9px] font-bold px-2 py-0.5 rounded ${
-              TYPE_STYLE[data.taskType] || "bg-gray-100 text-text-muted"
-            }`}
-          >
-            {data.taskType}
-          </span>
-          {ago && (
-            <span className="text-[10px] text-text-muted font-mono">
-              {ago} 업데이트
-            </span>
-          )}
-        </div>
+        </span>
+        <span className="text-[9px] text-text-muted/60 font-mono shrink-0 ml-auto whitespace-nowrap">
+          {data.projectTitle}
+        </span>
       </motion.div>
     </div>
   );
