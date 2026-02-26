@@ -117,7 +117,7 @@ export function RPGDialogue() {
               {currentWork.taskType}
             </span>
             <span className="font-medium text-text-secondary">{currentWork.projectTitle}</span>
-            <span className="text-text-muted/40">·</span>
+            <span className="text-text-muted/30">›</span>
             <span>{currentWork.taskTitle}</span>
           </p>
         )}
