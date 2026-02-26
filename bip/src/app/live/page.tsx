@@ -8,6 +8,7 @@ import { useEffect, useLayoutEffect, useState, useRef, useCallback } from "react
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_TEXT } from "@/lib/constants";
 import { track } from "@/lib/logging";
+import { CurrentWorkBannerPill } from "@/components/home/current-work-banner";
 
 function getDateKey(timestamp: string): string {
   try {
@@ -175,13 +176,8 @@ export default function LivePage() {
         )}
       </AnimatePresence>
 
-      {/* LIVE 뱃지 */}
-      <div className="absolute top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
-        <div className="flex items-center gap-1.5 bg-green-500/15 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm border border-green-500/10 pointer-events-auto">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-[10px] font-bold text-green-600 tracking-wider">LIVE</span>
-        </div>
-      </div>
+      {/* LIVE 뱃지 + 현재 작업 */}
+      <CurrentWorkBannerPill />
 
       {/* 스크롤 컨테이너 — div 기반 (iOS Safari 호환) */}
       <div
