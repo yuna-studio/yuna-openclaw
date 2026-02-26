@@ -69,43 +69,21 @@ export function CurrentWorkBanner() {
   );
 }
 
-/** 라이브 페이지용 — 플로팅 pill (기존 LIVE 뱃지 대체) */
+/** 라이브 페이지용 — 플로팅 pill */
 export function CurrentWorkBannerPill() {
   const { data, loading } = useCurrentWork();
 
-  // 데이터 없거나 로딩 중이면 기본 LIVE pill
-  if (loading || !data || !data.isActive) {
-    return (
-      <div className="absolute top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
-        <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm border border-border pointer-events-auto">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-[10px] font-bold text-primary tracking-wider">
-            LIVE
-          </span>
-        </div>
-      </div>
-    );
-  }
+  if (loading || !data || !data.isActive) return null;
 
   return (
     <div className="absolute top-[4.25rem] inset-x-0 z-30 flex justify-center pointer-events-none">
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-border pointer-events-auto max-w-[320px]"
+        className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-border pointer-events-auto max-w-[90vw]"
       >
-        {/* LIVE 표시 */}
-        <div className="flex items-center gap-1 shrink-0">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-[10px] font-bold text-primary tracking-wider">
-            LIVE
-          </span>
-        </div>
-
-        {/* 구분선 */}
-        <div className="w-px h-3 bg-border shrink-0" />
-
-        {/* 작업 타입 배지 */}
+        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+        <span className="text-[10px] font-bold text-primary shrink-0">작업 중</span>
         <span
           className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
             TYPE_STYLE[data.taskType] || "bg-gray-100 text-text-muted"
@@ -113,11 +91,9 @@ export function CurrentWorkBannerPill() {
         >
           {data.taskType}
         </span>
-
-        {/* 작업 제목 */}
-        <span className="text-[10px] text-text-secondary truncate">
-          {data.taskTitle}
-        </span>
+        <span className="text-[10px] font-medium text-text-secondary truncate">{data.projectTitle}</span>
+        <span className="text-text-muted/30 text-[10px]">›</span>
+        <span className="text-[10px] text-text-muted truncate">{data.taskTitle}</span>
       </motion.div>
     </div>
   );

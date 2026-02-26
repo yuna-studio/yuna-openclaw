@@ -113,6 +113,8 @@ export function RPGDialogue() {
         </div>
         {currentWork?.isActive && (
           <p className="text-[11px] text-text-muted pl-1 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shrink-0" />
+            <span className="text-[10px] font-bold text-primary shrink-0">작업 중</span>
             <span className={`text-[9px] font-bold px-1.5 py-px rounded ${TASK_TYPE_STYLE[currentWork.taskType] || "bg-gray-100 text-text-muted"}`}>
               {currentWork.taskType}
             </span>
