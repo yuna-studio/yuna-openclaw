@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { ChevronLeft } from "lucide-react";
 import { track } from "@/lib/logging";
 import { TuningLoader } from "@/components/ui/tuning-loader";
+import { Footer } from "@/components/ui/footer";
 
 type BlogPost = {
   id: string;
@@ -101,7 +102,7 @@ export default function BlogPage() {
         <div className="w-24" />
       </header>
 
-      <div className="w-full max-w-3xl mx-auto px-4 py-6">
+      <div className="w-full max-w-3xl mx-auto px-4 py-6 pb-24">
         <div className="bg-white border border-border rounded-2xl p-3 mb-4">
           <p className="text-[11px] text-text-muted mb-2">카테고리</p>
           <div className="flex flex-wrap gap-2">
@@ -171,6 +172,8 @@ export default function BlogPage() {
           </div>
         ) : null}
       </div>
+
+      <Footer />
     </main>
   );
 }

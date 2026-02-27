@@ -8,6 +8,7 @@ import { marked } from "marked";
 import { ChevronLeft } from "lucide-react";
 import { track } from "@/lib/logging";
 import { TuningLoader } from "@/components/ui/tuning-loader";
+import { Footer } from "@/components/ui/footer";
 
 type BlogPost = {
   id: string;
@@ -105,7 +106,7 @@ export default function BlogPostPage() {
         </Link>
       </header>
 
-      <div className="w-full max-w-3xl mx-auto px-4 py-6">
+      <div className="w-full max-w-3xl mx-auto px-4 py-6 pb-24">
         {loading ? <TuningLoader className="py-20" /> : null}
         {error ? <div className="text-red-400">{error}</div> : null}
 
@@ -134,6 +135,8 @@ export default function BlogPostPage() {
           </article>
         ) : null}
       </div>
+
+      <Footer />
     </main>
   );
 }
