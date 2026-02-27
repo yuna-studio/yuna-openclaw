@@ -12,7 +12,6 @@ type BlogPost = {
   id: string;
   title: string;
   slug: string;
-  summary?: string;
   contentMd?: string;
   category?: string;
   displayDate?: string;
@@ -62,7 +61,11 @@ export default function BlogPage() {
           : collection(db, "blog_posts");
         const snap = await getDocs(query(colRef, where("status", "==", "published")));
         const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as BlogPost[];
-        rows.sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+        rows.sort((a, b) => {
+          const da = a.displayDate || "";
+          const db_ = b.displayDate || "";
+          return db_.localeCompare(da); // 최신(날짜 내림차순)이 위로
+        });
         setPosts(rows);
       } catch (e: any) {
         setError(e?.message || "블로그 로드 실패");
@@ -147,7 +150,17 @@ export default function BlogPage() {
                   </div>
 
                   <p className="text-sm font-bold leading-snug line-clamp-2">{p.title}</p>
-                  <p className="text-xs text-text-secondary mt-1 line-clamp-2">{p.summary || "요약 없음"}</p>
+                  {p.contentMd && (
+                    <p className="text-xs text-text-secondary mt-1 line-clamp-3">
+                      {p.contentMd
+                        .replace(/^#{1,6}\s+/gm, "")
+                        .replace(/[*_~`>]/g, "")
+                        .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+                        .replace(/\n+/g, " ")
+                        .trim()
+                        .slice(0, 200)}
+                    </p>
+                  )}
                   <div className="mt-2 flex items-center justify-between text-[11px] text-text-secondary">
                     <span>{p.displayDate || ""}</span>
                     <span>{p.category || "블로그"}</span>

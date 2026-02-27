@@ -176,7 +176,13 @@ async function sendBatch(batch: QueueItem[]) {
     keepalive: true,
   });
 
-  if (!res.ok) throw new Error(`http-${res.status}`);
+  if (!res.ok) {
+    // 4xx: 클라이언트 오류는 재시도해도 의미 없음 — non-retryable 처리
+    if (res.status >= 400 && res.status < 500) {
+      return { ok: false, failedIndices: batch.map((_, i) => i), retryable: false } as IngestResponse;
+    }
+    throw new Error(`http-${res.status}`);
+  }
   return (await res.json().catch(() => ({}))) as IngestResponse;
 }
 
