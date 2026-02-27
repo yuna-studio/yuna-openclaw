@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ReactionBar } from "@/components/ui/reaction-bar";
+import { FloatingHomeCta } from "@/components/ui/floating-home-cta";
 import { FirebaseAnalyticsTracker } from "@/components/analytics/firebase-analytics-tracker";
 
 export const metadata: Metadata = {
@@ -72,6 +73,7 @@ export default function RootLayout({
         {children}
         <FirebaseAnalyticsTracker />
         <ReactionBar />
+        <FloatingHomeCta />
       </body>
     </html>
   );

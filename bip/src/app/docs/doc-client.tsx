@@ -9,6 +9,7 @@ import { marked } from "marked";
 import mermaid from "mermaid";
 import { ChevronLeft } from "lucide-react";
 import { TuningLoader } from "@/components/ui/tuning-loader";
+import { Footer } from "@/components/ui/footer";
 
 function escapeHtml(s: string): string {
   return s
@@ -194,7 +195,7 @@ export default function DocClient() {
         <div className="w-20" />
       </header>
 
-      <div className="w-full max-w-3xl mx-auto px-4 py-8">
+      <div className="w-full max-w-3xl mx-auto px-4 py-8 pb-24">
         {loading ? <TuningLoader className="py-20" /> : null}
         {error ? <div className="mt-6 text-red-600">{error}</div> : null}
 
@@ -208,6 +209,8 @@ export default function DocClient() {
           </article>
         ) : null}
       </div>
+
+      <Footer />
     </main>
   );
 }
