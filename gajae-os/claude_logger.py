@@ -162,6 +162,29 @@ def strip_git_context(text: str) -> str:
     return text.strip()
 
 
+_UNTRUSTED_METADATA_BLOCK_RE = re.compile(
+    r"\n*"
+    r"(?:Conversation info|Sender)\s*\(untrusted metadata\):\s*\n"
+    r"```json\s*\n"
+    r"\{[\s\S]*?\}\s*\n"
+    r"```\s*\n*",
+    re.IGNORECASE,
+)
+_UNTRUSTED_METADATA_INLINE_RE = re.compile(
+    r"\n*"
+    r"(?:Conversation info|Sender)\s*\(untrusted metadata\):\s*\n"
+    r"\{[\s\S]*?\}\s*\n*",
+    re.IGNORECASE,
+)
+
+
+def strip_untrusted_metadata(text: str) -> str:
+    """Remove OpenClaw-injected untrusted metadata blocks from user text."""
+    text = _UNTRUSTED_METADATA_BLOCK_RE.sub("\n", text)
+    text = _UNTRUSTED_METADATA_INLINE_RE.sub("\n", text)
+    return text.strip()
+
+
 def is_system_injected(text: str) -> bool:
     return bool(_SYSTEM_USER_RE.search(text))
 
@@ -309,6 +332,9 @@ def clean_message(entry: dict) -> dict | None:
 
     # git status/diff/log 컨텍스트 블록 제거 (훅이 주입하는 git 정보)
     text = strip_git_context(text)
+
+    # OpenClaw 대화 메타(Conversation/Sender untrusted metadata) 제거
+    text = strip_untrusted_metadata(text)
 
     # 시스템 주입 메시지 스킵
     if role == "user" and is_system_injected(text):

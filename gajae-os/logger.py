@@ -129,21 +129,32 @@ def strip_final_tags(text: str) -> str:
 
 
 def strip_inbound_meta(text: str) -> str:
-    """Remove OpenClaw inbound metadata blocks from user messages."""
-    # Conversation info block
+    """Remove OpenClaw inbound metadata/system wrapper blocks from user messages."""
+    # Conversation/Sender metadata blocks (fenced json)
     text = re.sub(
-        r"Conversation info \(untrusted metadata\):\s*```json\s*\{[^}]*\}\s*```\s*",
-        "", text, flags=re.DOTALL
-    ).strip()
+        r"\n*(?:Conversation info|Sender)\s*\(untrusted metadata\):\s*\n```json\s*\n\{[\s\S]*?\}\s*\n```\s*\n*",
+        "\n",
+        text,
+        flags=re.IGNORECASE,
+    )
+    # Conversation/Sender metadata blocks (inline json, no fences)
+    text = re.sub(
+        r"\n*(?:Conversation info|Sender)\s*\(untrusted metadata\):\s*\n\{[\s\S]*?\}\s*\n*",
+        "\n",
+        text,
+        flags=re.IGNORECASE,
+    )
+    # System runner wrappers (e.g. System: [timestamp] Exec ...)
+    text = re.sub(r"^System:\s*\[[^\]]*\].*?(?:\n|$)", "", text, flags=re.MULTILINE)
     # [Telegram ...] prefix
-    text = re.sub(r"^\[Telegram[^\]]*\]\s*", "", text).strip()
+    text = re.sub(r"^\[Telegram[^\]]*\]\s*", "", text, flags=re.MULTILINE)
     # <file ...>...</file> blocks
-    text = re.sub(r"<file[^>]*>.*?</file>", "", text, flags=re.DOTALL).strip()
+    text = re.sub(r"<file[^>]*>.*?</file>", "", text, flags=re.DOTALL)
     # [media attached: ...] lines
-    text = re.sub(r"\[media attached:.*?\]\s*", "", text).strip()
+    text = re.sub(r"\[media attached:.*?\]\s*", "", text)
     # "To send an image back..." instruction lines
-    text = re.sub(r"To send an image back.*?(?:\n|$)", "", text).strip()
-    return text
+    text = re.sub(r"To send an image back.*?(?:\n|$)", "", text)
+    return text.strip()
 
 
 # System-injected user messages to skip
